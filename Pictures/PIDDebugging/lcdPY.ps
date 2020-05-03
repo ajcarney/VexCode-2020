@@ -1,0 +1,1366 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../PIDDebugging/lcd.py) def
+/fdir (../PIDDebugging) def
+/ftail (lcd.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+24.165 664 M
+(""") s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(Created on Mon Jan  6 22:38:31 2020) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(@author: aiden) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(""") s
+/F-gs-font 5 5 SF
+0 setgray
+16 634 M (8:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 634 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 634 M
+( LCD:) s
+16 628 M (9:) s
+24.165 628 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+29.165 628 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Bold 5 5 SUF
+24.165 622 M
+(    class for communicating with the vex lcd via serial communication) s
+/F-gs-font 5 5 SF
+13.5 616 M (11:) s
+/Palatino-Bold 5 5 SUF
+24.165 616 M
+(    """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+24.165 610 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 610 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 610 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 610 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 610 M
+(\(self, serial_write, serial_read\):) s
+13.5 604 M (13:) s
+24.165 604 M
+(        self.lcd_screen = serial_write) s
+13.5 598 M (14:) s
+24.165 598 M
+(        self.lcd_buttons = serial_read) s
+13.5 592 M (15:) s
+24.165 592 M
+(        ) s
+13.5 586 M (16:) s
+24.165 586 M
+(        self.__flags = 0x00) s
+13.5 580 M (17:) s
+24.165 580 M
+(        self.__line_1 = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+66.795 580 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+72.065 580 M
+( * 16) s
+13.5 574 M (18:) s
+24.165 574 M
+(        self.__line_2 = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+66.795 574 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+72.065 574 M
+( * 16) s
+13.5 568 M (19:) s
+24.165 568 M
+(        ) s
+13.5 562 M (20:) s
+24.165 562 M
+(        self.__num_chars = 16) s
+13.5 556 M (21:) s
+24.165 556 M
+(        ) s
+13.5 550 M (22:) s
+24.165 550 M
+(        ) s
+13.5 544 M (23:) s
+24.165 544 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 544 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 544 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 544 M
+(__write_line) s
+/F-gs-font 5 5 SF
+0 setgray
+66.24 544 M
+(\(self\):) s
+13.5 538 M (24:) s
+24.165 538 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 538 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 532 M (25:) s
+/Palatino-Bold 5 5 SUF
+24.165 532 M
+(        Writes to the lcd. Runs from thread, not called by user) s
+/F-gs-font 5 5 SF
+13.5 526 M (26:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 520 M (27:) s
+/Palatino-Bold 5 5 SUF
+24.165 520 M
+(        Returns) s
+/F-gs-font 5 5 SF
+13.5 514 M (28:) s
+/Palatino-Bold 5 5 SUF
+24.165 514 M
+(        -------) s
+/F-gs-font 5 5 SF
+13.5 508 M (29:) s
+/Palatino-Bold 5 5 SUF
+24.165 508 M
+(        int) s
+/F-gs-font 5 5 SF
+13.5 502 M (30:) s
+/Palatino-Bold 5 5 SUF
+24.165 502 M
+(            1 on success.) s
+/F-gs-font 5 5 SF
+13.5 496 M (31:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 490 M (32:) s
+/Palatino-Bold 5 5 SUF
+24.165 490 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 484 M (33:) s
+24.165 484 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 484 M
+(#line 1 bytearray) s
+/F-gs-font 5 5 SF
+13.5 478 M (34:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 478 M
+(        send_array = bytearray\(\)) s
+13.5 472 M (35:) s
+24.165 472 M
+(        send_array.append\(0xAA\)) s
+13.5 466 M (36:) s
+24.165 466 M
+(        send_array.append\(0x55\)) s
+13.5 460 M (37:) s
+24.165 460 M
+(        send_array.append\(0x1E\)) s
+13.5 454 M (38:) s
+24.165 454 M
+(        send_array.append\(0x12\)) s
+13.5 448 M (39:) s
+24.165 448 M
+(        send_array.append\(0x00\)) s
+13.5 442 M (40:) s
+24.165 442 M
+(        checksum = 0x00) s
+13.5 436 M (41:) s
+24.165 436 M
+(        ) s
+13.5 430 M (42:) s
+24.165 430 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 430 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 430 M
+( char ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+52.94 430 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+57.66 430 M
+( self.__line_1:) s
+13.5 424 M (43:) s
+24.165 424 M
+(            send_array.append\(ord\(char\)\)) s
+13.5 418 M (44:) s
+24.165 418 M
+(            checksum += \(ord\(char\)\)) s
+13.5 412 M (45:) s
+24.165 412 M
+(            ) s
+13.5 406 M (46:) s
+24.165 406 M
+(        self.lcd_screen.write\(send_array\)) s
+13.5 400 M (47:) s
+24.165 400 M
+(            ) s
+13.5 394 M (48:) s
+24.165 394 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 394 M
+(#line 2 bytearray) s
+/F-gs-font 5 5 SF
+13.5 388 M (49:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(        send_array = bytearray\(\)) s
+13.5 382 M (50:) s
+24.165 382 M
+(        send_array.append\(0xAA\)) s
+13.5 376 M (51:) s
+24.165 376 M
+(        send_array.append\(0x55\)) s
+13.5 370 M (52:) s
+24.165 370 M
+(        send_array.append\(0x1E\)) s
+13.5 364 M (53:) s
+24.165 364 M
+(        send_array.append\(0x12\)) s
+13.5 358 M (54:) s
+24.165 358 M
+(        send_array.append\(0x01\)) s
+13.5 352 M (55:) s
+24.165 352 M
+(        checksum = 0x01) s
+13.5 346 M (56:) s
+24.165 346 M
+(        ) s
+13.5 340 M (57:) s
+24.165 340 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 340 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 340 M
+( char ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+52.94 340 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+57.66 340 M
+( self.__line_1:) s
+13.5 334 M (58:) s
+24.165 334 M
+(            send_array.append\(ord\(char\)\)) s
+13.5 328 M (59:) s
+24.165 328 M
+(            checksum += \(ord\(char\)\)) s
+13.5 322 M (60:) s
+24.165 322 M
+(            ) s
+13.5 316 M (61:) s
+24.165 316 M
+(        self.lcd_screen.write\(send_array\)) s
+13.5 310 M (62:) s
+24.165 310 M
+(        ) s
+13.5 304 M (63:) s
+24.165 304 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 304 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 304 M
+( 1) s
+13.5 298 M (64:) s
+24.165 298 M
+(            ) s
+13.5 292 M (65:) s
+24.165 292 M
+(            ) s
+13.5 286 M (66:) s
+24.165 286 M
+(        ) s
+13.5 280 M (67:) s
+24.165 280 M
+(        ) s
+13.5 274 M (68:) s
+24.165 274 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 274 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 274 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 274 M
+(write_string) s
+/F-gs-font 5 5 SF
+0 setgray
+65.685 274 M
+(\(self, string, ln=0, align=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+119.38 274 M
+("left") s
+/F-gs-font 5 5 SF
+0 setgray
+131.175 274 M
+(\):) s
+13.5 268 M (69:) s
+24.165 268 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 268 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 262 M (70:) s
+/Palatino-Bold 5 5 SUF
+24.165 262 M
+(        writes a string to the lcd) s
+/F-gs-font 5 5 SF
+13.5 256 M (71:) s
+/Palatino-Bold 5 5 SUF
+24.165 256 M
+(        handles multiline writing by keeping track of line one and line two) s
+/F-gs-font 5 5 SF
+13.5 250 M (72:) s
+/Palatino-Bold 5 5 SUF
+24.165 250 M
+(        and adding a newline character between them) s
+/F-gs-font 5 5 SF
+13.5 244 M (73:) s
+/Palatino-Bold 5 5 SUF
+24.165 244 M
+(        ) s
+/F-gs-font 5 5 SF
+13.5 238 M (74:) s
+/Palatino-Bold 5 5 SUF
+24.165 238 M
+(        returns 0 on unsucessful write and 1 if completed successfully) s
+/F-gs-font 5 5 SF
+13.5 232 M (75:) s
+/Palatino-Bold 5 5 SUF
+24.165 232 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 226 M (76:) s
+24.165 226 M
+(        buffer = self.__num_chars - len\(string\)) s
+13.5 220 M (77:) s
+24.165 220 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 220 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 220 M
+( align == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+58.685 220 M
+("center") s
+/F-gs-font 5 5 SF
+0 setgray
+76.59 220 M
+(:) s
+13.5 214 M (78:) s
+24.165 214 M
+(            left_spaces = round\(buffer/2, 0\)) s
+13.5 208 M (79:) s
+24.165 208 M
+(            right_spaces = self.__num_chars - len\(string\) - left_spaces) s
+13.5 202 M (80:) s
+24.165 202 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 202 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 202 M
+( right_spaces < 0:) s
+13.5 196 M (81:) s
+24.165 196 M
+(                right_spaces = 0) s
+13.5 190 M (82:) s
+24.165 190 M
+(            string = \() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.23 190 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.5 190 M
+( * left_spaces\) + string + \() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+120.21 190 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+125.48 190 M
+( * right_spaces\)) s
+13.5 184 M (83:) s
+24.165 184 M
+(            ) s
+13.5 178 M (84:) s
+24.165 178 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 178 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 178 M
+( align == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+62.85 178 M
+("right") s
+/F-gs-font 5 5 SF
+0 setgray
+77.98 178 M
+(:) s
+13.5 172 M (85:) s
+24.165 172 M
+(            left_spaces = self.__num_chars - len\(string\)) s
+13.5 166 M (86:) s
+24.165 166 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 166 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 166 M
+( left_spaces < 0:) s
+13.5 160 M (87:) s
+24.165 160 M
+(                left_spaces = 0) s
+13.5 154 M (88:) s
+24.165 154 M
+(            string = \() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.23 154 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.5 154 M
+( * left_spaces\) + string) s
+13.5 148 M (89:) s
+24.165 148 M
+(            ) s
+13.5 142 M (90:) s
+24.165 142 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 142 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 142 M
+( align == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+62.85 142 M
+("left") s
+/F-gs-font 5 5 SF
+0 setgray
+74.645 142 M
+(:) s
+13.5 136 M (91:) s
+24.165 136 M
+(            string = string) s
+13.5 130 M (92:) s
+24.165 130 M
+(            ) s
+13.5 124 M (93:) s
+24.165 124 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 124 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 124 M
+(:) s
+13.5 118 M (94:) s
+24.165 118 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 118 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+53.33 118 M
+( 0) s
+13.5 112 M (95:) s
+24.165 112 M
+(        ) s
+13.5 106 M (96:) s
+24.165 106 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 106 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 106 M
+( len\(string\) > self.__num_chars:  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+109.715 106 M
+(#cap string length to the number of characters on the lcd) s
+/F-gs-font 5 5 SF
+13.5 100 M (97:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 100 M
+(            string = string[:self.__num_chars]) s
+13.5 94 M (98:) s
+24.165 94 M
+(            ) s
+13.5 88 M (99:) s
+24.165 88 M
+(            ) s
+11 82 M (100:) s
+24.165 82 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 82 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 82 M
+( ln == 0:) s
+11 76 M (101:) s
+24.165 76 M
+(            self.__line_1 = string) s
+11 70 M (102:) s
+24.165 70 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 70 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 70 M
+( ln == 1:) s
+11 64 M (103:) s
+24.165 64 M
+(            self.__line_2 = string) s
+11 58 M (104:) s
+11 52 M (105:) s
+24.165 52 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 52 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 52 M
+( 1) s
+11 46 M (106:) s
+24.165 46 M
+(    ) s
+11 40 M (107:) s
+24.165 40 M
+(    ) s
+11 34 M (108:) s
+24.165 34 M
+(    ) s
+11 28 M (109:) s
+24.165 28 M
+(    ) s
+11 22 M (110:) s
+24.165 22 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 22 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 22 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 22 M
+(clear) s
+/F-gs-font 5 5 SF
+0 setgray
+48.745 22 M
+(\(self, line\):) s
+11 16 M (111:) s
+24.165 16 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 16 M
+(""") s
+/F-gs-font 5 5 SF
+11 10 M (112:) s
+/Palatino-Bold 5 5 SUF
+24.165 10 M
+(        clears a line on the lcd by sending spaces) s
+/F-gs-font 5 5 SF
+11 4 M (113:) s
+/Palatino-Bold 5 5 SUF
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../PIDDebugging/lcd.py) def
+/fdir (../PIDDebugging) def
+/ftail (lcd.py) def
+/Palatino-Bold 5 5 SUF
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.737255 0.560784 0.560784 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (114:) s
+/Palatino-Bold 5 5 SUF
+24.165 676 M
+(        Parameters) s
+/F-gs-font 5 5 SF
+11 670 M (115:) s
+/Palatino-Bold 5 5 SUF
+24.165 670 M
+(        ----------) s
+/F-gs-font 5 5 SF
+11 664 M (116:) s
+/Palatino-Bold 5 5 SUF
+24.165 664 M
+(        line : int) s
+/F-gs-font 5 5 SF
+11 658 M (117:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(            the line to clear.) s
+/F-gs-font 5 5 SF
+11 652 M (118:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 646 M (119:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(        Returns) s
+/F-gs-font 5 5 SF
+11 640 M (120:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(        -------) s
+/F-gs-font 5 5 SF
+11 634 M (121:) s
+/Palatino-Bold 5 5 SUF
+24.165 634 M
+(        int) s
+/F-gs-font 5 5 SF
+11 628 M (122:) s
+/Palatino-Bold 5 5 SUF
+24.165 628 M
+(            1 on success, 0 on failure.) s
+/F-gs-font 5 5 SF
+11 622 M (123:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 616 M (124:) s
+/Palatino-Bold 5 5 SUF
+24.165 616 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 610 M (125:) s
+24.165 610 M
+(        string = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.565 610 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+57.835 610 M
+( * 16) s
+11 604 M (126:) s
+24.165 604 M
+(        ret = self.write_string\(string, ln=line\)) s
+11 598 M (127:) s
+24.165 598 M
+(        ) s
+11 592 M (128:) s
+24.165 592 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 592 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.025 592 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+46.525 592 M
+( ret:) s
+11 586 M (129:) s
+24.165 586 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 586 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+53.33 586 M
+( 0) s
+11 580 M (130:) s
+24.165 580 M
+(        ) s
+11 574 M (131:) s
+24.165 574 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 574 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 574 M
+( 1) s
+11 568 M (132:) s
+24.165 568 M
+(    ) s
+11 562 M (133:) s
+24.165 562 M
+(    ) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

@@ -1,0 +1,1424 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../Print/DirectoryTree.py) def
+/fdir (../Print) def
+/ftail (DirectoryTree.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+24.165 664 M
+(""") s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(Created on Fri Jun  7 10:22:26 2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(@author: aiden) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(""") s
+/F-gs-font 5 5 SF
+0 setgray
+16 634 M (8:) s
+16 628 M (9:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 628 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 628 M
+( os) s
+13.5 622 M (10:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 622 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 622 M
+( treelib) s
+13.5 616 M (11:) s
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 604 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 604 M
+( DirectoryTree:) s
+13.5 598 M (14:) s
+24.165 598 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+29.165 598 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 592 M (15:) s
+/Palatino-Bold 5 5 SUF
+24.165 592 M
+(    contains methods for making a treelib tree structure of a) s
+/F-gs-font 5 5 SF
+13.5 586 M (16:) s
+/Palatino-Bold 5 5 SUF
+24.165 586 M
+(    given directory tree) s
+/F-gs-font 5 5 SF
+13.5 580 M (17:) s
+/Palatino-Bold 5 5 SUF
+24.165 580 M
+(    meant to be inherited but can be a stand alone class) s
+/F-gs-font 5 5 SF
+13.5 574 M (18:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 568 M (19:) s
+/Palatino-Bold 5 5 SUF
+24.165 568 M
+(    @params = None) s
+/F-gs-font 5 5 SF
+13.5 562 M (20:) s
+/Palatino-Bold 5 5 SUF
+24.165 562 M
+(    @return = None) s
+/F-gs-font 5 5 SF
+13.5 556 M (21:) s
+/Palatino-Bold 5 5 SUF
+24.165 556 M
+(    """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 550 M (22:) s
+13.5 544 M (23:) s
+24.165 544 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 544 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 544 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 544 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 544 M
+(\(self\):) s
+13.5 538 M (24:) s
+24.165 538 M
+(        self.__directories = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+81.565 538 M
+(#will contain all directories and subdirectories) s
+/F-gs-font 5 5 SF
+13.5 532 M (25:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 532 M
+(        self.__directory_tree = treelib.Tree\(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+114.42 532 M
+(#will contain all directories ordered according) s
+/F-gs-font 5 5 SF
+13.5 526 M (26:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 526 M
+(                                             ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+80.415 526 M
+(#to "config.txt") s
+/F-gs-font 5 5 SF
+13.5 520 M (27:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 514 M (28:) s
+13.5 508 M (29:) s
+13.5 502 M (30:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 502 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 502 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 502 M
+(__get_dirs) s
+/F-gs-font 5 5 SF
+0 setgray
+61.245 502 M
+(\(self, parent_directory, storage_list\):) s
+13.5 496 M (31:) s
+24.165 496 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 496 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 490 M (32:) s
+/Palatino-Bold 5 5 SUF
+24.165 490 M
+(        recursively prints all files in parent directory) s
+/F-gs-font 5 5 SF
+13.5 484 M (33:) s
+/Palatino-Bold 5 5 SUF
+24.165 484 M
+(        put in list given) s
+/F-gs-font 5 5 SF
+13.5 478 M (34:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 472 M (35:) s
+/Palatino-Bold 5 5 SUF
+24.165 472 M
+(        @params = directory to start at, directory to write output to) s
+/F-gs-font 5 5 SF
+13.5 466 M (36:) s
+/Palatino-Bold 5 5 SUF
+24.165 466 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+13.5 460 M (37:) s
+/Palatino-Bold 5 5 SUF
+24.165 460 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 454 M (38:) s
+13.5 448 M (39:) s
+24.165 448 M
+(        dirs = [f.path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+64.175 448 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+70.845 448 M
+( f ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+75.01 448 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+79.73 448 M
+( os.scandir\(parent_directory\) ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+145.025 448 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+148.635 448 M
+( f.is_dir\(\)]) s
+13.5 442 M (40:) s
+13.5 436 M (41:) s
+24.165 436 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 436 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 436 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.55 436 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+68.27 436 M
+( dirs:) s
+13.5 430 M (42:) s
+24.165 430 M
+(            storage_list.append\(directory\)) s
+13.5 424 M (43:) s
+24.165 424 M
+(            self.__get_dirs\(directory, storage_list\)) s
+13.5 418 M (44:) s
+13.5 412 M (45:) s
+13.5 406 M (46:) s
+13.5 400 M (47:) s
+13.5 394 M (48:) s
+24.165 394 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 394 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 394 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 394 M
+(__get_all) s
+/F-gs-font 5 5 SF
+0 setgray
+58.19 394 M
+(\(self, parent_directory, storage_list\):) s
+13.5 388 M (49:) s
+24.165 388 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 388 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 382 M (50:) s
+/Palatino-Bold 5 5 SUF
+24.165 382 M
+(        recursively prints all files in parent directory) s
+/F-gs-font 5 5 SF
+13.5 376 M (51:) s
+/Palatino-Bold 5 5 SUF
+24.165 376 M
+(        put in list given) s
+/F-gs-font 5 5 SF
+13.5 370 M (52:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 364 M (53:) s
+/Palatino-Bold 5 5 SUF
+24.165 364 M
+(        @params = directory to start at, directory to write output to) s
+/F-gs-font 5 5 SF
+13.5 358 M (54:) s
+/Palatino-Bold 5 5 SUF
+24.165 358 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+13.5 352 M (55:) s
+/Palatino-Bold 5 5 SUF
+24.165 352 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 346 M (56:) s
+13.5 340 M (57:) s
+24.165 340 M
+(        dirs = [f.path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+64.175 340 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+70.845 340 M
+( f ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+75.01 340 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+79.73 340 M
+( os.scandir\(parent_directory\) ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+145.025 340 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+148.635 340 M
+( f.is_dir\(\)]) s
+13.5 334 M (58:) s
+24.165 334 M
+(        files = [f.path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+64.66 334 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+71.33 334 M
+( f ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+75.495 334 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+80.215 334 M
+( os.scandir\(parent_directory\)]) s
+13.5 328 M (59:) s
+13.5 322 M (60:) s
+24.165 322 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 322 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 322 M
+( file ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.305 322 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.025 322 M
+( files:) s
+13.5 316 M (61:) s
+24.165 316 M
+(            storage_list.append\(file\)) s
+13.5 310 M (62:) s
+13.5 304 M (63:) s
+24.165 304 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 304 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 304 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.55 304 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+68.27 304 M
+( dirs:) s
+13.5 298 M (64:) s
+24.165 298 M
+(            storage_list.append\(directory\)) s
+13.5 292 M (65:) s
+24.165 292 M
+(            self.__get_all\(directory, storage_list\)) s
+13.5 286 M (66:) s
+13.5 280 M (67:) s
+13.5 274 M (68:) s
+13.5 268 M (69:) s
+24.165 268 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 268 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 268 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 268 M
+(__make_tree) s
+/F-gs-font 5 5 SF
+0 setgray
+66.525 268 M
+(\(self\):) s
+13.5 262 M (70:) s
+24.165 262 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 262 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 256 M (71:) s
+/Palatino-Bold 5 5 SUF
+24.165 256 M
+(        add directories found to a treelib structure) s
+/F-gs-font 5 5 SF
+13.5 250 M (72:) s
+/Palatino-Bold 5 5 SUF
+24.165 250 M
+(        the parent directory is set in "config.txt") s
+/F-gs-font 5 5 SF
+13.5 244 M (73:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+13.5 238 M (74:) s
+/Palatino-Bold 5 5 SUF
+24.165 238 M
+(        @params = None) s
+/F-gs-font 5 5 SF
+13.5 232 M (75:) s
+/Palatino-Bold 5 5 SUF
+24.165 232 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+13.5 226 M (76:) s
+/Palatino-Bold 5 5 SUF
+24.165 226 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 220 M (77:) s
+24.165 220 M
+(        depth = self.__directory_tree.depth\(\)) s
+13.5 214 M (78:) s
+13.5 208 M (79:) s
+24.165 208 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 208 M
+(#splits path of directory and makes nodes of partial paths until) s
+/F-gs-font 5 5 SF
+13.5 202 M (80:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 202 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 202 M
+(#it reaches the end of the path given) s
+/F-gs-font 5 5 SF
+13.5 196 M (81:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 196 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 196 M
+(#the resulting tree is saved in "self.__directory_tree") s
+/F-gs-font 5 5 SF
+13.5 190 M (82:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 190 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 190 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 190 M
+( path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+53.38 190 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.1 190 M
+( self.__directories:) s
+13.5 184 M (83:) s
+24.165 184 M
+(            path_split = path.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.53 184 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+95.03 184 M
+(\)) s
+13.5 178 M (84:) s
+13.5 172 M (85:) s
+24.165 172 M
+(            i = depth) s
+13.5 166 M (86:) s
+13.5 160 M (87:) s
+24.165 160 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 160 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+52.215 160 M
+( i < len\(path_split\):) s
+13.5 154 M (88:) s
+24.165 154 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 154 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 154 M
+(:) s
+13.5 148 M (89:) s
+24.165 148 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 148 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+52.775 148 M
+( i > 0:) s
+13.5 142 M (90:) s
+24.165 142 M
+(                        name = path_split[i]) s
+13.5 136 M (91:) s
+24.165 136 M
+(                        node_id = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.795 136 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 136 M
+(.join\(path_split[0:i + 1]\)) s
+13.5 130 M (92:) s
+24.165 130 M
+(                        parent = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.11 130 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+79.61 130 M
+(.join\(path_split[0:i]\)) s
+13.5 124 M (93:) s
+24.165 124 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 124 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+58.05 124 M
+(:) s
+13.5 118 M (94:) s
+24.165 118 M
+(                        name = path_split[i]) s
+13.5 112 M (95:) s
+24.165 112 M
+(                        node_id = path_split[i]) s
+13.5 106 M (96:) s
+24.165 106 M
+(                        parent = None) s
+13.5 100 M (97:) s
+13.5 94 M (98:) s
+24.165 94 M
+(                    self.__directory_tree.create_node\(tag=name, identifier=node_id, parent=parent\)) s
+13.5 88 M (99:) s
+11 82 M (100:) s
+24.165 82 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 82 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 82 M
+( treelib.exceptions.NodeIDAbsentError:) s
+11 76 M (101:) s
+24.165 76 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 76 M
+(pass) s
+/F-gs-font 5 5 SF
+0 setgray
+11 70 M (102:) s
+24.165 70 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 70 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 70 M
+( treelib.exceptions.DuplicatedNodeIdError:) s
+11 64 M (103:) s
+24.165 64 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 64 M
+(pass) s
+/F-gs-font 5 5 SF
+0 setgray
+11 58 M (104:) s
+11 52 M (105:) s
+24.165 52 M
+(                i = i + 1) s
+11 46 M (106:) s
+11 40 M (107:) s
+11 34 M (108:) s
+11 28 M (109:) s
+24.165 28 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 28 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 28 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 28 M
+(return_directory_tree) s
+/F-gs-font 5 5 SF
+0 setgray
+86.245 28 M
+(\(self, parent_directory\):) s
+11 22 M (110:) s
+24.165 22 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 22 M
+(""") s
+/F-gs-font 5 5 SF
+11 16 M (111:) s
+/Palatino-Bold 5 5 SUF
+24.165 16 M
+(        makes and returns a treelib tree structure of a directory) s
+/F-gs-font 5 5 SF
+11 10 M (112:) s
+/Palatino-Bold 5 5 SUF
+24.165 10 M
+(        tree based on a parent directory given only directories are) s
+/F-gs-font 5 5 SF
+11 4 M (113:) s
+/Palatino-Bold 5 5 SUF
+24.165 4 M
+(        included) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../Print/DirectoryTree.py) def
+/fdir (../Print) def
+/ftail (DirectoryTree.py) def
+/Palatino-Bold 5 5 SUF
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.737255 0.560784 0.560784 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (114:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 670 M (115:) s
+/Palatino-Bold 5 5 SUF
+24.165 670 M
+(        @params = string of parent directory to start node at) s
+/F-gs-font 5 5 SF
+11 664 M (116:) s
+/Palatino-Bold 5 5 SUF
+24.165 664 M
+(        @return = treelib tree structure of directory tree,) s
+/F-gs-font 5 5 SF
+11 658 M (117:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(                  list of directories found) s
+/F-gs-font 5 5 SF
+11 652 M (118:) s
+/Palatino-Bold 5 5 SUF
+24.165 652 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 646 M (119:) s
+24.165 646 M
+(        self.__directory_tree = treelib.Tree\(\)) s
+11 640 M (120:) s
+24.165 640 M
+(        self.__directories = []) s
+11 634 M (121:) s
+11 628 M (122:) s
+24.165 628 M
+(        self.__get_dirs\(parent_directory, self.__directories\)) s
+11 622 M (123:) s
+24.165 622 M
+(        self.__make_tree\(\)) s
+11 616 M (124:) s
+11 610 M (125:) s
+24.165 610 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 610 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 610 M
+( self.__directory_tree, self.__directories) s
+11 604 M (126:) s
+11 598 M (127:) s
+11 592 M (128:) s
+11 586 M (129:) s
+24.165 586 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 586 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 586 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 586 M
+(return_tree) s
+/F-gs-font 5 5 SF
+0 setgray
+63.19 586 M
+(\(self, parent_directory\):) s
+11 580 M (130:) s
+24.165 580 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 580 M
+(""") s
+/F-gs-font 5 5 SF
+11 574 M (131:) s
+/Palatino-Bold 5 5 SUF
+24.165 574 M
+(        makes and returns a treelib tree structure of a directory) s
+/F-gs-font 5 5 SF
+11 568 M (132:) s
+/Palatino-Bold 5 5 SUF
+24.165 568 M
+(        tree based on a parent directory given) s
+/F-gs-font 5 5 SF
+11 562 M (133:) s
+/Palatino-Bold 5 5 SUF
+24.165 562 M
+(        everything is included) s
+/F-gs-font 5 5 SF
+11 556 M (134:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 550 M (135:) s
+/Palatino-Bold 5 5 SUF
+24.165 550 M
+(        @params = string of parent directory to start node at) s
+/F-gs-font 5 5 SF
+11 544 M (136:) s
+/Palatino-Bold 5 5 SUF
+24.165 544 M
+(        @return = treelib tree structure of directory tree,) s
+/F-gs-font 5 5 SF
+11 538 M (137:) s
+/Palatino-Bold 5 5 SUF
+24.165 538 M
+(                  list of directories found) s
+/F-gs-font 5 5 SF
+11 532 M (138:) s
+/Palatino-Bold 5 5 SUF
+24.165 532 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 526 M (139:) s
+24.165 526 M
+(        self.__directory_tree = treelib.Tree\(\)) s
+11 520 M (140:) s
+24.165 520 M
+(        self.__directories = []) s
+11 514 M (141:) s
+11 508 M (142:) s
+24.165 508 M
+(        self.__get_all\(parent_directory, self.__directories\)) s
+11 502 M (143:) s
+24.165 502 M
+(        self.__make_tree\(\)) s
+11 496 M (144:) s
+11 490 M (145:) s
+24.165 490 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 490 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 490 M
+( self.__directory_tree, self.__directories) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

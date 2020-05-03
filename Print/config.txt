@@ -1,0 +1,66 @@
+#contains rules for print order
+#all files are printed alphabetically unless otherwise specified
+
+#parent will specify which directory to start at. It should be set to where pictures are
+parent = ../Pictures
+
+
+#for rules: algorithm first finds all directories and sorts them according
+#to rules. Directory rules starts with "dir" (can be in any order).
+
+#Once all directories and their subdirectories are sorted, algorithm
+#will look for individual files rules specifies with "file"
+
+#formatting will look best as a directory tree
+#only one rule per line
+
+#order for print goes directory, files in that directory, subdirectory,
+#files in the subdirectories of that parent
+
+
+#set to "1" if user wants headers to be printed before implementation files
+HEADERS_FIRST 1
+
+#set to "1" if user only wants header files to be printed to save paper
+#this will only keep implementation files that have no header
+ONLY_HEADERS 0
+
+
+#rules
+
+#for rules involving headers and implementation files
+#specify both the HPP and CPP file
+#by setting HEADERS_FIRST the HPP file will be printed first
+#even if the CPP file is listed first
+
+dir Print
+dir PIDDebugging
+    file PIDDebugging/mainPY.ps
+dir Prototypes
+dir DocumentationMacros
+dir CodeGenerator
+    file CodeGenerator/code_genPY.ps
+    file CodeGenerator/cpp_typesPY.ps
+    file CodeGenerator/exceptionsPY.ps
+    file CodeGenerator/configPY.ps
+dir AutonSimulator
+    file AutonSimulator/mainPY.ps
+dir Scouting
+    file Scouting/ReadmeMD.ps
+dir RobotCode
+    file RobotCode/lcdTestSH.ps
+    file RobotCode/configJSON.ps
+    file RobotCode/stacktraceSH.ps
+    dir RobotCode/include
+    dir RobotCode/src
+        file RobotCode/src/mainCPP.ps
+        dir RobotCode/src/objects/controller
+        dir RobotCode/src/objects/motors
+        dir RobotCode/src/objects/sensors
+        dir RobotCode/src/objects/robotChassis
+        dir RobotCode/src/objects/lift
+        dir RobotCode/src/objects/tilter
+        dir RobotCode/src/objects/writer
+        dir RobotCode/src/objects/lcdCode
+            file RobotCode/src/objects/lcdCode/Debug/DebugHPP.ps
+            file RobotCode/src/objects/lcdCode/Debug/DebugCPP.ps

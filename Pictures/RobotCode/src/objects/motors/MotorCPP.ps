@@ -1,0 +1,5640 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+16 670 M (2:) s
+24.165 670 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 670 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 670 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 670 M
+("main.h") s
+/F-gs-font 5 5 SF
+0 setgray
+16 664 M (3:) s
+16 658 M (4:) s
+24.165 658 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 658 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 658 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 658 M
+("../../Configuration.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+16 652 M (5:) s
+24.165 652 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 652 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 652 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 652 M
+("Motor.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+16 646 M (6:) s
+16 640 M (7:) s
+16 634 M (8:) s
+16 628 M (9:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 628 M
+(Motor::Motor) s
+/F-gs-font 5 5 SF
+0 setgray
+55.005 628 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+57.92 628 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+64.305 628 M
+( port, pros::motor_gearset_e_t gearset, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+150.07 628 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+160.35 628 M
+( reversed \)) s
+13.5 622 M (10:) s
+24.165 622 M
+({) s
+13.5 616 M (11:) s
+24.165 616 M
+(    lock = ATOMIC_VAR_INIT\(false\);) s
+13.5 610 M (12:) s
+24.165 610 M
+(    allow_driver_control = true;) s
+13.5 604 M (13:) s
+24.165 604 M
+(    ) s
+13.5 598 M (14:) s
+24.165 598 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 598 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 598 M
+( \( lock.exchange\( true \) \); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+97.765 598 M
+(//aquire motor lock) s
+/F-gs-font 5 5 SF
+13.5 592 M (15:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 592 M
+(    ) s
+13.5 586 M (16:) s
+24.165 586 M
+(    motor_port = port;) s
+13.5 580 M (17:) s
+24.165 580 M
+(    ) s
+13.5 574 M (18:) s
+24.165 574 M
+(    motor = ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+48.175 574 M
+(new) s
+/F-gs-font 5 5 SF
+0 setgray
+57.895 574 M
+( pros::Motor\(port, gearset, reversed, pros::E_MOTOR_ENCODER_DEGREES\);) s
+13.5 568 M (19:) s
+24.165 568 M
+(        ) s
+13.5 562 M (20:) s
+24.165 562 M
+(    velocity_pid_enabled = true; ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+93.69 562 M
+(//default motor velocity pid controller) s
+/F-gs-font 5 5 SF
+13.5 556 M (21:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 556 M
+(    prev_velocity = 0;) s
+13.5 550 M (22:) s
+24.165 550 M
+(    ) s
+13.5 544 M (23:) s
+24.165 544 M
+(    log_level = 0;) s
+13.5 538 M (24:) s
+24.165 538 M
+(    ) s
+13.5 532 M (25:) s
+24.165 532 M
+(    slew_enabled = true;) s
+13.5 526 M (26:) s
+24.165 526 M
+(    slew_rate = 30;  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+64.585 526 M
+(//approx. 5% voltage per 20ms == 400ms to reach full voltage) s
+/F-gs-font 5 5 SF
+13.5 520 M (27:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 520 M
+(    ) s
+13.5 514 M (28:) s
+24.165 514 M
+(    prev_target_voltage = 0;) s
+13.5 508 M (29:) s
+24.165 508 M
+(    target_voltage = 0;) s
+13.5 502 M (30:) s
+24.165 502 M
+(    ) s
+13.5 496 M (31:) s
+24.165 496 M
+(    Configuration *configuration = Configuration::get_instance\(\);) s
+13.5 490 M (32:) s
+24.165 490 M
+(    internal_motor_pid.kP = configuration->internal_motor_pid.kP;) s
+13.5 484 M (33:) s
+24.165 484 M
+(    internal_motor_pid.kI = configuration->internal_motor_pid.kI;) s
+13.5 478 M (34:) s
+24.165 478 M
+(    internal_motor_pid.kD = configuration->internal_motor_pid.kD;) s
+13.5 472 M (35:) s
+24.165 472 M
+(    internal_motor_pid.I_max = configuration->internal_motor_pid.I_max;) s
+13.5 466 M (36:) s
+24.165 466 M
+(    integral = 0;) s
+13.5 460 M (37:) s
+24.165 460 M
+(    prev_error = 0;) s
+13.5 454 M (38:) s
+24.165 454 M
+(    ) s
+13.5 448 M (39:) s
+24.165 448 M
+(    lock.exchange\(false\);) s
+13.5 442 M (40:) s
+24.165 442 M
+(}) s
+13.5 436 M (41:) s
+13.5 430 M (42:) s
+13.5 424 M (43:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 424 M
+(Motor::Motor) s
+/F-gs-font 5 5 SF
+0 setgray
+55.005 424 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+56.67 424 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+63.055 424 M
+( port, pros::motor_gearset_e_t gearset, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+148.82 424 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+159.1 424 M
+( reversed, pid pid_consts\)) s
+13.5 418 M (44:) s
+24.165 418 M
+({) s
+13.5 412 M (45:) s
+24.165 412 M
+(    lock = ATOMIC_VAR_INIT\(false\);) s
+13.5 406 M (46:) s
+24.165 406 M
+(    allow_driver_control = true;) s
+13.5 400 M (47:) s
+24.165 400 M
+(    ) s
+13.5 394 M (48:) s
+24.165 394 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 394 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 394 M
+( \( lock.exchange\( true \) \); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+97.765 394 M
+(//aquire motor lock) s
+/F-gs-font 5 5 SF
+13.5 388 M (49:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(    ) s
+13.5 382 M (50:) s
+24.165 382 M
+(    motor_port = port;) s
+13.5 376 M (51:) s
+24.165 376 M
+(    ) s
+13.5 370 M (52:) s
+24.165 370 M
+(    motor = ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+48.175 370 M
+(new) s
+/F-gs-font 5 5 SF
+0 setgray
+57.895 370 M
+( pros::Motor\(port, gearset, reversed, pros::E_MOTOR_ENCODER_DEGREES\);) s
+13.5 364 M (53:) s
+24.165 364 M
+(        ) s
+13.5 358 M (54:) s
+24.165 358 M
+(    velocity_pid_enabled = true; ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+93.69 358 M
+(//default motor velocity pid controller) s
+/F-gs-font 5 5 SF
+13.5 352 M (55:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 352 M
+(    prev_velocity = 0;) s
+13.5 346 M (56:) s
+24.165 346 M
+(    ) s
+13.5 340 M (57:) s
+24.165 340 M
+(    log_level = 0; ) s
+13.5 334 M (58:) s
+24.165 334 M
+(    ) s
+13.5 328 M (59:) s
+24.165 328 M
+(    slew_enabled = true;) s
+13.5 322 M (60:) s
+24.165 322 M
+(    slew_rate = 30;  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+64.585 322 M
+(//approx. 5% voltage per 20ms == 400ms to reach full voltage) s
+/F-gs-font 5 5 SF
+13.5 316 M (61:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 316 M
+(    ) s
+13.5 310 M (62:) s
+24.165 310 M
+(    prev_target_voltage = 0;) s
+13.5 304 M (63:) s
+24.165 304 M
+(    target_voltage = 0;) s
+13.5 298 M (64:) s
+24.165 298 M
+(    ) s
+13.5 292 M (65:) s
+24.165 292 M
+(    internal_motor_pid.kP = pid_consts.kP;) s
+13.5 286 M (66:) s
+24.165 286 M
+(    internal_motor_pid.kI = pid_consts.kI;) s
+13.5 280 M (67:) s
+24.165 280 M
+(    internal_motor_pid.kD = pid_consts.kD;) s
+13.5 274 M (68:) s
+24.165 274 M
+(    internal_motor_pid.I_max = pid_consts.I_max;) s
+13.5 268 M (69:) s
+24.165 268 M
+(    integral = 0;) s
+13.5 262 M (70:) s
+24.165 262 M
+(    prev_error = 0;) s
+13.5 256 M (71:) s
+24.165 256 M
+(    ) s
+13.5 250 M (72:) s
+24.165 250 M
+(    lock.exchange\(false\);) s
+13.5 244 M (73:) s
+24.165 244 M
+(}) s
+13.5 238 M (74:) s
+13.5 232 M (75:) s
+13.5 226 M (76:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 226 M
+(Motor::~Motor) s
+/F-gs-font 5 5 SF
+0 setgray
+56.67 226 M
+(\( \)) s
+13.5 220 M (77:) s
+24.165 220 M
+({) s
+13.5 214 M (78:) s
+24.165 214 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 214 M
+(delete) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 214 M
+( motor;) s
+13.5 208 M (79:) s
+24.165 208 M
+(}) s
+13.5 202 M (80:) s
+13.5 196 M (81:) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+13.5 178 M (84:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 178 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 178 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 178 M
+(Motor::calc_target_rate) s
+/F-gs-font 5 5 SF
+0 setgray
+83.74 178 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+86.655 178 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+93.04 178 M
+( target, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+109.7 178 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+116.085 178 M
+( previous, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+139.355 178 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+145.74 178 M
+( delta_t\)) s
+13.5 172 M (85:) s
+24.165 172 M
+({) s
+13.5 166 M (86:) s
+24.165 166 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 166 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 166 M
+( delta_v = target - previous;) s
+13.5 160 M (87:) s
+24.165 160 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 160 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 160 M
+( rate;) s
+13.5 154 M (88:) s
+24.165 154 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 154 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 154 M
+( \( delta_t == 0 && delta_v == 0 \)) s
+13.5 148 M (89:) s
+24.165 148 M
+(    {) s
+13.5 142 M (90:) s
+24.165 142 M
+(        rate = 0;) s
+13.5 136 M (91:) s
+24.165 136 M
+(    }) s
+13.5 130 M (92:) s
+24.165 130 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 130 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 130 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 130 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 130 M
+( \( delta_t == 0 && delta_v != 0 \)) s
+13.5 124 M (93:) s
+24.165 124 M
+(    {) s
+13.5 118 M (94:) s
+24.165 118 M
+(        rate = INT32_MAX;  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+80.305 118 M
+(//essentially undefined but still represented as integer) s
+/F-gs-font 5 5 SF
+13.5 112 M (95:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 112 M
+(    }) s
+13.5 106 M (96:) s
+24.165 106 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 106 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 100 M (97:) s
+24.165 100 M
+(    {) s
+13.5 94 M (98:) s
+24.165 94 M
+(        rate = delta_v / delta_t;) s
+13.5 88 M (99:) s
+24.165 88 M
+(    }) s
+11 82 M (100:) s
+24.165 82 M
+(    ) s
+11 76 M (101:) s
+24.165 76 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 76 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 76 M
+( rate;) s
+11 70 M (102:) s
+24.165 70 M
+(}) s
+11 64 M (103:) s
+11 58 M (104:) s
+11 52 M (105:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 52 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 52 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 52 M
+(Motor::calc_target_velocity) s
+/F-gs-font 5 5 SF
+0 setgray
+93.185 52 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+96.1 52 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+102.485 52 M
+( voltage \)) s
+11 46 M (106:) s
+24.165 46 M
+({) s
+11 40 M (107:) s
+24.165 40 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 40 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 40 M
+( prev_max = 12000;) s
+11 34 M (108:) s
+24.165 34 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 34 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 34 M
+( prev_min = -12000;) s
+11 28 M (109:) s
+24.165 28 M
+(    ) s
+11 22 M (110:) s
+24.165 22 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 22 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+39.165 22 M
+(::motor_gearset_e_t gearset = motor->get_gearing\(\);) s
+11 16 M (111:) s
+24.165 16 M
+(    ) s
+11 10 M (112:) s
+24.165 10 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 10 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 10 M
+( new_max;) s
+11 4 M (113:) s
+24.165 4 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 4 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 4 M
+( new_min;) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+(    ) s
+11 670 M (115:) s
+24.165 670 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 670 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 670 M
+( \( gearset == pros::E_MOTOR_GEARSET_36 \)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+136.435 670 M
+(//100 RPM Motor) s
+/F-gs-font 5 5 SF
+11 664 M (116:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 664 M
+(    {) s
+11 658 M (117:) s
+24.165 658 M
+(        new_max = 120;) s
+11 652 M (118:) s
+24.165 652 M
+(        new_min = -120;) s
+11 646 M (119:) s
+24.165 646 M
+(    }) s
+11 640 M (120:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 640 M
+( \( gearset == pros::E_MOTOR_GEARSET_06 \) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+135.185 640 M
+(//600 RPM Motor) s
+/F-gs-font 5 5 SF
+11 634 M (121:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 634 M
+(    {) s
+11 628 M (122:) s
+24.165 628 M
+(        new_max = 720;) s
+11 622 M (123:) s
+24.165 622 M
+(        new_min = -720;) s
+11 616 M (124:) s
+24.165 616 M
+(    }) s
+11 610 M (125:) s
+24.165 610 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 610 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 610 M
+( ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.3 610 M
+(//default to 200 RPM motor because that is most commonly used) s
+/F-gs-font 5 5 SF
+11 604 M (126:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 604 M
+(    {) s
+11 598 M (127:) s
+24.165 598 M
+(        new_max = 240;) s
+11 592 M (128:) s
+24.165 592 M
+(        new_min = -240;) s
+11 586 M (129:) s
+24.165 586 M
+(    }) s
+11 580 M (130:) s
+24.165 580 M
+(    ) s
+11 574 M (131:) s
+24.165 574 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 574 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 574 M
+( velocity = \(\(\(voltage - prev_min\) * \(new_max - new_min\)\) / \(prev_max - prev_min\)\) + new_min;) s
+11 568 M (132:) s
+24.165 568 M
+(    ) s
+11 562 M (133:) s
+11 556 M (134:) s
+24.165 556 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 556 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 556 M
+( velocity;) s
+11 550 M (135:) s
+24.165 550 M
+(}) s
+11 544 M (136:) s
+11 538 M (137:) s
+11 532 M (138:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 532 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 532 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 532 M
+(Motor::get_target_voltage) s
+/F-gs-font 5 5 SF
+0 setgray
+90.14 532 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+93.055 532 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+99.44 532 M
+( delta_t \)) s
+11 526 M (139:) s
+24.165 526 M
+({    ) s
+11 520 M (140:) s
+24.165 520 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 520 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+45.275 520 M
+( kP = internal_motor_pid.kP;) s
+11 514 M (141:) s
+24.165 514 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 514 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+45.275 514 M
+( kI = internal_motor_pid.kI;) s
+11 508 M (142:) s
+24.165 508 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 508 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+45.275 508 M
+( kD = internal_motor_pid.kD;) s
+11 502 M (143:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 502 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+45.275 502 M
+( I_max = internal_motor_pid.I_max;) s
+11 496 M (144:) s
+24.165 496 M
+(    ) s
+11 490 M (145:) s
+24.165 490 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 490 M
+(//int voltage = get_actual_voltage\(\);) s
+/F-gs-font 5 5 SF
+11 484 M (146:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 484 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 484 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 484 M
+( voltage;) s
+11 478 M (147:) s
+24.165 478 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 478 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 478 M
+( calculated_target_voltage = target_voltage;) s
+11 472 M (148:) s
+24.165 472 M
+(    ) s
+11 466 M (149:) s
+24.165 466 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 466 M
+(//velocity pid is enabled when the target voltage does not change) s
+/F-gs-font 5 5 SF
+11 460 M (150:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 460 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 460 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 460 M
+( \( velocity_pid_enabled && target_voltage == prev_target_voltage \)) s
+11 454 M (151:) s
+24.165 454 M
+(    {) s
+11 448 M (152:) s
+24.165 448 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+34.165 448 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 448 M
+( error =  calc_target_velocity\(target_voltage\) - get_actual_velocity\(\);) s
+11 442 M (153:) s
+24.165 442 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 442 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 442 M
+( \( integral == 0 || std::abs\(integral\) > I_max\)) s
+11 436 M (154:) s
+24.165 436 M
+(        {) s
+11 430 M (155:) s
+24.165 430 M
+(            integral = 0;) s
+11 424 M (156:) s
+24.165 424 M
+(        }) s
+11 418 M (157:) s
+24.165 418 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 418 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 418 M
+( ) s
+11 412 M (158:) s
+24.165 412 M
+(        {) s
+11 406 M (159:) s
+24.165 406 M
+(            integral = integral + error;) s
+11 400 M (160:) s
+24.165 400 M
+(        }) s
+11 394 M (161:) s
+24.165 394 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+34.165 394 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+50.275 394 M
+( derivative = error - prev_error;) s
+11 388 M (162:) s
+24.165 388 M
+(        prev_error = error;) s
+11 382 M (163:) s
+24.165 382 M
+(        ) s
+11 376 M (164:) s
+24.165 376 M
+(        calculated_target_voltage = kP * error + kI * integral + kD * derivative;) s
+11 370 M (165:) s
+24.165 370 M
+(        ) s
+11 364 M (166:) s
+24.165 364 M
+(    } ) s
+11 358 M (167:) s
+24.165 358 M
+(    ) s
+11 352 M (168:) s
+24.165 352 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 352 M
+(//ensure that voltage range is allowed by the slew rate set) s
+/F-gs-font 5 5 SF
+11 346 M (169:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 346 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 346 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 346 M
+( rate = calc_target_rate\(calculated_target_voltage, prev_target_voltage, delta_t\);) s
+11 340 M (170:) s
+24.165 340 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 340 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 340 M
+( \( slew_enabled && std::abs\(rate\) > slew_rate \)) s
+11 334 M (171:) s
+24.165 334 M
+(    {) s
+11 328 M (172:) s
+24.165 328 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+34.165 328 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 328 M
+( max_delta_v = slew_rate * delta_t;) s
+11 322 M (173:) s
+11 316 M (174:) s
+24.165 316 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+34.165 316 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 316 M
+( polarity = 1;                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+88.61 316 M
+(// rate will be positive or negative if motor is gaining) s
+/F-gs-font 5 5 SF
+11 310 M (175:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 310 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 310 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 310 M
+( \( rate < 0 \)                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+83.885 310 M
+(// or losing velocity ) s
+/F-gs-font 5 5 SF
+11 304 M (176:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 304 M
+(        {                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+75.83 304 M
+(// the polarity ensures that the max voltage is added) s
+/F-gs-font 5 5 SF
+11 298 M (177:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 298 M
+(            polarity = -1;               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+86.39 298 M
+(// in the correct direction so that the motor's velocity ) s
+/F-gs-font 5 5 SF
+11 292 M (178:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 292 M
+(        }                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+75.83 292 M
+(// will increase in the correct direction) s
+/F-gs-font 5 5 SF
+11 286 M (179:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 286 M
+(        ) s
+11 280 M (180:) s
+24.165 280 M
+(        voltage = prev_target_voltage + \(polarity * max_delta_v\);) s
+11 274 M (181:) s
+24.165 274 M
+(    }) s
+11 268 M (182:) s
+24.165 268 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 268 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 268 M
+( ) s
+11 262 M (183:) s
+24.165 262 M
+(    {) s
+11 256 M (184:) s
+24.165 256 M
+(        voltage = calculated_target_voltage;) s
+11 250 M (185:) s
+24.165 250 M
+(    }) s
+11 244 M (186:) s
+24.165 244 M
+(    ) s
+11 238 M (187:) s
+24.165 238 M
+(    ) s
+11 232 M (188:) s
+24.165 232 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 232 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 232 M
+( voltage;) s
+11 226 M (189:) s
+24.165 226 M
+(}) s
+11 220 M (190:) s
+11 214 M (191:) s
+11 208 M (192:) s
+11 202 M (193:) s
+11 196 M (194:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 196 M
+(//accessor functions) s
+/F-gs-font 5 5 SF
+11 190 M (195:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 190 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 190 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 190 M
+(Motor::get_actual_velocity) s
+/F-gs-font 5 5 SF
+0 setgray
+101.8 190 M
+(\( \)) s
+11 184 M (196:) s
+24.165 184 M
+({) s
+11 178 M (197:) s
+24.165 178 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 178 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 178 M
+( motor->get_actual_velocity\(\);) s
+11 172 M (198:) s
+24.165 172 M
+(}) s
+11 166 M (199:) s
+11 160 M (200:) s
+11 154 M (201:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 154 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 154 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 154 M
+(Motor::get_actual_voltage) s
+/F-gs-font 5 5 SF
+0 setgray
+100.415 154 M
+(\( \)) s
+11 148 M (202:) s
+24.165 148 M
+({) s
+11 142 M (203:) s
+24.165 142 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 142 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 142 M
+( motor->get_voltage\(\);) s
+11 136 M (204:) s
+24.165 136 M
+(}) s
+11 130 M (205:) s
+11 124 M (206:) s
+11 118 M (207:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 118 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 118 M
+(Motor::get_current_draw) s
+/F-gs-font 5 5 SF
+0 setgray
+88.465 118 M
+(\( \)) s
+11 112 M (208:) s
+24.165 112 M
+({) s
+11 106 M (209:) s
+24.165 106 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 106 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 106 M
+( motor->get_current_draw\(\);) s
+11 100 M (210:) s
+24.165 100 M
+(}) s
+11 94 M (211:) s
+11 88 M (212:) s
+11 82 M (213:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 82 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 82 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 82 M
+(Motor::get_encoder_position) s
+/F-gs-font 5 5 SF
+0 setgray
+107.08 82 M
+(\( \)) s
+11 76 M (214:) s
+24.165 76 M
+({) s
+11 70 M (215:) s
+24.165 70 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 70 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 70 M
+( motor->get_position\(\);) s
+11 64 M (216:) s
+24.165 64 M
+(}) s
+11 58 M (217:) s
+11 52 M (218:) s
+11 46 M (219:) s
+24.165 46 M
+(pros::motor_gearset_e_t Motor::get_gearset\( \)) s
+11 40 M (220:) s
+24.165 40 M
+({) s
+11 34 M (221:) s
+24.165 34 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 34 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 34 M
+( motor->get_gearing\(\);) s
+11 28 M (222:) s
+24.165 28 M
+(}) s
+11 22 M (223:) s
+11 16 M (224:) s
+11 10 M (225:) s
+24.165 10 M
+(pros::motor_brake_mode_e_t Motor::get_brake_mode\( \)) s
+11 4 M (226:) s
+24.165 4 M
+({) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (227:) s
+24.165 676 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 676 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 676 M
+( motor->get_brake_mode\(\);) s
+11 670 M (228:) s
+24.165 670 M
+(}) s
+11 664 M (229:) s
+11 658 M (230:) s
+11 652 M (231:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 652 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 652 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 652 M
+(Motor::get_port) s
+/F-gs-font 5 5 SF
+0 setgray
+67.36 652 M
+(\( \)) s
+11 646 M (232:) s
+24.165 646 M
+({) s
+11 640 M (233:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 640 M
+( motor_port;) s
+11 634 M (234:) s
+24.165 634 M
+(}) s
+11 628 M (235:) s
+11 622 M (236:) s
+11 616 M (237:) s
+24.165 616 M
+(pid ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+32.93 616 M
+(Motor::get_pid) s
+/F-gs-font 5 5 SF
+0 setgray
+66.82 616 M
+(\( \)) s
+11 610 M (238:) s
+24.165 610 M
+({) s
+11 604 M (239:) s
+24.165 604 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 604 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 604 M
+( internal_motor_pid;) s
+11 598 M (240:) s
+24.165 598 M
+(}) s
+11 592 M (241:) s
+11 586 M (242:) s
+11 580 M (243:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 580 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 580 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 580 M
+(Motor::get_slew_rate) s
+/F-gs-font 5 5 SF
+0 setgray
+79.575 580 M
+(\( \)) s
+11 574 M (244:) s
+24.165 574 M
+({) s
+11 568 M (245:) s
+24.165 568 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 568 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 568 M
+( slew_rate;) s
+11 562 M (246:) s
+24.165 562 M
+(}) s
+11 556 M (247:) s
+11 550 M (248:) s
+11 544 M (249:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 544 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 544 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 544 M
+(Motor::get_power) s
+/F-gs-font 5 5 SF
+0 setgray
+82.085 544 M
+(\( \)) s
+11 538 M (250:) s
+24.165 538 M
+({) s
+11 532 M (251:) s
+24.165 532 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 532 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 532 M
+( motor->get_power\(\);) s
+11 526 M (252:) s
+24.165 526 M
+(}) s
+11 520 M (253:) s
+11 514 M (254:) s
+11 508 M (255:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 508 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 508 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 508 M
+(Motor::get_temperature) s
+/F-gs-font 5 5 SF
+0 setgray
+95.415 508 M
+(\( \)) s
+11 502 M (256:) s
+24.165 502 M
+({) s
+11 496 M (257:) s
+24.165 496 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 496 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 496 M
+( motor->get_temperature\(\);) s
+11 490 M (258:) s
+24.165 490 M
+(}) s
+11 484 M (259:) s
+11 478 M (260:) s
+11 472 M (261:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 472 M
+(double) s
+/F-gs-font 5 5 SF
+0 setgray
+40.275 472 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+41.525 472 M
+(Motor::get_torque) s
+/F-gs-font 5 5 SF
+0 setgray
+82.64 472 M
+(\( \)) s
+11 466 M (262:) s
+24.165 466 M
+({) s
+11 460 M (263:) s
+24.165 460 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 460 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 460 M
+( motor->get_torque\(\);) s
+11 454 M (264:) s
+24.165 454 M
+(}) s
+11 448 M (265:) s
+11 442 M (266:) s
+24.165 442 M
+(    ) s
+11 436 M (267:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 436 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 436 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 436 M
+(Motor::get_direction) s
+/F-gs-font 5 5 SF
+0 setgray
+78.465 436 M
+(\( \)) s
+11 430 M (268:) s
+24.165 430 M
+({) s
+11 424 M (269:) s
+24.165 424 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 424 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 424 M
+( motor->get_direction\(\);) s
+11 418 M (270:) s
+24.165 418 M
+(}) s
+11 412 M (271:) s
+11 406 M (272:) s
+11 400 M (273:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 400 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 400 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 400 M
+(Motor::get_efficiency) s
+/F-gs-font 5 5 SF
+0 setgray
+80.41 400 M
+(\( \)) s
+11 394 M (274:) s
+24.165 394 M
+({) s
+11 388 M (275:) s
+24.165 388 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 388 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 388 M
+( motor->get_efficiency\(\);) s
+11 382 M (276:) s
+24.165 382 M
+(}) s
+11 376 M (277:) s
+11 370 M (278:) s
+11 364 M (279:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 364 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 364 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 364 M
+(Motor::is_stopped) s
+/F-gs-font 5 5 SF
+0 setgray
+73.185 364 M
+(\( \)) s
+11 358 M (280:) s
+24.165 358 M
+({) s
+11 352 M (281:) s
+24.165 352 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 352 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 352 M
+( motor->is_stopped\(\);) s
+11 346 M (282:) s
+24.165 346 M
+(}) s
+11 340 M (283:) s
+11 334 M (284:) s
+11 328 M (285:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 328 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 328 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 328 M
+(Motor::is_reversed) s
+/F-gs-font 5 5 SF
+0 setgray
+74.3 328 M
+(\( \)) s
+11 322 M (286:) s
+24.165 322 M
+({) s
+11 316 M (287:) s
+24.165 316 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 316 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 316 M
+( motor->is_reversed\(\);) s
+11 310 M (288:) s
+24.165 310 M
+(}) s
+11 304 M (289:) s
+11 298 M (290:) s
+11 292 M (291:) s
+11 286 M (292:) s
+11 280 M (293:) s
+11 274 M (294:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 274 M
+(//setter functions        ) s
+/F-gs-font 5 5 SF
+11 268 M (295:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 268 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 268 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 268 M
+(Motor::set_port) s
+/F-gs-font 5 5 SF
+0 setgray
+66.8 268 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+69.715 268 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+76.1 268 M
+( port \)) s
+11 262 M (296:) s
+24.165 262 M
+({) s
+11 256 M (297:) s
+24.165 256 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 256 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+39.165 256 M
+(::motor_gearset_e_t gearset = motor->get_gearing\(\);) s
+11 250 M (298:) s
+24.165 250 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 250 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+39.445 250 M
+( reversed = motor->is_reversed\(\);) s
+11 244 M (299:) s
+24.165 244 M
+(    ) s
+11 238 M (300:) s
+24.165 238 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 238 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 238 M
+( \( lock.exchange\( true \) \);) s
+11 232 M (301:) s
+24.165 232 M
+(    ) s
+11 226 M (302:) s
+24.165 226 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 226 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+11 220 M (303:) s
+24.165 220 M
+(    {) s
+11 214 M (304:) s
+24.165 214 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 214 M
+(delete) s
+/F-gs-font 5 5 SF
+0 setgray
+48.05 214 M
+( motor;) s
+11 208 M (305:) s
+24.165 208 M
+(        motor = ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+53.175 208 M
+(new) s
+/F-gs-font 5 5 SF
+0 setgray
+62.895 208 M
+( pros::Motor\(port, gearset, reversed, pros::E_MOTOR_ENCODER_DEGREES\);) s
+11 202 M (306:) s
+24.165 202 M
+(        motor_port = port;) s
+11 196 M (307:) s
+24.165 196 M
+(    }) s
+11 190 M (308:) s
+24.165 190 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 190 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 190 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 190 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 184 M (309:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 184 M
+(    {) s
+11 178 M (310:) s
+24.165 178 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 178 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 178 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 178 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 178 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 178 M
+("could not set port on motor port ") s
+/F-gs-font 5 5 SF
+0 setgray
+210.285 178 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+252.725 178 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+262.83 178 M
+(;) s
+11 172 M (311:) s
+24.165 172 M
+(        lock.exchange\(false\);) s
+11 166 M (312:) s
+24.165 166 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 166 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 166 M
+( 0;) s
+11 160 M (313:) s
+24.165 160 M
+(    }) s
+11 154 M (314:) s
+24.165 154 M
+(    ) s
+11 148 M (315:) s
+24.165 148 M
+(    lock.exchange\(false\);) s
+11 142 M (316:) s
+24.165 142 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 142 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 142 M
+( 1;) s
+11 136 M (317:) s
+24.165 136 M
+(}) s
+11 130 M (318:) s
+11 124 M (319:) s
+11 118 M (320:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 118 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 118 M
+(Motor::tare_encoder) s
+/F-gs-font 5 5 SF
+0 setgray
+77.635 118 M
+(\( \)) s
+11 112 M (321:) s
+24.165 112 M
+({) s
+11 106 M (322:) s
+24.165 106 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 106 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 106 M
+( \( lock.exchange\( true \) \);) s
+11 100 M (323:) s
+24.165 100 M
+(    ) s
+11 94 M (324:) s
+24.165 94 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 94 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+11 88 M (325:) s
+24.165 88 M
+(    {) s
+11 82 M (326:) s
+24.165 82 M
+(        motor->tare_position\(\);) s
+11 76 M (327:) s
+24.165 76 M
+(    }) s
+11 70 M (328:) s
+24.165 70 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 70 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 70 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 70 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 64 M (329:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 64 M
+(    {) s
+11 58 M (330:) s
+24.165 58 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 58 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 58 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 58 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 58 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 58 M
+("could not tare encoder on motor port ") s
+/F-gs-font 5 5 SF
+0 setgray
+221.12 58 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+263.56 58 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+273.665 58 M
+(;) s
+11 52 M (331:) s
+24.165 52 M
+(        lock.exchange\(false\);) s
+11 46 M (332:) s
+24.165 46 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 46 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 46 M
+( 0;) s
+11 40 M (333:) s
+24.165 40 M
+(    }) s
+11 34 M (334:) s
+24.165 34 M
+(    ) s
+11 28 M (335:) s
+24.165 28 M
+(    lock.exchange\(false\);) s
+11 22 M (336:) s
+24.165 22 M
+(    ) s
+11 16 M (337:) s
+24.165 16 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 16 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 16 M
+( 1;) s
+11 10 M (338:) s
+24.165 10 M
+(}) s
+11 4 M (339:) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (4) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (340:) s
+11 670 M (341:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 670 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 670 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 670 M
+(Motor::set_brake_mode) s
+/F-gs-font 5 5 SF
+0 setgray
+85.69 670 M
+(\( pros::motor_brake_mode_e_t brake_mode \)) s
+11 664 M (342:) s
+24.165 664 M
+({) s
+11 658 M (343:) s
+24.165 658 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 658 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 658 M
+( \( lock.exchange\( true \) \);) s
+11 652 M (344:) s
+24.165 652 M
+(    ) s
+11 646 M (345:) s
+24.165 646 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 646 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+35.555 646 M
+( ) s
+11 640 M (346:) s
+24.165 640 M
+(    {) s
+11 634 M (347:) s
+24.165 634 M
+(        motor->set_brake_mode\(brake_mode\);) s
+11 628 M (348:) s
+24.165 628 M
+(    }) s
+11 622 M (349:) s
+24.165 622 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 622 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 622 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 622 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 616 M (350:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 616 M
+(    {) s
+11 610 M (351:) s
+24.165 610 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 610 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 610 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 610 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 610 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 610 M
+("could not set brakemode on motor port ") s
+/F-gs-font 5 5 SF
+0 setgray
+226.675 610 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+269.115 610 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+279.22 610 M
+(;) s
+11 604 M (352:) s
+24.165 604 M
+(        lock.exchange\(false\);) s
+11 598 M (353:) s
+24.165 598 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 598 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 598 M
+( 0;) s
+11 592 M (354:) s
+24.165 592 M
+(    }) s
+11 586 M (355:) s
+24.165 586 M
+(    ) s
+11 580 M (356:) s
+24.165 580 M
+(    lock.exchange\(false\);) s
+11 574 M (357:) s
+24.165 574 M
+(    ) s
+11 568 M (358:) s
+24.165 568 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 568 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 568 M
+( 1;) s
+11 562 M (359:) s
+24.165 562 M
+(}) s
+11 556 M (360:) s
+11 550 M (361:) s
+11 544 M (362:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 544 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 544 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 544 M
+(Motor::set_gearing) s
+/F-gs-font 5 5 SF
+0 setgray
+74.58 544 M
+(\( pros::motor_gearset_e_t gearset \)) s
+11 538 M (363:) s
+24.165 538 M
+({) s
+11 532 M (364:) s
+24.165 532 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 532 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 532 M
+( \( lock.exchange\( true \) \);) s
+11 526 M (365:) s
+24.165 526 M
+(    ) s
+11 520 M (366:) s
+24.165 520 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 520 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+35.555 520 M
+( ) s
+11 514 M (367:) s
+24.165 514 M
+(    {) s
+11 508 M (368:) s
+24.165 508 M
+(        motor->set_gearing\(gearset\);) s
+11 502 M (369:) s
+24.165 502 M
+(    }) s
+11 496 M (370:) s
+24.165 496 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 496 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 496 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 496 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 490 M (371:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 490 M
+(    {) s
+11 484 M (372:) s
+24.165 484 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 484 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 484 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 484 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 484 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 484 M
+("could not set gearing on motor port ") s
+/F-gs-font 5 5 SF
+0 setgray
+218.065 484 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+260.505 484 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+270.61 484 M
+(;) s
+11 478 M (373:) s
+24.165 478 M
+(        lock.exchange\(false\);) s
+11 472 M (374:) s
+24.165 472 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 472 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 472 M
+( 0;) s
+11 466 M (375:) s
+24.165 466 M
+(    }) s
+11 460 M (376:) s
+24.165 460 M
+(    ) s
+11 454 M (377:) s
+24.165 454 M
+(    lock.exchange\(false\);) s
+11 448 M (378:) s
+24.165 448 M
+(    ) s
+11 442 M (379:) s
+24.165 442 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 442 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 442 M
+( 1;) s
+11 436 M (380:) s
+24.165 436 M
+(}) s
+11 430 M (381:) s
+11 424 M (382:) s
+11 418 M (383:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 418 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 418 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 418 M
+(Motor::reverse_motor) s
+/F-gs-font 5 5 SF
+0 setgray
+80.975 418 M
+(\( \)) s
+11 412 M (384:) s
+24.165 412 M
+({) s
+11 406 M (385:) s
+24.165 406 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 406 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 406 M
+( \( lock.exchange\( true \) \);) s
+11 400 M (386:) s
+24.165 400 M
+(    ) s
+11 394 M (387:) s
+24.165 394 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 394 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+35.555 394 M
+( ) s
+11 388 M (388:) s
+24.165 388 M
+(    {) s
+11 382 M (389:) s
+24.165 382 M
+(        motor->set_reversed\(!motor->is_reversed\(\)\);) s
+11 376 M (390:) s
+24.165 376 M
+(    }) s
+11 370 M (391:) s
+24.165 370 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 370 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 370 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 370 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 364 M (392:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 364 M
+(    {) s
+11 358 M (393:) s
+24.165 358 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 358 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 358 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 358 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 358 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 358 M
+("could not reverse motor on port ") s
+/F-gs-font 5 5 SF
+0 setgray
+209.595 358 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+252.035 358 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+262.14 358 M
+(;) s
+11 352 M (394:) s
+24.165 352 M
+(        lock.exchange\(false\);) s
+11 346 M (395:) s
+24.165 346 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 346 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 346 M
+( 0;) s
+11 340 M (396:) s
+24.165 340 M
+(    }) s
+11 334 M (397:) s
+24.165 334 M
+(    ) s
+11 328 M (398:) s
+24.165 328 M
+(    lock.exchange\(false\);    ) s
+11 322 M (399:) s
+24.165 322 M
+(    ) s
+11 316 M (400:) s
+24.165 316 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 316 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 316 M
+( 1;) s
+11 310 M (401:) s
+24.165 310 M
+(}) s
+11 304 M (402:) s
+11 298 M (403:) s
+11 292 M (404:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 292 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 292 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 292 M
+(Motor::set_pid) s
+/F-gs-font 5 5 SF
+0 setgray
+65.13 292 M
+(\( pid pid_consts \)) s
+11 286 M (405:) s
+24.165 286 M
+({) s
+11 280 M (406:) s
+24.165 280 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 280 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 280 M
+( \( lock.exchange\( true \) \);) s
+11 274 M (407:) s
+24.165 274 M
+(    ) s
+11 268 M (408:) s
+24.165 268 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 268 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+35.555 268 M
+( ) s
+11 262 M (409:) s
+24.165 262 M
+(    {) s
+11 256 M (410:) s
+24.165 256 M
+(        internal_motor_pid.kP = pid_consts.kP;) s
+11 250 M (411:) s
+24.165 250 M
+(        internal_motor_pid.kI = pid_consts.kI;) s
+11 244 M (412:) s
+24.165 244 M
+(        internal_motor_pid.kD = pid_consts.kD;) s
+11 238 M (413:) s
+24.165 238 M
+(        internal_motor_pid.I_max = pid_consts.I_max;) s
+11 232 M (414:) s
+24.165 232 M
+(    }) s
+11 226 M (415:) s
+24.165 226 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 226 M
+(catch) s
+/F-gs-font 5 5 SF
+0 setgray
+40.825 226 M
+(\(...\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+49.155 226 M
+(//ensure lock will be released) s
+/F-gs-font 5 5 SF
+11 220 M (416:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 220 M
+(    {) s
+11 214 M (417:) s
+24.165 214 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 214 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+41.105 214 M
+(::cerr << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.73 214 M
+("[ERROR] ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.38 214 M
+( << pros::millis\(\) << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.515 214 M
+("could not set motor pid on motor port ") s
+/F-gs-font 5 5 SF
+0 setgray
+223.48 214 M
+( << motor_port << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+265.92 214 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+276.025 214 M
+(;) s
+11 208 M (418:) s
+24.165 208 M
+(        lock.exchange\(false\);) s
+11 202 M (419:) s
+24.165 202 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 202 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 202 M
+( 0;) s
+11 196 M (420:) s
+24.165 196 M
+(    }) s
+11 190 M (421:) s
+24.165 190 M
+(    ) s
+11 184 M (422:) s
+24.165 184 M
+(    lock.exchange\(false\);) s
+11 178 M (423:) s
+24.165 178 M
+(    ) s
+11 172 M (424:) s
+24.165 172 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 172 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 172 M
+( 1;    ) s
+11 166 M (425:) s
+24.165 166 M
+(}) s
+11 160 M (426:) s
+11 154 M (427:) s
+11 148 M (428:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 148 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 148 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 148 M
+(Motor::set_log_level) s
+/F-gs-font 5 5 SF
+0 setgray
+82.085 148 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+85 148 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+91.385 148 M
+( logging \)) s
+11 142 M (429:) s
+24.165 142 M
+({) s
+11 136 M (430:) s
+24.165 136 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 136 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 136 M
+( \( logging > 5 \)) s
+11 130 M (431:) s
+24.165 130 M
+(    {) s
+11 124 M (432:) s
+24.165 124 M
+(        log_level = 5;) s
+11 118 M (433:) s
+24.165 118 M
+(    }) s
+11 112 M (434:) s
+24.165 112 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 112 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 112 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 112 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 112 M
+( \( logging < 0 \)) s
+11 106 M (435:) s
+24.165 106 M
+(    {) s
+11 100 M (436:) s
+24.165 100 M
+(        log_level = 0;) s
+11 94 M (437:) s
+24.165 94 M
+(    }) s
+11 88 M (438:) s
+24.165 88 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 88 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 88 M
+( ) s
+11 82 M (439:) s
+24.165 82 M
+(    {) s
+11 76 M (440:) s
+24.165 76 M
+(        log_level = logging;) s
+11 70 M (441:) s
+24.165 70 M
+(    }) s
+11 64 M (442:) s
+24.165 64 M
+(}) s
+11 58 M (443:) s
+11 52 M (444:) s
+11 46 M (445:) s
+11 40 M (446:) s
+11 34 M (447:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 34 M
+(//movement functions        ) s
+/F-gs-font 5 5 SF
+11 28 M (448:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 28 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 28 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 28 M
+(Motor::move) s
+/F-gs-font 5 5 SF
+0 setgray
+60.975 28 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+63.89 28 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+70.275 28 M
+( voltage  \)) s
+11 22 M (449:) s
+24.165 22 M
+({) s
+11 16 M (450:) s
+24.165 16 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 16 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 16 M
+( prev_max = 127;) s
+11 10 M (451:) s
+24.165 10 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 10 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 10 M
+( prev_min = -127;) s
+11 4 M (452:) s
+24.165 4 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 4 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 4 M
+( new_max = 12000;) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (5) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (453:) s
+24.165 676 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 676 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 676 M
+( new_min = -12000;) s
+11 670 M (454:) s
+24.165 670 M
+(    ) s
+11 664 M (455:) s
+24.165 664 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 664 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 664 M
+( scaled_voltage = \(\(\(voltage - prev_min\) * \(new_max - new_min\)\) / \(prev_max - prev_min\)\) + new_min;) s
+11 658 M (456:) s
+24.165 658 M
+(    ) s
+11 652 M (457:) s
+24.165 652 M
+(    set_voltage\(scaled_voltage\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+92.515 652 M
+(//dont aquire lock because it will be acquired in this function) s
+/F-gs-font 5 5 SF
+11 646 M (458:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 646 M
+(    ) s
+11 640 M (459:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 640 M
+( 1;) s
+11 634 M (460:) s
+24.165 634 M
+(}) s
+11 628 M (461:) s
+11 622 M (462:) s
+11 616 M (463:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 616 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 616 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 616 M
+(Motor::move_velocity) s
+/F-gs-font 5 5 SF
+0 setgray
+81.53 616 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+84.445 616 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+90.83 616 M
+( velocity \)) s
+11 610 M (464:) s
+24.165 610 M
+({) s
+11 604 M (465:) s
+24.165 604 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 604 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+39.165 604 M
+(::motor_gearset_e_t gearset = motor->get_gearing\(\);) s
+11 598 M (466:) s
+24.165 598 M
+(    ) s
+11 592 M (467:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 592 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 592 M
+( prev_max;) s
+11 586 M (468:) s
+24.165 586 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 586 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 586 M
+( prev_min;) s
+11 580 M (469:) s
+24.165 580 M
+(    ) s
+11 574 M (470:) s
+24.165 574 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 574 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 574 M
+( \( gearset == pros::E_MOTOR_GEARSET_36 \)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+136.435 574 M
+(//100 RPM Motor) s
+/F-gs-font 5 5 SF
+11 568 M (471:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 568 M
+(    {) s
+11 562 M (472:) s
+24.165 562 M
+(        prev_max = 120;) s
+11 556 M (473:) s
+24.165 556 M
+(        prev_min = -120;) s
+11 550 M (474:) s
+24.165 550 M
+(    }) s
+11 544 M (475:) s
+24.165 544 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 544 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 544 M
+( \( gearset == pros::E_MOTOR_GEARSET_06 \) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+135.185 544 M
+(//600 RPM Motor) s
+/F-gs-font 5 5 SF
+11 538 M (476:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 538 M
+(    {) s
+11 532 M (477:) s
+24.165 532 M
+(        prev_max = 720;) s
+11 526 M (478:) s
+24.165 526 M
+(        prev_min = -720;) s
+11 520 M (479:) s
+24.165 520 M
+(    }) s
+11 514 M (480:) s
+24.165 514 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 514 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 514 M
+( ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.3 514 M
+(//default to 200 RPM motor because that is most commonly used) s
+/F-gs-font 5 5 SF
+11 508 M (481:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 508 M
+(    {) s
+11 502 M (482:) s
+24.165 502 M
+(        prev_max = 240;) s
+11 496 M (483:) s
+24.165 496 M
+(        prev_min = -240;) s
+11 490 M (484:) s
+24.165 490 M
+(    }) s
+11 484 M (485:) s
+11 478 M (486:) s
+24.165 478 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 478 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 478 M
+( new_max = 12000;) s
+11 472 M (487:) s
+24.165 472 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 472 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 472 M
+( new_min = -12000;) s
+11 466 M (488:) s
+24.165 466 M
+(    ) s
+11 460 M (489:) s
+24.165 460 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 460 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 460 M
+( voltage = \(\(\(velocity - prev_min\) * \(new_max - new_min\)\) / \(prev_max - prev_min\)\) + new_min;) s
+11 454 M (490:) s
+24.165 454 M
+(    ) s
+11 448 M (491:) s
+24.165 448 M
+(    set_voltage\(voltage\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+76.27 448 M
+(//dont aquire lock because it will be acquired in this function) s
+/F-gs-font 5 5 SF
+11 442 M (492:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 442 M
+(    ) s
+11 436 M (493:) s
+24.165 436 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 436 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 436 M
+( 1;    ) s
+11 430 M (494:) s
+24.165 430 M
+(}) s
+11 424 M (495:) s
+11 418 M (496:) s
+11 412 M (497:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 412 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 412 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 412 M
+(Motor::set_voltage) s
+/F-gs-font 5 5 SF
+0 setgray
+74.025 412 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+76.94 412 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+83.325 412 M
+( voltage \)) s
+11 406 M (498:) s
+24.165 406 M
+({) s
+11 400 M (499:) s
+24.165 400 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 400 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 400 M
+( \( lock.exchange\( true \) \);) s
+11 394 M (500:) s
+24.165 394 M
+(    target_voltage = voltage;) s
+11 388 M (501:) s
+24.165 388 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 388 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 388 M
+( \( target_voltage != prev_target_voltage \)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+125.425 388 M
+(//reset integral for new setpoint) s
+/F-gs-font 5 5 SF
+11 382 M (502:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 382 M
+(    {) s
+11 376 M (503:) s
+24.165 376 M
+(        integral = 0;) s
+11 370 M (504:) s
+24.165 370 M
+(    }) s
+11 364 M (505:) s
+24.165 364 M
+(    lock.exchange\(false\);     ) s
+11 358 M (506:) s
+24.165 358 M
+(    ) s
+11 352 M (507:) s
+24.165 352 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 352 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 352 M
+( 1; ) s
+11 346 M (508:) s
+24.165 346 M
+(}) s
+11 340 M (509:) s
+11 334 M (510:) s
+11 328 M (511:) s
+11 322 M (512:) s
+11 316 M (513:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 316 M
+(//velocity pid control functions) s
+/F-gs-font 5 5 SF
+11 310 M (514:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 310 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 310 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 310 M
+(Motor::enable_velocity_pid) s
+/F-gs-font 5 5 SF
+0 setgray
+98.47 310 M
+(\( \)) s
+11 304 M (515:) s
+24.165 304 M
+({) s
+11 298 M (516:) s
+24.165 298 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 298 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 298 M
+( \( lock.exchange\( true \) \);) s
+11 292 M (517:) s
+24.165 292 M
+(    velocity_pid_enabled = true;) s
+11 286 M (518:) s
+24.165 286 M
+(    lock.exchange\(false\);        ) s
+11 280 M (519:) s
+24.165 280 M
+(}) s
+11 274 M (520:) s
+11 268 M (521:) s
+11 262 M (522:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 262 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 262 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 262 M
+(Motor::disable_velocity_pid) s
+/F-gs-font 5 5 SF
+0 setgray
+99.855 262 M
+(\( \)) s
+11 256 M (523:) s
+24.165 256 M
+({) s
+11 250 M (524:) s
+24.165 250 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 250 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 250 M
+( \( lock.exchange\( true \) \);) s
+11 244 M (525:) s
+24.165 244 M
+(    velocity_pid_enabled = false;) s
+11 238 M (526:) s
+24.165 238 M
+(    lock.exchange\(false\);      ) s
+11 232 M (527:) s
+24.165 232 M
+(}) s
+11 226 M (528:) s
+11 220 M (529:) s
+11 214 M (530:) s
+24.165 214 M
+(        ) s
+11 208 M (531:) s
+24.165 208 M
+(            ) s
+11 202 M (532:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 202 M
+(//slew control functions    ) s
+/F-gs-font 5 5 SF
+11 196 M (533:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 196 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 196 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 196 M
+(Motor::set_slew) s
+/F-gs-font 5 5 SF
+0 setgray
+67.905 196 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+70.82 196 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+77.205 196 M
+( rate \)) s
+11 190 M (534:) s
+24.165 190 M
+({) s
+11 184 M (535:) s
+24.165 184 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 184 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 184 M
+( \( lock.exchange\( true \) \);) s
+11 178 M (536:) s
+24.165 178 M
+(    slew_rate = rate;) s
+11 172 M (537:) s
+24.165 172 M
+(    lock.exchange\(false\);    ) s
+11 166 M (538:) s
+24.165 166 M
+(    ) s
+11 160 M (539:) s
+24.165 160 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 160 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 160 M
+( 1;) s
+11 154 M (540:) s
+24.165 154 M
+(}) s
+11 148 M (541:) s
+11 142 M (542:) s
+11 136 M (543:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 136 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 136 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 136 M
+(Motor::enable_slew) s
+/F-gs-font 5 5 SF
+0 setgray
+80.69 136 M
+(\( \)) s
+11 130 M (544:) s
+24.165 130 M
+({) s
+11 124 M (545:) s
+24.165 124 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 124 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 124 M
+( \( lock.exchange\( true \) \);) s
+11 118 M (546:) s
+24.165 118 M
+(    slew_enabled = true;) s
+11 112 M (547:) s
+24.165 112 M
+(    lock.exchange\(false\);     ) s
+11 106 M (548:) s
+24.165 106 M
+(}) s
+11 100 M (549:) s
+11 94 M (550:) s
+11 88 M (551:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 88 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 88 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 88 M
+(Motor::disable_slew) s
+/F-gs-font 5 5 SF
+0 setgray
+82.075 88 M
+(\( \)) s
+11 82 M (552:) s
+24.165 82 M
+({) s
+11 76 M (553:) s
+24.165 76 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 76 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 76 M
+( \( lock.exchange\( true \) \);) s
+11 70 M (554:) s
+24.165 70 M
+(    slew_enabled = false;) s
+11 64 M (555:) s
+24.165 64 M
+(    lock.exchange\(false\);      ) s
+11 58 M (556:) s
+24.165 58 M
+(}) s
+11 52 M (557:) s
+11 46 M (558:) s
+11 40 M (559:) s
+11 34 M (560:) s
+11 28 M (561:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 28 M
+(//driver control lock setting and clearing functions) s
+/F-gs-font 5 5 SF
+11 22 M (562:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 22 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 22 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 22 M
+(Motor::enable_driver_control) s
+/F-gs-font 5 5 SF
+0 setgray
+102.64 22 M
+(\(\)) s
+11 16 M (563:) s
+24.165 16 M
+({) s
+11 10 M (564:) s
+24.165 10 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 10 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 10 M
+( \( lock.exchange\( true \) \);) s
+11 4 M (565:) s
+24.165 4 M
+(    allow_driver_control = true;) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 6 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (6) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (566:) s
+24.165 676 M
+(    lock.exchange\(false\);) s
+11 670 M (567:) s
+24.165 670 M
+(}) s
+11 664 M (568:) s
+11 658 M (569:) s
+11 652 M (570:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 652 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 652 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 652 M
+(Motor::disable_driver_control) s
+/F-gs-font 5 5 SF
+0 setgray
+104.025 652 M
+(\(\)) s
+11 646 M (571:) s
+24.165 646 M
+({) s
+11 640 M (572:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 640 M
+( \( lock.exchange\( true \) \);) s
+11 634 M (573:) s
+24.165 634 M
+(    allow_driver_control = false;) s
+11 628 M (574:) s
+24.165 628 M
+(    lock.exchange\(false\);) s
+11 622 M (575:) s
+24.165 622 M
+(}) s
+11 616 M (576:) s
+11 610 M (577:) s
+11 604 M (578:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 604 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 604 M
+(Motor::driver_control_allowed) s
+/F-gs-font 5 5 SF
+0 setgray
+101.8 604 M
+(\(\)) s
+11 598 M (579:) s
+24.165 598 M
+({) s
+11 592 M (580:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 592 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 592 M
+( \( allow_driver_control \)) s
+11 586 M (581:) s
+24.165 586 M
+(    {) s
+11 580 M (582:) s
+24.165 580 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 580 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 580 M
+( 1;) s
+11 574 M (583:) s
+24.165 574 M
+(    }) s
+11 568 M (584:) s
+24.165 568 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 568 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 568 M
+( ) s
+11 562 M (585:) s
+24.165 562 M
+(    {) s
+11 556 M (586:) s
+24.165 556 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 556 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 556 M
+( 0;) s
+11 550 M (587:) s
+24.165 550 M
+(    }) s
+11 544 M (588:) s
+24.165 544 M
+(}) s
+11 538 M (589:) s
+11 532 M (590:) s
+11 526 M (591:) s
+11 520 M (592:) s
+11 514 M (593:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 514 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 514 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+31.8 514 M
+(Motor::run) s
+/F-gs-font 5 5 SF
+0 setgray
+56.525 514 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+59.44 514 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+65.825 514 M
+( delta_t \)) s
+11 508 M (594:) s
+24.165 508 M
+({) s
+11 502 M (595:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 502 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 502 M
+( voltage = get_target_voltage\( delta_t \);) s
+11 496 M (596:) s
+24.165 496 M
+(    motor->move_voltage\(voltage\);) s
+11 490 M (597:) s
+24.165 490 M
+(    ) s
+11 484 M (598:) s
+24.165 484 M
+(    ) s
+11 478 M (599:) s
+24.165 478 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 478 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 478 M
+(::string log_msg; ) s
+11 472 M (600:) s
+24.165 472 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 472 M
+(switch) s
+/F-gs-font 5 5 SF
+0 setgray
+44.155 472 M
+( \( log_level \)) s
+11 466 M (601:) s
+24.165 466 M
+(    {) s
+11 460 M (602:) s
+24.165 460 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 460 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 460 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 460 M
+(0) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 460 M
+(:) s
+11 454 M (603:) s
+24.165 454 M
+(            log_msg = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+63.475 454 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+67.495 454 M
+(;) s
+11 448 M (604:) s
+24.165 448 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 448 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 448 M
+(;) s
+11 442 M (605:) s
+24.165 442 M
+(            ) s
+11 436 M (606:) s
+24.165 436 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 436 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 436 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 436 M
+(1) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 436 M
+(:) s
+11 430 M (607:) s
+24.165 430 M
+(            log_msg = \() s
+11 424 M (608:) s
+24.165 424 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 424 M
+("[INFO]") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 424 M
+( + std::string\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.94 424 M
+(" Motor ") s
+/F-gs-font 5 5 SF
+0 setgray
+114.63 424 M
+(\) + std::to_string\(motor_port\)) s
+11 418 M (609:) s
+24.165 418 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 418 M
+(", Actual_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 418 M
+( + std::to_string\(get_actual_voltage\(\)\)) s
+11 412 M (610:) s
+24.165 412 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 412 M
+(", Brake: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 412 M
+( + std::to_string\(get_brake_mode\(\)\)) s
+11 406 M (611:) s
+24.165 406 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 406 M
+(", Gear: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.575 406 M
+( + std::to_string\(get_gearset\(\)\)) s
+11 400 M (612:) s
+24.165 400 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 400 M
+(", I_max: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.355 400 M
+( + std::to_string\(internal_motor_pid.I_max\)) s
+11 394 M (613:) s
+24.165 394 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 394 M
+(", I: ") s
+/F-gs-font 5 5 SF
+0 setgray
+59.41 394 M
+( + std::to_string\(integral\)) s
+11 388 M (614:) s
+24.165 388 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 388 M
+(", kD: ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.685 388 M
+( + std::to_string\(internal_motor_pid.kD\)) s
+11 382 M (615:) s
+24.165 382 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 382 M
+(", kI: ") s
+/F-gs-font 5 5 SF
+0 setgray
+62.465 382 M
+( + std::to_string\(internal_motor_pid.kI\)) s
+11 376 M (616:) s
+24.165 376 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 376 M
+(", kP: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.575 376 M
+( + std::to_string\(internal_motor_pid.kP\)) s
+11 370 M (617:) s
+24.165 370 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 370 M
+(", Slew: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.85 370 M
+( + std::to_string\(get_slew_rate\(\)\)) s
+11 364 M (618:) s
+24.165 364 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 364 M
+(", Time: ") s
+/F-gs-font 5 5 SF
+0 setgray
+69.41 364 M
+( + std::to_string\(pros::millis\(\)\)) s
+11 358 M (619:) s
+24.165 358 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 358 M
+(", Vel_Sp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.13 358 M
+( + std::to_string\(calc_target_velocity\(target_voltage\)\)) s
+11 352 M (620:) s
+24.165 352 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 352 M
+(", Vel: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.52 352 M
+( + std::to_string\(get_actual_velocity\(\)\)) s
+11 346 M (621:) s
+24.165 346 M
+(            \);) s
+11 340 M (622:) s
+24.165 340 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 340 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 340 M
+(;) s
+11 334 M (623:) s
+24.165 334 M
+(            ) s
+11 328 M (624:) s
+24.165 328 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 328 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 328 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 328 M
+(2) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 328 M
+(:) s
+11 322 M (625:) s
+24.165 322 M
+(            log_msg = \() s
+11 316 M (626:) s
+24.165 316 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 316 M
+("[INFO]") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 316 M
+( + std::string\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.94 316 M
+(" Motor ") s
+/F-gs-font 5 5 SF
+0 setgray
+114.63 316 M
+(\) + std::to_string\(motor_port\)) s
+11 310 M (627:) s
+24.165 310 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 310 M
+(", Actual_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 310 M
+( + std::to_string\(get_actual_voltage\(\)\)) s
+11 304 M (628:) s
+24.165 304 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 304 M
+(", Brake: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 304 M
+( + std::to_string\(get_brake_mode\(\)\)) s
+11 298 M (629:) s
+24.165 298 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 298 M
+(", Calc_Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+95.52 298 M
+( + std::to_string\(voltage\)) s
+11 292 M (630:) s
+24.165 292 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 292 M
+(", Gear: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.575 292 M
+( + std::to_string\(get_gearset\(\)\)) s
+11 286 M (631:) s
+24.165 286 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 286 M
+(", I_max: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.355 286 M
+( + std::to_string\(internal_motor_pid.I_max\)) s
+11 280 M (632:) s
+24.165 280 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 280 M
+(", I: ") s
+/F-gs-font 5 5 SF
+0 setgray
+59.41 280 M
+( + std::to_string\(integral\)) s
+11 274 M (633:) s
+24.165 274 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 274 M
+(", kD: ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.685 274 M
+( + std::to_string\(internal_motor_pid.kD\)) s
+11 268 M (634:) s
+24.165 268 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 268 M
+(", kI: ") s
+/F-gs-font 5 5 SF
+0 setgray
+62.465 268 M
+( + std::to_string\(internal_motor_pid.kI\)) s
+11 262 M (635:) s
+24.165 262 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 262 M
+(", kP: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.575 262 M
+( + std::to_string\(internal_motor_pid.kP\)) s
+11 256 M (636:) s
+24.165 256 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 256 M
+(", Slew: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.85 256 M
+( + std::to_string\(get_slew_rate\(\)\)) s
+11 250 M (637:) s
+24.165 250 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 250 M
+(", Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.025 250 M
+( + std::to_string\(target_voltage\)) s
+11 244 M (638:) s
+24.165 244 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 244 M
+(", Time: ") s
+/F-gs-font 5 5 SF
+0 setgray
+69.41 244 M
+( + std::to_string\(pros::millis\(\)\)) s
+11 238 M (639:) s
+24.165 238 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 238 M
+(", Vel_Sp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.13 238 M
+( + std::to_string\(calc_target_velocity\(target_voltage\)\)) s
+11 232 M (640:) s
+24.165 232 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 232 M
+(", Vel: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.52 232 M
+( + std::to_string\(get_actual_velocity\(\)\)) s
+11 226 M (641:) s
+24.165 226 M
+(            \);) s
+11 220 M (642:) s
+24.165 220 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 220 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 220 M
+(;) s
+11 214 M (643:) s
+24.165 214 M
+(            ) s
+11 208 M (644:) s
+24.165 208 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 208 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 208 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 208 M
+(3) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 208 M
+(:) s
+11 202 M (645:) s
+24.165 202 M
+(            log_msg = \() s
+11 196 M (646:) s
+24.165 196 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 196 M
+("[INFO]") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 196 M
+( + std::string\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.94 196 M
+(" Motor ") s
+/F-gs-font 5 5 SF
+0 setgray
+114.63 196 M
+(\) + std::to_string\(motor_port\)) s
+11 190 M (647:) s
+24.165 190 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 190 M
+(", Actual_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 190 M
+( + std::to_string\(get_actual_voltage\(\)\)) s
+11 184 M (648:) s
+24.165 184 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 184 M
+(", Brake: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 184 M
+( + std::to_string\(get_brake_mode\(\)\)) s
+11 178 M (649:) s
+24.165 178 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 178 M
+(", Calc_Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+95.52 178 M
+( + std::to_string\(voltage\)) s
+11 172 M (650:) s
+24.165 172 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 172 M
+(", Gear: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.575 172 M
+( + std::to_string\(get_gearset\(\)\)) s
+11 166 M (651:) s
+24.165 166 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 166 M
+(", I_max: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.355 166 M
+( + std::to_string\(internal_motor_pid.I_max\)) s
+11 160 M (652:) s
+24.165 160 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 160 M
+(", I: ") s
+/F-gs-font 5 5 SF
+0 setgray
+59.41 160 M
+( + std::to_string\(integral\)) s
+11 154 M (653:) s
+24.165 154 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 154 M
+(", IME: ") s
+/F-gs-font 5 5 SF
+0 setgray
+67.465 154 M
+( + std::to_string\(get_encoder_position\(\)\)) s
+11 148 M (654:) s
+24.165 148 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 148 M
+(", kD: ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.685 148 M
+( + std::to_string\(internal_motor_pid.kD\)) s
+11 142 M (655:) s
+24.165 142 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 142 M
+(", kI: ") s
+/F-gs-font 5 5 SF
+0 setgray
+62.465 142 M
+( + std::to_string\(internal_motor_pid.kI\)) s
+11 136 M (656:) s
+24.165 136 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 136 M
+(", kP: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.575 136 M
+( + std::to_string\(internal_motor_pid.kP\)) s
+11 130 M (657:) s
+24.165 130 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 130 M
+(", Slew: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.85 130 M
+( + std::to_string\(get_slew_rate\(\)\)) s
+11 124 M (658:) s
+24.165 124 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 124 M
+(", Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.025 124 M
+( + std::to_string\(target_voltage\)) s
+11 118 M (659:) s
+24.165 118 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 118 M
+(", Time: ") s
+/F-gs-font 5 5 SF
+0 setgray
+69.41 118 M
+( + std::to_string\(pros::millis\(\)\)) s
+11 112 M (660:) s
+24.165 112 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 112 M
+(", Vel_Sp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.13 112 M
+( + std::to_string\(calc_target_velocity\(target_voltage\)\)) s
+11 106 M (661:) s
+24.165 106 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 106 M
+(", Vel: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.52 106 M
+( + std::to_string\(get_actual_velocity\(\)\)) s
+11 100 M (662:) s
+24.165 100 M
+(            \);) s
+11 94 M (663:) s
+24.165 94 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 94 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 94 M
+(;) s
+11 88 M (664:) s
+24.165 88 M
+(            ) s
+11 82 M (665:) s
+24.165 82 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 82 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 82 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 82 M
+(4) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 82 M
+(:) s
+11 76 M (666:) s
+24.165 76 M
+(            log_msg = \() s
+11 70 M (667:) s
+24.165 70 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 70 M
+("[INFO]") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 70 M
+( + std::string\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.94 70 M
+(" Motor ") s
+/F-gs-font 5 5 SF
+0 setgray
+114.63 70 M
+(\) + std::to_string\(motor_port\)) s
+11 64 M (668:) s
+24.165 64 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 64 M
+(", Actual_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 64 M
+( + std::to_string\(get_actual_voltage\(\)\)) s
+11 58 M (669:) s
+24.165 58 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 58 M
+(", Brake: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 58 M
+( + std::to_string\(get_brake_mode\(\)\)) s
+11 52 M (670:) s
+24.165 52 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 52 M
+(", Calc_Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+95.52 52 M
+( + std::to_string\(voltage\)) s
+11 46 M (671:) s
+24.165 46 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 46 M
+(", Dir: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.24 46 M
+( + std::to_string\(get_direction\(\)\)) s
+11 40 M (672:) s
+24.165 40 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 40 M
+(", Gear: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.575 40 M
+( + std::to_string\(get_gearset\(\)\)) s
+11 34 M (673:) s
+24.165 34 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 34 M
+(", I_max: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.355 34 M
+( + std::to_string\(internal_motor_pid.I_max\)) s
+11 28 M (674:) s
+24.165 28 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 28 M
+(", I: ") s
+/F-gs-font 5 5 SF
+0 setgray
+59.41 28 M
+( + std::to_string\(integral\)) s
+11 22 M (675:) s
+24.165 22 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 22 M
+(", IME: ") s
+/F-gs-font 5 5 SF
+0 setgray
+67.465 22 M
+( + std::to_string\(get_encoder_position\(\)\)) s
+11 16 M (676:) s
+24.165 16 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 16 M
+(", kD: ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.685 16 M
+( + std::to_string\(internal_motor_pid.kD\)) s
+11 10 M (677:) s
+24.165 10 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 10 M
+(", kI: ") s
+/F-gs-font 5 5 SF
+0 setgray
+62.465 10 M
+( + std::to_string\(internal_motor_pid.kI\)) s
+11 4 M (678:) s
+24.165 4 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 4 M
+(", kP: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.575 4 M
+( + std::to_string\(internal_motor_pid.kP\)) s
+_R
+S
+%%Page: (7) 7
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 7 def
+/fname (../RobotCode/src/objects/motors/Motor.cpp) def
+/fdir (../RobotCode/src/objects/motors) def
+/ftail (Motor.cpp) def
+% User defined strings:
+/pagenumstr (7) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (679:) s
+24.165 676 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 676 M
+(", Reversed: ") s
+/F-gs-font 5 5 SF
+0 setgray
+78.575 676 M
+( + std::to_string\(is_reversed\(\)\)) s
+11 670 M (680:) s
+24.165 670 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 670 M
+(", Slew: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.85 670 M
+( + std::to_string\(get_slew_rate\(\)\)) s
+11 664 M (681:) s
+24.165 664 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 664 M
+(", Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.025 664 M
+( + std::to_string\(target_voltage\)) s
+11 658 M (682:) s
+24.165 658 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 658 M
+(", Time: ") s
+/F-gs-font 5 5 SF
+0 setgray
+69.41 658 M
+( + std::to_string\(pros::millis\(\)\)) s
+11 652 M (683:) s
+24.165 652 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 652 M
+(", Vel_Sp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.13 652 M
+( + std::to_string\(calc_target_velocity\(target_voltage\)\)) s
+11 646 M (684:) s
+24.165 646 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 646 M
+(", Vel: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.52 646 M
+( + std::to_string\(get_actual_velocity\(\)\)) s
+11 640 M (685:) s
+24.165 640 M
+(            \);) s
+11 634 M (686:) s
+24.165 634 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 634 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 634 M
+(; ) s
+11 628 M (687:) s
+24.165 628 M
+(            ) s
+11 622 M (688:) s
+24.165 622 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 622 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+43.605 622 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+44.855 622 M
+(5) s
+/F-gs-font 5 5 SF
+0 setgray
+47.355 622 M
+(:) s
+11 616 M (689:) s
+24.165 616 M
+(            log_msg = \() s
+11 610 M (690:) s
+24.165 610 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 610 M
+("[INFO]") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 610 M
+( + std::string\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.94 610 M
+(" Motor ") s
+/F-gs-font 5 5 SF
+0 setgray
+114.63 610 M
+(\) + std::to_string\(motor_port\)) s
+11 604 M (691:) s
+24.165 604 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 604 M
+(", Actual_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.295 604 M
+( + std::to_string\(get_actual_voltage\(\)\)) s
+11 598 M (692:) s
+24.165 598 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 598 M
+(", Brake: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 598 M
+( + std::to_string\(get_brake_mode\(\)\)) s
+11 592 M (693:) s
+24.165 592 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 592 M
+(", Calc_Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+95.52 592 M
+( + std::to_string\(voltage\)) s
+11 586 M (694:) s
+24.165 586 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 586 M
+(", Current: ") s
+/F-gs-font 5 5 SF
+0 setgray
+75.24 586 M
+( + std::to_string\(get_current_draw\(\)\)) s
+11 580 M (695:) s
+24.165 580 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 580 M
+(", Dir: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.24 580 M
+( + std::to_string\(get_direction\(\)\)) s
+11 574 M (696:) s
+24.165 574 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 574 M
+(", Gear: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.575 574 M
+( + std::to_string\(get_gearset\(\)\)) s
+11 568 M (697:) s
+24.165 568 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 568 M
+(", I_max: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.355 568 M
+( + std::to_string\(internal_motor_pid.I_max\)) s
+11 562 M (698:) s
+24.165 562 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 562 M
+(", I: ") s
+/F-gs-font 5 5 SF
+0 setgray
+59.41 562 M
+( + std::to_string\(integral\)) s
+11 556 M (699:) s
+24.165 556 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 556 M
+(", IME: ") s
+/F-gs-font 5 5 SF
+0 setgray
+67.465 556 M
+( + std::to_string\(get_encoder_position\(\)\)) s
+11 550 M (700:) s
+24.165 550 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 550 M
+(", kD: ") s
+/F-gs-font 5 5 SF
+0 setgray
+64.685 550 M
+( + std::to_string\(internal_motor_pid.kD\)) s
+11 544 M (701:) s
+24.165 544 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 544 M
+(", kI: ") s
+/F-gs-font 5 5 SF
+0 setgray
+62.465 544 M
+( + std::to_string\(internal_motor_pid.kI\)) s
+11 538 M (702:) s
+24.165 538 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 538 M
+(", kP: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.575 538 M
+( + std::to_string\(internal_motor_pid.kP\)) s
+11 532 M (703:) s
+24.165 532 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 532 M
+(", Reversed: ") s
+/F-gs-font 5 5 SF
+0 setgray
+78.575 532 M
+( + std::to_string\(is_reversed\(\)\)) s
+11 526 M (704:) s
+24.165 526 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 526 M
+(", Slew: ") s
+/F-gs-font 5 5 SF
+0 setgray
+68.85 526 M
+( + std::to_string\(get_slew_rate\(\)\)) s
+11 520 M (705:) s
+24.165 520 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 520 M
+(", Target_Vol: ") s
+/F-gs-font 5 5 SF
+0 setgray
+83.025 520 M
+( + std::to_string\(target_voltage\)) s
+11 514 M (706:) s
+24.165 514 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 514 M
+(", Temp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+70.8 514 M
+( + std::to_string\(get_temperature\(\)\)) s
+11 508 M (707:) s
+24.165 508 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 508 M
+(", Time: ") s
+/F-gs-font 5 5 SF
+0 setgray
+69.41 508 M
+( + std::to_string\(pros::millis\(\)\)) s
+11 502 M (708:) s
+24.165 502 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 502 M
+(", Torque: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.135 502 M
+( + std::to_string\(get_torque\(\)\)) s
+11 496 M (709:) s
+24.165 496 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 496 M
+(", Vel_Sp: ") s
+/F-gs-font 5 5 SF
+0 setgray
+74.13 496 M
+( + std::to_string\(calc_target_velocity\(target_voltage\)\)) s
+11 490 M (710:) s
+24.165 490 M
+(                + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.445 490 M
+(", Vel: ") s
+/F-gs-font 5 5 SF
+0 setgray
+65.52 490 M
+( + std::to_string\(get_actual_velocity\(\)\)) s
+11 484 M (711:) s
+24.165 484 M
+(            \);) s
+11 478 M (712:) s
+24.165 478 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 478 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+52.22 478 M
+(;) s
+11 472 M (713:) s
+24.165 472 M
+(        ) s
+11 466 M (714:) s
+24.165 466 M
+(    }) s
+11 460 M (715:) s
+11 454 M (716:) s
+24.165 454 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 454 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 454 M
+(::clog << log_msg << ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+83.69 454 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+93.795 454 M
+(;  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+97.545 454 M
+(//change to actual logger class to avoid fragmentation) s
+/F-gs-font 5 5 SF
+11 448 M (717:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 448 M
+(    ) s
+11 442 M (718:) s
+24.165 442 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 442 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 442 M
+( 1;) s
+11 436 M (719:) s
+24.165 436 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 7
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

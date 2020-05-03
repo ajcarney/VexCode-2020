@@ -1,0 +1,2409 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../RobotCode/src/objects/lcdCode/AutonSelection/OptionsScreen.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/AutonSelection) def
+/ftail (OptionsScreen.cpp) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(/**) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+24.165 670 M
+( * @file: ./RobotCode/src/lcdCode/AutonSelecton/OptionsScreen.cpp) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+24.165 664 M
+( * @author: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Italic 5 5 SUF
+24.165 658 M
+( * @reviewed_on: 10/15/2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Italic 5 5 SUF
+24.165 652 M
+( * @reviewed_by: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Italic 5 5 SUF
+24.165 646 M
+( *) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Italic 5 5 SUF
+24.165 640 M
+( * @see: OptionsScreen.hpp) s
+/F-gs-font 5 5 SF
+16 634 M (8:) s
+/Palatino-Italic 5 5 SUF
+24.165 634 M
+( *) s
+/F-gs-font 5 5 SF
+16 628 M (9:) s
+/Palatino-Italic 5 5 SUF
+24.165 628 M
+( * contains class with methods for getting a configuration struct for how) s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+( * auton will be run) s
+/F-gs-font 5 5 SF
+13.5 616 M (11:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+24.165 604 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 604 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 604 M
+(<unordered_map>) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 598 M (14:) s
+13.5 592 M (15:) s
+24.165 592 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 592 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 592 M
+("../../../../include/main.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 586 M (16:) s
+24.165 586 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 586 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 586 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 586 M
+("../../../../include/api.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 580 M (17:) s
+13.5 574 M (18:) s
+24.165 574 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 574 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 574 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 574 M
+("../../../Autons.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 568 M (19:) s
+24.165 568 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 568 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 568 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 568 M
+("../../controller/controller.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 562 M (20:) s
+24.165 562 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 562 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 562 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 562 M
+("OptionsScreen.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 556 M (21:) s
+13.5 550 M (22:) s
+13.5 544 M (23:) s
+24.165 544 M
+(autonConfig OptionsScreen::cnfg;) s
+13.5 538 M (24:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 538 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 538 M
+( OptionsScreen::nextScreen = false;) s
+13.5 532 M (25:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 532 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 532 M
+( OptionsScreen::back = false;) s
+13.5 526 M (26:) s
+13.5 520 M (27:) s
+13.5 514 M (28:) s
+13.5 508 M (29:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 508 M
+(OptionsScreen::OptionsScreen) s
+/F-gs-font 5 5 SF
+0 setgray
+94.425 508 M
+(\(\)) s
+13.5 502 M (30:) s
+24.165 502 M
+({) s
+13.5 496 M (31:) s
+24.165 496 M
+(    nextScreen = false;) s
+13.5 490 M (32:) s
+24.165 490 M
+(    back = false;) s
+13.5 484 M (33:) s
+13.5 478 M (34:) s
+24.165 478 M
+(    options_screen = lv_obj_create\(NULL, NULL\);) s
+13.5 472 M (35:) s
+13.5 466 M (36:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 466 M
+(//use hard coded autonomous) s
+/F-gs-font 5 5 SF
+13.5 460 M (37:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 460 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 460 M
+(//switch) s
+/F-gs-font 5 5 SF
+13.5 454 M (38:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 454 M
+(    sw_use_hardcoded = lv_sw_create\(options_screen, NULL\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+161.675 454 M
+(//switch template) s
+/F-gs-font 5 5 SF
+13.5 448 M (39:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 448 M
+(    lv_sw_set_style\(sw_use_hardcoded, LV_SW_STYLE_BG, &sw_bg\);) s
+13.5 442 M (40:) s
+24.165 442 M
+(    lv_sw_set_style\(sw_use_hardcoded, LV_SW_STYLE_INDIC, &sw_indic\);) s
+13.5 436 M (41:) s
+24.165 436 M
+(    lv_sw_set_style\(sw_use_hardcoded, LV_SW_STYLE_KNOB_ON, &sw_toggled\);) s
+13.5 430 M (42:) s
+24.165 430 M
+(    lv_sw_set_style\(sw_use_hardcoded, LV_SW_STYLE_KNOB_OFF, &sw_off\);) s
+13.5 424 M (43:) s
+13.5 418 M (44:) s
+24.165 418 M
+(    lv_sw_set_action\(sw_use_hardcoded, sw_use_hardcoded_action\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+176.53 418 M
+(//map action) s
+/F-gs-font 5 5 SF
+13.5 412 M (45:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 412 M
+(    lv_obj_set_width\(sw_use_hardcoded, 40\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+123.02 412 M
+(//witdth) s
+/F-gs-font 5 5 SF
+13.5 406 M (46:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 406 M
+(    lv_obj_set_height\(sw_use_hardcoded, 20\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+123.88 406 M
+(//height) s
+/F-gs-font 5 5 SF
+13.5 400 M (47:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 394 M (48:) s
+24.165 394 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 394 M
+(//label) s
+/F-gs-font 5 5 SF
+13.5 388 M (49:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(    sw_use_hardcoded_label = lv_label_create\(options_screen, NULL\);) s
+13.5 382 M (50:) s
+24.165 382 M
+(    lv_label_set_style\(sw_use_hardcoded_label, &heading_text\);) s
+13.5 376 M (51:) s
+24.165 376 M
+(    lv_obj_set_width\(sw_use_hardcoded_label, 10\);) s
+13.5 370 M (52:) s
+24.165 370 M
+(    lv_obj_set_height\(sw_use_hardcoded_label, 20\);) s
+13.5 364 M (53:) s
+24.165 364 M
+(    lv_label_set_align\(sw_use_hardcoded_label, LV_LABEL_ALIGN_LEFT\);) s
+13.5 358 M (54:) s
+24.165 358 M
+(    lv_label_set_text\(sw_use_hardcoded_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+125.845 358 M
+("Use Hardcoded Auton") s
+/F-gs-font 5 5 SF
+0 setgray
+180.695 358 M
+(\);) s
+13.5 352 M (55:) s
+13.5 346 M (56:) s
+13.5 340 M (57:) s
+13.5 334 M (58:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 334 M
+(//gyro turns) s
+/F-gs-font 5 5 SF
+13.5 328 M (59:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 328 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 328 M
+(//switch) s
+/F-gs-font 5 5 SF
+13.5 322 M (60:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 322 M
+(    sw_gyro_turn = lv_sw_create\(options_screen, sw_use_hardcoded\);) s
+13.5 316 M (61:) s
+24.165 316 M
+(    lv_sw_set_action\(sw_gyro_turn, sw_gyro_turn_action\);) s
+13.5 310 M (62:) s
+24.165 310 M
+(    lv_obj_set_width\(sw_gyro_turn, 40\);) s
+13.5 304 M (63:) s
+24.165 304 M
+(    lv_obj_set_height\(sw_gyro_turn, 20\);) s
+13.5 298 M (64:) s
+13.5 292 M (65:) s
+24.165 292 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 292 M
+(//label) s
+/F-gs-font 5 5 SF
+13.5 286 M (66:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 286 M
+(    sw_gyro_turn_label = lv_label_create\(options_screen, NULL\);) s
+13.5 280 M (67:) s
+24.165 280 M
+(    lv_label_set_style\(sw_gyro_turn_label, &heading_text\);) s
+13.5 274 M (68:) s
+24.165 274 M
+(    lv_obj_set_width\(sw_gyro_turn_label, 300\);) s
+13.5 268 M (69:) s
+24.165 268 M
+(    lv_obj_set_height\(sw_gyro_turn_label, 20\);) s
+13.5 262 M (70:) s
+24.165 262 M
+(    lv_label_set_align\(sw_gyro_turn_label, LV_LABEL_ALIGN_LEFT\);) s
+13.5 256 M (71:) s
+24.165 256 M
+(    lv_label_set_text\(sw_gyro_turn_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.215 256 M
+("Use Gyro Turns") s
+/F-gs-font 5 5 SF
+0 setgray
+154.625 256 M
+(\);) s
+13.5 250 M (72:) s
+13.5 244 M (73:) s
+13.5 238 M (74:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 238 M
+(//acceleration control) s
+/F-gs-font 5 5 SF
+13.5 232 M (75:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 232 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 232 M
+(//switch) s
+/F-gs-font 5 5 SF
+13.5 226 M (76:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 226 M
+(    sw_accelleration_ctrl = lv_sw_create\(options_screen, sw_use_hardcoded\);) s
+13.5 220 M (77:) s
+24.165 220 M
+(    lv_sw_set_action\(sw_accelleration_ctrl, sw_accelleration_ctrl_action\);) s
+13.5 214 M (78:) s
+24.165 214 M
+(    lv_obj_set_width\(sw_accelleration_ctrl, 40\);) s
+13.5 208 M (79:) s
+24.165 208 M
+(    lv_obj_set_height\(sw_accelleration_ctrl, 20\);) s
+13.5 202 M (80:) s
+13.5 196 M (81:) s
+24.165 196 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 196 M
+(//label) s
+/F-gs-font 5 5 SF
+13.5 190 M (82:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 190 M
+(    sw_accelleration_ctrl_label = lv_label_create\(options_screen, NULL\);) s
+13.5 184 M (83:) s
+24.165 184 M
+(    lv_label_set_style\(sw_accelleration_ctrl_label, &heading_text\);) s
+13.5 178 M (84:) s
+24.165 178 M
+(    lv_obj_set_width\(sw_accelleration_ctrl_label, 300\);) s
+13.5 172 M (85:) s
+24.165 172 M
+(    lv_obj_set_height\(sw_accelleration_ctrl_label, 20\);) s
+13.5 166 M (86:) s
+24.165 166 M
+(    lv_label_set_align\(sw_accelleration_ctrl_label, LV_LABEL_ALIGN_LEFT\);) s
+13.5 160 M (87:) s
+24.165 160 M
+(    lv_label_set_text\(sw_accelleration_ctrl_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.54 160 M
+("Use Acceleration Control") s
+/F-gs-font 5 5 SF
+0 setgray
+190.775 160 M
+(\);) s
+13.5 154 M (88:) s
+13.5 148 M (89:) s
+13.5 142 M (90:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 142 M
+(//check motor temp) s
+/F-gs-font 5 5 SF
+13.5 136 M (91:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 136 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 136 M
+(//switch) s
+/F-gs-font 5 5 SF
+13.5 130 M (92:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 130 M
+(    sw_check_motor_tmp = lv_sw_create\(options_screen, sw_use_hardcoded\);) s
+13.5 124 M (93:) s
+24.165 124 M
+(    lv_sw_set_action\(sw_check_motor_tmp, sw_check_motor_tmp_action\);) s
+13.5 118 M (94:) s
+24.165 118 M
+(    lv_obj_set_width\(sw_check_motor_tmp, 40\);) s
+13.5 112 M (95:) s
+24.165 112 M
+(    lv_obj_set_height\(sw_check_motor_tmp, 20\);) s
+13.5 106 M (96:) s
+13.5 100 M (97:) s
+24.165 100 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 100 M
+(//label) s
+/F-gs-font 5 5 SF
+13.5 94 M (98:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 94 M
+(    sw_check_motor_tmp_label = lv_label_create\(options_screen, NULL\);) s
+13.5 88 M (99:) s
+24.165 88 M
+(    lv_label_set_style\(sw_check_motor_tmp_label, &heading_text\);) s
+11 82 M (100:) s
+24.165 82 M
+(    lv_obj_set_width\(sw_check_motor_tmp_label, 300\);) s
+11 76 M (101:) s
+24.165 76 M
+(    lv_obj_set_height\(sw_check_motor_tmp_label, 20\);) s
+11 70 M (102:) s
+24.165 70 M
+(    lv_label_set_align\(sw_check_motor_tmp_label, LV_LABEL_ALIGN_LEFT\);) s
+11 64 M (103:) s
+24.165 64 M
+(    lv_label_set_text\(sw_check_motor_tmp_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+131.975 64 M
+("Limit Motor Temp") s
+/F-gs-font 5 5 SF
+0 setgray
+178.495 64 M
+(\);) s
+11 58 M (104:) s
+11 52 M (105:) s
+11 46 M (106:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 46 M
+(//use previous macros) s
+/F-gs-font 5 5 SF
+11 40 M (107:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 40 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 40 M
+(//switch) s
+/F-gs-font 5 5 SF
+11 34 M (108:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 34 M
+(    sw_use_previous_macros = lv_sw_create\(options_screen, sw_use_hardcoded\);) s
+11 28 M (109:) s
+24.165 28 M
+(    lv_sw_set_action\(sw_use_previous_macros, sw_use_previous_macros_action\);) s
+11 22 M (110:) s
+24.165 22 M
+(    lv_obj_set_width\(sw_use_previous_macros, 40\);) s
+11 16 M (111:) s
+24.165 16 M
+(    lv_obj_set_height\(sw_use_previous_macros, 20\);) s
+11 10 M (112:) s
+11 4 M (113:) s
+24.165 4 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 4 M
+(//label) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../RobotCode/src/objects/lcdCode/AutonSelection/OptionsScreen.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/AutonSelection) def
+/ftail (OptionsScreen.cpp) def
+/Palatino-Italic 5 5 SUF
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.698039 0.133333 0.133333 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (114:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 676 M
+(    sw_use_previous_macros_label = lv_label_create\(options_screen, NULL\);) s
+11 670 M (115:) s
+24.165 670 M
+(    lv_label_set_style\(sw_use_previous_macros_label, &heading_text\);) s
+11 664 M (116:) s
+24.165 664 M
+(    lv_obj_set_width\(sw_use_previous_macros_label, 300\);) s
+11 658 M (117:) s
+24.165 658 M
+(    lv_obj_set_height\(sw_use_previous_macros_label, 20\);) s
+11 652 M (118:) s
+24.165 652 M
+(    lv_label_set_align\(sw_use_previous_macros_label, LV_LABEL_ALIGN_LEFT\);) s
+11 646 M (119:) s
+24.165 646 M
+(    lv_label_set_text\(sw_use_previous_macros_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+139.93 646 M
+("Use Previously Recorded Macros") s
+/F-gs-font 5 5 SF
+0 setgray
+219.085 646 M
+(\);) s
+11 640 M (120:) s
+11 634 M (121:) s
+11 628 M (122:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 628 M
+(//record) s
+/F-gs-font 5 5 SF
+11 622 M (123:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 622 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 622 M
+(//switch) s
+/F-gs-font 5 5 SF
+11 616 M (124:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 616 M
+(    sw_record = lv_sw_create\(options_screen, sw_use_hardcoded\);) s
+11 610 M (125:) s
+24.165 610 M
+(    lv_sw_set_action\(sw_record, sw_record_action\);) s
+11 604 M (126:) s
+24.165 604 M
+(    lv_obj_set_width\(sw_record, 40\);) s
+11 598 M (127:) s
+24.165 598 M
+(    lv_obj_set_height\(sw_record, 20\);) s
+11 592 M (128:) s
+11 586 M (129:) s
+24.165 586 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 586 M
+(//label) s
+/F-gs-font 5 5 SF
+11 580 M (130:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 580 M
+(    sw_record_label = lv_label_create\(options_screen, NULL\);) s
+11 574 M (131:) s
+24.165 574 M
+(    lv_label_set_style\(sw_record_label, &heading_text\);) s
+11 568 M (132:) s
+24.165 568 M
+(    lv_obj_set_width\(sw_record_label, 300\);) s
+11 562 M (133:) s
+24.165 562 M
+(    lv_obj_set_height\(sw_record_label, 20\);) s
+11 556 M (134:) s
+24.165 556 M
+(    lv_label_set_align\(sw_record_label, LV_LABEL_ALIGN_LEFT\);) s
+11 550 M (135:) s
+24.165 550 M
+(    lv_label_set_text\(sw_record_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+106.27 550 M
+("Record Motor Movements") s
+/F-gs-font 5 5 SF
+0 setgray
+170.015 550 M
+(\);) s
+11 544 M (136:) s
+11 538 M (137:) s
+11 532 M (138:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 532 M
+(//confirm button) s
+/F-gs-font 5 5 SF
+11 526 M (139:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 526 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 526 M
+(//button) s
+/F-gs-font 5 5 SF
+11 520 M (140:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 520 M
+(    btn_confirm = lv_btn_create\(options_screen, NULL\);) s
+11 514 M (141:) s
+24.165 514 M
+(    lv_btn_set_style\(btn_confirm, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 508 M (142:) s
+24.165 508 M
+(    lv_btn_set_style\(btn_confirm, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 502 M (143:) s
+24.165 502 M
+(    lv_btn_set_action\(btn_confirm, LV_BTN_ACTION_CLICK, btn_confirm_action\);) s
+11 496 M (144:) s
+24.165 496 M
+(    lv_obj_set_width\(btn_confirm, 300\);) s
+11 490 M (145:) s
+24.165 490 M
+(    lv_obj_set_height\(btn_confirm, 25\);) s
+11 484 M (146:) s
+11 478 M (147:) s
+24.165 478 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 478 M
+(//label) s
+/F-gs-font 5 5 SF
+11 472 M (148:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 472 M
+(    btn_confirm_label = lv_label_create\(btn_confirm, NULL\);) s
+11 466 M (149:) s
+24.165 466 M
+(    lv_obj_set_style\(btn_confirm_label, &heading_text\);) s
+11 460 M (150:) s
+24.165 460 M
+(    lv_label_set_text\(btn_confirm_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+110.305 460 M
+("Confirm") s
+/F-gs-font 5 5 SF
+0 setgray
+133.77 460 M
+(\);) s
+11 454 M (151:) s
+11 448 M (152:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 448 M
+(//back button) s
+/F-gs-font 5 5 SF
+11 442 M (153:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 442 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 442 M
+(//button) s
+/F-gs-font 5 5 SF
+11 436 M (154:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 436 M
+(    btn_back = lv_btn_create\(options_screen, NULL\);) s
+11 430 M (155:) s
+24.165 430 M
+(    lv_btn_set_style\(btn_back, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 424 M (156:) s
+24.165 424 M
+(    lv_btn_set_style\(btn_back, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 418 M (157:) s
+24.165 418 M
+(    lv_btn_set_action\(btn_back, LV_BTN_ACTION_CLICK, btn_back_action\);) s
+11 412 M (158:) s
+24.165 412 M
+(    lv_obj_set_width\(btn_back, 50\);) s
+11 406 M (159:) s
+24.165 406 M
+(    lv_obj_set_height\(btn_back, 25\);) s
+11 400 M (160:) s
+11 394 M (161:) s
+24.165 394 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 394 M
+(//label) s
+/F-gs-font 5 5 SF
+11 388 M (162:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(    btn_back_label = lv_label_create\(btn_back, NULL\);) s
+11 382 M (163:) s
+24.165 382 M
+(    lv_obj_set_style\(btn_back_label, &heading_text\);) s
+11 376 M (164:) s
+24.165 376 M
+(    lv_label_set_text\(btn_back_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+103.2 376 M
+("Back") s
+/F-gs-font 5 5 SF
+0 setgray
+118.33 376 M
+(\);) s
+11 370 M (165:) s
+11 364 M (166:) s
+11 358 M (167:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 358 M
+(//title label) s
+/F-gs-font 5 5 SF
+11 352 M (168:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 352 M
+(    title_label = lv_label_create\(options_screen, NULL\);) s
+11 346 M (169:) s
+24.165 346 M
+(    lv_obj_set_style\(title_label, &heading_text\);) s
+11 340 M (170:) s
+24.165 340 M
+(    lv_obj_set_width\(title_label, 300\);) s
+11 334 M (171:) s
+24.165 334 M
+(    lv_obj_set_height\(title_label, 20\);) s
+11 328 M (172:) s
+24.165 328 M
+(    lv_label_set_align\(title_label, LV_LABEL_ALIGN_LEFT\);) s
+11 322 M (173:) s
+24.165 322 M
+(    lv_label_set_text\(title_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+91.695 322 M
+("Auton") s
+/F-gs-font 5 5 SF
+0 setgray
+110.16 322 M
+(\);) s
+11 316 M (174:) s
+11 310 M (175:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 310 M
+(//set postition of widgets) s
+/F-gs-font 5 5 SF
+11 304 M (176:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 304 M
+(    lv_obj_set_pos\(sw_use_hardcoded, 400, 40\);) s
+11 298 M (177:) s
+24.165 298 M
+(    lv_obj_set_pos\(sw_gyro_turn, 400, 65\);) s
+11 292 M (178:) s
+24.165 292 M
+(    lv_obj_set_pos\(sw_accelleration_ctrl, 400, 90\);) s
+11 286 M (179:) s
+24.165 286 M
+(    lv_obj_set_pos\(sw_check_motor_tmp, 400, 115\);) s
+11 280 M (180:) s
+24.165 280 M
+(    lv_obj_set_pos\(sw_use_previous_macros, 400, 140\);) s
+11 274 M (181:) s
+24.165 274 M
+(    lv_obj_set_pos\(sw_record, 400, 165\);) s
+11 268 M (182:) s
+11 262 M (183:) s
+24.165 262 M
+(    lv_obj_set_pos\(sw_use_hardcoded_label, 20, 40\);) s
+11 256 M (184:) s
+24.165 256 M
+(    lv_obj_set_pos\(sw_gyro_turn_label, 20, 65\);) s
+11 250 M (185:) s
+24.165 250 M
+(    lv_obj_set_pos\(sw_accelleration_ctrl_label, 20, 90\);) s
+11 244 M (186:) s
+24.165 244 M
+(    lv_obj_set_pos\(sw_check_motor_tmp_label, 20, 115\);) s
+11 238 M (187:) s
+24.165 238 M
+(    lv_obj_set_pos\(sw_use_previous_macros_label, 20, 140\);) s
+11 232 M (188:) s
+24.165 232 M
+(    lv_obj_set_pos\(sw_record_label, 20, 165\);) s
+11 226 M (189:) s
+11 220 M (190:) s
+24.165 220 M
+(    lv_obj_set_pos\(btn_back, 40, 200\);) s
+11 214 M (191:) s
+24.165 214 M
+(    lv_obj_set_pos\(btn_confirm, 100, 200\);) s
+11 208 M (192:) s
+24.165 208 M
+(    lv_obj_set_pos\(title_label, 210, 20\);) s
+11 202 M (193:) s
+24.165 202 M
+(}) s
+11 196 M (194:) s
+11 190 M (195:) s
+11 184 M (196:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 184 M
+(OptionsScreen::~OptionsScreen) s
+/F-gs-font 5 5 SF
+0 setgray
+96.09 184 M
+(\(\)) s
+11 178 M (197:) s
+24.165 178 M
+({) s
+11 172 M (198:) s
+24.165 172 M
+(    lv_obj_del\(sw_use_hardcoded_label\);) s
+11 166 M (199:) s
+24.165 166 M
+(    lv_obj_del\(sw_gyro_turn_label\);) s
+11 160 M (200:) s
+24.165 160 M
+(    lv_obj_del\(sw_accelleration_ctrl_label\);) s
+11 154 M (201:) s
+24.165 154 M
+(    lv_obj_del\(sw_check_motor_tmp_label\);) s
+11 148 M (202:) s
+24.165 148 M
+(    lv_obj_del\(sw_use_previous_macros_label\);) s
+11 142 M (203:) s
+24.165 142 M
+(    lv_obj_del\(sw_record_label\);) s
+11 136 M (204:) s
+11 130 M (205:) s
+24.165 130 M
+(    lv_obj_del\(sw_use_hardcoded\);) s
+11 124 M (206:) s
+24.165 124 M
+(    lv_obj_del\(sw_gyro_turn\);) s
+11 118 M (207:) s
+24.165 118 M
+(    lv_obj_del\(sw_accelleration_ctrl\);) s
+11 112 M (208:) s
+24.165 112 M
+(    lv_obj_del\(sw_check_motor_tmp\);) s
+11 106 M (209:) s
+24.165 106 M
+(    lv_obj_del\(sw_use_previous_macros\);) s
+11 100 M (210:) s
+24.165 100 M
+(    lv_obj_del\(sw_record\);) s
+11 94 M (211:) s
+11 88 M (212:) s
+24.165 88 M
+(    lv_obj_del\(btn_back_label\);) s
+11 82 M (213:) s
+24.165 82 M
+(    lv_obj_del\(btn_confirm_label\);) s
+11 76 M (214:) s
+24.165 76 M
+(    lv_obj_del\(title_label\);) s
+11 70 M (215:) s
+11 64 M (216:) s
+24.165 64 M
+(    lv_obj_del\(btn_back\);) s
+11 58 M (217:) s
+24.165 58 M
+(    lv_obj_del\(btn_confirm\);) s
+11 52 M (218:) s
+11 46 M (219:) s
+24.165 46 M
+(    lv_obj_del\(options_screen\);) s
+11 40 M (220:) s
+11 34 M (221:) s
+24.165 34 M
+(}) s
+11 28 M (222:) s
+11 22 M (223:) s
+11 16 M (224:) s
+11 10 M (225:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 10 M
+(/**) s
+/F-gs-font 5 5 SF
+11 4 M (226:) s
+/Palatino-Italic 5 5 SUF
+24.165 4 M
+( * sets nextScreen so that main loop will break and go to next stage) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../RobotCode/src/objects/lcdCode/AutonSelection/OptionsScreen.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/AutonSelection) def
+/ftail (OptionsScreen.cpp) def
+/Palatino-Italic 5 5 SUF
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.698039 0.133333 0.133333 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (227:) s
+/Palatino-Italic 5 5 SUF
+24.165 676 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 670 M (228:) s
+24.165 670 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 670 M
+(OptionsScreen::btn_confirm_action) s
+/F-gs-font 5 5 SF
+0 setgray
+123.91 670 M
+(\(lv_obj_t *btn\)) s
+11 664 M (229:) s
+24.165 664 M
+({) s
+11 658 M (230:) s
+24.165 658 M
+(    nextScreen = true;) s
+11 652 M (231:) s
+24.165 652 M
+(    back = false;) s
+11 646 M (232:) s
+11 640 M (233:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 640 M
+( LV_RES_OK;) s
+11 634 M (234:) s
+24.165 634 M
+(}) s
+11 628 M (235:) s
+11 622 M (236:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 622 M
+(/**) s
+/F-gs-font 5 5 SF
+11 616 M (237:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( * sets nextScreen so that main loop will break and go to the previous stage) s
+/F-gs-font 5 5 SF
+11 610 M (238:) s
+/Palatino-Italic 5 5 SUF
+24.165 610 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 604 M (239:) s
+24.165 604 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 604 M
+(OptionsScreen::btn_back_action) s
+/F-gs-font 5 5 SF
+0 setgray
+116.685 604 M
+(\(lv_obj_t *btn\)) s
+11 598 M (240:) s
+24.165 598 M
+({) s
+11 592 M (241:) s
+24.165 592 M
+(    nextScreen = true;) s
+11 586 M (242:) s
+24.165 586 M
+(    back = true;) s
+11 580 M (243:) s
+11 574 M (244:) s
+24.165 574 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 574 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 574 M
+( LV_RES_OK;) s
+11 568 M (245:) s
+24.165 568 M
+(}) s
+11 562 M (246:) s
+11 556 M (247:) s
+11 550 M (248:) s
+11 544 M (249:) s
+11 538 M (250:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 538 M
+(/**) s
+/F-gs-font 5 5 SF
+11 532 M (251:) s
+/Palatino-Italic 5 5 SUF
+24.165 532 M
+( * sets or clears config option for using hard coded autons based on the) s
+/F-gs-font 5 5 SF
+11 526 M (252:) s
+/Palatino-Italic 5 5 SUF
+24.165 526 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 520 M (253:) s
+/Palatino-Italic 5 5 SUF
+24.165 520 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 514 M (254:) s
+24.165 514 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 514 M
+(OptionsScreen::sw_use_hardcoded_action) s
+/F-gs-font 5 5 SF
+0 setgray
+138.905 514 M
+(\(lv_obj_t *sw\)) s
+11 508 M (255:) s
+24.165 508 M
+({) s
+11 502 M (256:) s
+24.165 502 M
+(    cnfg.use_hardcoded = !\(cnfg.use_hardcoded\);) s
+11 496 M (257:) s
+24.165 496 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 496 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 496 M
+( LV_RES_OK;) s
+11 490 M (258:) s
+24.165 490 M
+(}) s
+11 484 M (259:) s
+11 478 M (260:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 478 M
+(/**) s
+/F-gs-font 5 5 SF
+11 472 M (261:) s
+/Palatino-Italic 5 5 SUF
+24.165 472 M
+( * sets or clears config option for using gyro turns based on the) s
+/F-gs-font 5 5 SF
+11 466 M (262:) s
+/Palatino-Italic 5 5 SUF
+24.165 466 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 460 M (263:) s
+/Palatino-Italic 5 5 SUF
+24.165 460 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 454 M (264:) s
+24.165 454 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 454 M
+(OptionsScreen::sw_gyro_turn_action) s
+/F-gs-font 5 5 SF
+0 setgray
+126.97 454 M
+(\(lv_obj_t *sw\)) s
+11 448 M (265:) s
+24.165 448 M
+({) s
+11 442 M (266:) s
+24.165 442 M
+(    cnfg.gyro_turn = !\(cnfg.gyro_turn\);) s
+11 436 M (267:) s
+24.165 436 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 436 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 436 M
+( LV_RES_OK;) s
+11 430 M (268:) s
+24.165 430 M
+(}) s
+11 424 M (269:) s
+11 418 M (270:) s
+11 412 M (271:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 412 M
+(/**) s
+/F-gs-font 5 5 SF
+11 406 M (272:) s
+/Palatino-Italic 5 5 SUF
+24.165 406 M
+( * sets or clears config option for using acceleration control code based on the) s
+/F-gs-font 5 5 SF
+11 400 M (273:) s
+/Palatino-Italic 5 5 SUF
+24.165 400 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 394 M (274:) s
+/Palatino-Italic 5 5 SUF
+24.165 394 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 388 M (275:) s
+24.165 388 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 388 M
+(OptionsScreen::sw_accelleration_ctrl_action) s
+/F-gs-font 5 5 SF
+0 setgray
+143.34 388 M
+(\(lv_obj_t *sw\)) s
+11 382 M (276:) s
+24.165 382 M
+({) s
+11 376 M (277:) s
+24.165 376 M
+(    cnfg.accelleration_ctrl = !\(cnfg.accelleration_ctrl\);) s
+11 370 M (278:) s
+24.165 370 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 370 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 370 M
+( LV_RES_OK;) s
+11 364 M (279:) s
+24.165 364 M
+(}) s
+11 358 M (280:) s
+11 352 M (281:) s
+11 346 M (282:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 346 M
+(/**) s
+/F-gs-font 5 5 SF
+11 340 M (283:) s
+/Palatino-Italic 5 5 SUF
+24.165 340 M
+( * sets or clears config option for limiting motor output based on the) s
+/F-gs-font 5 5 SF
+11 334 M (284:) s
+/Palatino-Italic 5 5 SUF
+24.165 334 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 328 M (285:) s
+/Palatino-Italic 5 5 SUF
+24.165 328 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 322 M (286:) s
+24.165 322 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 322 M
+(OptionsScreen::sw_check_motor_tmp_action) s
+/F-gs-font 5 5 SF
+0 setgray
+145.295 322 M
+(\(lv_obj_t *sw\)) s
+11 316 M (287:) s
+24.165 316 M
+({) s
+11 310 M (288:) s
+24.165 310 M
+(    cnfg.check_motor_tmp = !\(cnfg.check_motor_tmp\);) s
+11 304 M (289:) s
+24.165 304 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 304 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 304 M
+( LV_RES_OK;) s
+11 298 M (290:) s
+24.165 298 M
+(}) s
+11 292 M (291:) s
+11 286 M (292:) s
+11 280 M (293:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 280 M
+(/**) s
+/F-gs-font 5 5 SF
+11 274 M (294:) s
+/Palatino-Italic 5 5 SUF
+24.165 274 M
+( * sets or clears config option for allowing use of previously recorded macros based on the) s
+/F-gs-font 5 5 SF
+11 268 M (295:) s
+/Palatino-Italic 5 5 SUF
+24.165 268 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 262 M (296:) s
+/Palatino-Italic 5 5 SUF
+24.165 262 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 256 M (297:) s
+24.165 256 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 256 M
+(OptionsScreen::sw_use_previous_macros_action) s
+/F-gs-font 5 5 SF
+0 setgray
+153.35 256 M
+(\(lv_obj_t *sw\)) s
+11 250 M (298:) s
+24.165 250 M
+({) s
+11 244 M (299:) s
+24.165 244 M
+(    cnfg.use_previous_macros = !\(cnfg.use_previous_macros\);) s
+11 238 M (300:) s
+24.165 238 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 238 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 238 M
+( LV_RES_OK;) s
+11 232 M (301:) s
+24.165 232 M
+(}) s
+11 226 M (302:) s
+11 220 M (303:) s
+11 214 M (304:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 214 M
+(/**) s
+/F-gs-font 5 5 SF
+11 208 M (305:) s
+/Palatino-Italic 5 5 SUF
+24.165 208 M
+( * sets or clears config option for recorded the match as a macro based on the) s
+/F-gs-font 5 5 SF
+11 202 M (306:) s
+/Palatino-Italic 5 5 SUF
+24.165 202 M
+( * switches previous state) s
+/F-gs-font 5 5 SF
+11 196 M (307:) s
+/Palatino-Italic 5 5 SUF
+24.165 196 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 190 M (308:) s
+24.165 190 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 190 M
+(OptionsScreen::sw_record_action) s
+/F-gs-font 5 5 SF
+0 setgray
+118.91 190 M
+(\(lv_obj_t *sw\)) s
+11 184 M (309:) s
+24.165 184 M
+({) s
+11 178 M (310:) s
+24.165 178 M
+(    cnfg.record = !\(cnfg.record\);) s
+11 172 M (311:) s
+24.165 172 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 172 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 172 M
+( LV_RES_OK;) s
+11 166 M (312:) s
+24.165 166 M
+(}) s
+11 160 M (313:) s
+11 154 M (314:) s
+11 148 M (315:) s
+11 142 M (316:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 142 M
+(/**) s
+/F-gs-font 5 5 SF
+11 136 M (317:) s
+/Palatino-Italic 5 5 SUF
+24.165 136 M
+( * runs loop where user can set auton configuration options with digital switches) s
+/F-gs-font 5 5 SF
+11 130 M (318:) s
+/Palatino-Italic 5 5 SUF
+24.165 130 M
+( * loop breaks when user clicks the back or continue button) s
+/F-gs-font 5 5 SF
+11 124 M (319:) s
+/Palatino-Italic 5 5 SUF
+24.165 124 M
+( * if user click the back button then the back flag is set ) s
+/F-gs-font 5 5 SF
+11 118 M (320:) s
+/Palatino-Italic 5 5 SUF
+24.165 118 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 112 M (321:) s
+24.165 112 M
+(autonConfig ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+53.285 112 M
+(OptionsScreen::getOptions) s
+/F-gs-font 5 5 SF
+0 setgray
+115.215 112 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+118.13 112 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+124.515 112 M
+( auton \)) s
+11 106 M (322:) s
+24.165 106 M
+({) s
+11 100 M (323:) s
+24.165 100 M
+(    Controller controllers;) s
+11 94 M (324:) s
+24.165 94 M
+(    Autons auton_data;) s
+11 88 M (325:) s
+24.165 88 M
+(    ) s
+11 82 M (326:) s
+24.165 82 M
+(    lv_sw_off\(sw_use_hardcoded\); ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+99.34 82 M
+(//reset switches and values) s
+/F-gs-font 5 5 SF
+11 76 M (327:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 76 M
+(    lv_sw_on\(sw_gyro_turn\);) s
+11 70 M (328:) s
+24.165 70 M
+(    lv_sw_on\(sw_accelleration_ctrl\);) s
+11 64 M (329:) s
+24.165 64 M
+(    lv_sw_off\(sw_check_motor_tmp\);) s
+11 58 M (330:) s
+24.165 58 M
+(    lv_sw_on\(sw_use_previous_macros\);) s
+11 52 M (331:) s
+24.165 52 M
+(    lv_sw_off\(sw_record\);) s
+11 46 M (332:) s
+11 40 M (333:) s
+24.165 40 M
+(    cnfg.use_hardcoded = 0;) s
+11 34 M (334:) s
+24.165 34 M
+(    cnfg.gyro_turn = 1;) s
+11 28 M (335:) s
+24.165 28 M
+(    cnfg.accelleration_ctrl = 1;) s
+11 22 M (336:) s
+24.165 22 M
+(    cnfg.check_motor_tmp = 0;) s
+11 16 M (337:) s
+24.165 16 M
+(    cnfg.use_previous_macros = 1;) s
+11 10 M (338:) s
+24.165 10 M
+(    cnfg.record = 0;) s
+11 4 M (339:) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (../RobotCode/src/objects/lcdCode/AutonSelection/OptionsScreen.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/AutonSelection) def
+/ftail (OptionsScreen.cpp) def
+% User defined strings:
+/pagenumstr (4) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (340:) s
+11 670 M (341:) s
+24.165 670 M
+(    lv_label_set_text\(title_label, auton_data.AUTONOMOUS_NAMES.at\(auton\)\);) s
+11 664 M (342:) s
+11 658 M (343:) s
+24.165 658 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 658 M
+(//load screen) s
+/F-gs-font 5 5 SF
+11 652 M (344:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 652 M
+(    lv_scr_load\(options_screen\);) s
+11 646 M (345:) s
+11 640 M (346:) s
+24.165 640 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 640 M
+(//set color of border) s
+/F-gs-font 5 5 SF
+11 634 M (347:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 634 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 634 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 634 M
+(::string color = auton_data.AUTONOMOUS_COLORS.at\(auton\);) s
+11 628 M (348:) s
+24.165 628 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 628 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 628 M
+( \(color == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+55.36 628 M
+("blue") s
+/F-gs-font 5 5 SF
+0 setgray
+69.655 628 M
+(\)) s
+11 622 M (349:) s
+24.165 622 M
+(    {) s
+11 616 M (350:) s
+24.165 616 M
+(        gray.body.border.color = BLUE_BORDER;) s
+11 610 M (351:) s
+24.165 610 M
+(    }) s
+11 604 M (352:) s
+24.165 604 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 604 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 604 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 604 M
+( \(color == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.495 604 M
+("red") s
+/F-gs-font 5 5 SF
+0 setgray
+77.015 604 M
+(\)) s
+11 598 M (353:) s
+24.165 598 M
+(    {) s
+11 592 M (354:) s
+24.165 592 M
+(        gray.body.border.color = RED_BORDER;) s
+11 586 M (355:) s
+24.165 586 M
+(    }) s
+11 580 M (356:) s
+24.165 580 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 580 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+11 574 M (357:) s
+24.165 574 M
+(    {) s
+11 568 M (358:) s
+24.165 568 M
+(        gray.body.border.color = BG;) s
+11 562 M (359:) s
+24.165 562 M
+(    }) s
+11 556 M (360:) s
+11 550 M (361:) s
+24.165 550 M
+(    lv_obj_set_style\(options_screen, &gray\);) s
+11 544 M (362:) s
+11 538 M (363:) s
+11 532 M (364:) s
+24.165 532 M
+(    back = false;) s
+11 526 M (365:) s
+24.165 526 M
+(    nextScreen = false;) s
+11 520 M (366:) s
+24.165 520 M
+(    ) s
+11 514 M (367:) s
+24.165 514 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 514 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+39.165 514 M
+(::delay\( 100 \);  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+70.93 514 M
+(//add delay so that previous button clicks do not register) s
+/F-gs-font 5 5 SF
+11 508 M (368:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 502 M (369:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 502 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 502 M
+( \( !\(nextScreen\) \)) s
+11 496 M (370:) s
+24.165 496 M
+(    {) s
+11 490 M (371:) s
+24.165 490 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 490 M
+(//allow controller to press the buttons as well) s
+/F-gs-font 5 5 SF
+11 484 M (372:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 484 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 484 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 484 M
+( \( controllers.master.get_digital\(pros::E_CONTROLLER_DIGITAL_A\) \)) s
+11 478 M (373:) s
+24.165 478 M
+(        {) s
+11 472 M (374:) s
+24.165 472 M
+(            btn_confirm_action\( NULL \);) s
+11 466 M (375:) s
+24.165 466 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+39.165 466 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+49.165 466 M
+(::delay\(100\);) s
+11 460 M (376:) s
+24.165 460 M
+(        }) s
+11 454 M (377:) s
+24.165 454 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 454 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 454 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.3 454 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+47.91 454 M
+( \( controllers.master.get_digital\(pros::E_CONTROLLER_DIGITAL_B\) \)) s
+11 448 M (378:) s
+24.165 448 M
+(        {) s
+11 442 M (379:) s
+24.165 442 M
+(            btn_back_action\( NULL \);) s
+11 436 M (380:) s
+24.165 436 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+39.165 436 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+49.165 436 M
+(::delay\(100\);) s
+11 430 M (381:) s
+24.165 430 M
+(        }) s
+11 424 M (382:) s
+24.165 424 M
+(        ) s
+11 418 M (383:) s
+24.165 418 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 418 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+44.165 418 M
+(::delay\(20\);) s
+11 412 M (384:) s
+24.165 412 M
+(    }) s
+11 406 M (385:) s
+11 400 M (386:) s
+24.165 400 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 400 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 400 M
+( cnfg;) s
+11 394 M (387:) s
+11 388 M (388:) s
+24.165 388 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 4
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

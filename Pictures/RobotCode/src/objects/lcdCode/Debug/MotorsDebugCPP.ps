@@ -1,0 +1,3880 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(/**) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+24.165 670 M
+( * @file: ./RobotCode/src/lcdCode/Debug/MotorsDebug.cpp) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+24.165 664 M
+( * @author: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Italic 5 5 SUF
+24.165 658 M
+( * @reviewed_on: 10/16/2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Italic 5 5 SUF
+24.165 652 M
+( * @reviewed_by: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Italic 5 5 SUF
+24.165 646 M
+( *) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Italic 5 5 SUF
+24.165 640 M
+( * @see: MotorsDebug.hpp) s
+/F-gs-font 5 5 SF
+16 634 M (8:) s
+/Palatino-Italic 5 5 SUF
+24.165 634 M
+( *) s
+/F-gs-font 5 5 SF
+16 628 M (9:) s
+/Palatino-Italic 5 5 SUF
+24.165 628 M
+( * contains classes and methods implementation that allow the gui to show) s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+( * the user information about groups of motors seperated into tabs) s
+/F-gs-font 5 5 SF
+13.5 616 M (11:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+24.165 604 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 604 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 604 M
+(<cstdint>) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 598 M (14:) s
+24.165 598 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 598 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 598 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 598 M
+(<cmath>) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 592 M (15:) s
+24.165 592 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 592 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 592 M
+(<vector>) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 586 M (16:) s
+13.5 580 M (17:) s
+24.165 580 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 580 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 580 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 580 M
+("../../../../include/main.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 574 M (18:) s
+24.165 574 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 574 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 574 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 574 M
+("../../../../include/api.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 568 M (19:) s
+13.5 562 M (20:) s
+24.165 562 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 562 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 562 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 562 M
+("../Styles.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 556 M (21:) s
+24.165 556 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 556 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 556 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 556 M
+("../../motors/Motors.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 550 M (22:) s
+24.165 550 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 550 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 550 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 550 M
+("MotorsDebug.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 544 M (23:) s
+13.5 538 M (24:) s
+13.5 532 M (25:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 532 M
+(//declare static members of all classes) s
+/F-gs-font 5 5 SF
+13.5 526 M (26:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 526 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 526 M
+( MotorsDebug::cont = true;) s
+13.5 520 M (27:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 520 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 520 M
+( MotorsDebug::target_velocity = 0;) s
+13.5 514 M (28:) s
+24.165 514 M
+(lv_obj_t *MotorsDebug::tabview;) s
+13.5 508 M (29:) s
+24.165 508 M
+(pros::motor_brake_mode_e_t MotorsDebug::current_brake_mode = pros::E_MOTOR_BRAKE_COAST;) s
+13.5 502 M (30:) s
+24.165 502 M
+(uint16_t MotorsDebug::tab_loaded = 0;) s
+13.5 496 M (31:) s
+13.5 490 M (32:) s
+13.5 484 M (33:) s
+13.5 478 M (34:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 478 M
+(MotorsDebugTab::MotorsDebugTab) s
+/F-gs-font 5 5 SF
+0 setgray
+108.335 478 M
+(\( std::vector<pros::Motor*> motors_vec, std::vector<std::string> titles_vec, lv_obj_t *parent\)) s
+13.5 472 M (35:) s
+24.165 472 M
+({) s
+13.5 466 M (36:) s
+24.165 466 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 466 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+35.835 466 M
+(\( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+38.75 466 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+45.135 466 M
+( i = 0; i < motors_vec.size\(\); i++ \)) s
+13.5 460 M (37:) s
+24.165 460 M
+(    {) s
+13.5 454 M (38:) s
+24.165 454 M
+(        motors.push_back\(motors_vec.at\(i\)\);) s
+13.5 448 M (39:) s
+24.165 448 M
+(        titles.push_back\(titles_vec.at\(i\)\);) s
+13.5 442 M (40:) s
+24.165 442 M
+(    }) s
+13.5 436 M (41:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 436 M
+(//init container) s
+/F-gs-font 5 5 SF
+13.5 430 M (42:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 430 M
+(    container = lv_cont_create\(parent, NULL\);) s
+13.5 424 M (43:) s
+24.165 424 M
+(    lv_cont_set_fit\(container, false, false\);) s
+13.5 418 M (44:) s
+24.165 418 M
+(    lv_obj_set_style\(container, &gray\);) s
+13.5 412 M (45:) s
+24.165 412 M
+(    lv_cont_set_fit\(container, false, false\);) s
+13.5 406 M (46:) s
+24.165 406 M
+(    lv_obj_set_width\(container, MOTORS_CONTAINER_WIDTH\);) s
+13.5 400 M (47:) s
+24.165 400 M
+(    lv_obj_set_height\(container, MOTORS_CONTAINER_HEIGHT\);) s
+13.5 394 M (48:) s
+13.5 388 M (49:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 388 M
+(//init motor 1 label) s
+/F-gs-font 5 5 SF
+13.5 382 M (50:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 382 M
+(    motor1_label = lv_label_create\(container, NULL\);) s
+13.5 376 M (51:) s
+24.165 376 M
+(    lv_obj_set_style\(motor1_label, &toggle_tabbtn_pressed\);) s
+13.5 370 M (52:) s
+24.165 370 M
+(    lv_obj_set_width\(motor1_label, \(MOTORS_CONTAINER_WIDTH/2\)\);) s
+13.5 364 M (53:) s
+24.165 364 M
+(    lv_obj_set_height\(motor1_label, 20\);) s
+13.5 358 M (54:) s
+24.165 358 M
+(    lv_label_set_align\(motor1_label, LV_LABEL_ALIGN_CENTER\);) s
+13.5 352 M (55:) s
+24.165 352 M
+(    lv_label_set_text\(motor1_label, titles.at\(0\).c_str\(\)\);) s
+13.5 346 M (56:) s
+13.5 340 M (57:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 340 M
+(//init motor 1 info label) s
+/F-gs-font 5 5 SF
+13.5 334 M (58:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 334 M
+(    motor1_info = lv_label_create\(container, NULL\);) s
+13.5 328 M (59:) s
+24.165 328 M
+(    lv_obj_set_style\(motor1_info, &toggle_tabbtn_pressed\);) s
+13.5 322 M (60:) s
+24.165 322 M
+(    lv_obj_set_width\(motor1_info, \(MOTORS_CONTAINER_WIDTH/2\)\);) s
+13.5 316 M (61:) s
+24.165 316 M
+(    lv_obj_set_height\(motor1_info, 20\);) s
+13.5 310 M (62:) s
+24.165 310 M
+(    lv_label_set_align\(motor1_info, LV_LABEL_ALIGN_LEFT\);) s
+13.5 304 M (63:) s
+24.165 304 M
+(    lv_label_set_text\(motor1_info, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+97.3 304 M
+("None\\nNone\\nNone\\nNone\\nNone\\nNone") s
+/F-gs-font 5 5 SF
+0 setgray
+206.745 304 M
+(\);) s
+13.5 298 M (64:) s
+13.5 292 M (65:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 292 M
+(//init motor 2 label) s
+/F-gs-font 5 5 SF
+13.5 286 M (66:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 286 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 286 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 286 M
+(\( motors.size\(\) > 1 \)) s
+13.5 280 M (67:) s
+24.165 280 M
+(    {) s
+13.5 274 M (68:) s
+24.165 274 M
+(        motor2_label = lv_label_create\(container, NULL\);) s
+13.5 268 M (69:) s
+24.165 268 M
+(        lv_obj_set_style\(motor2_label, &toggle_tabbtn_pressed\);) s
+13.5 262 M (70:) s
+24.165 262 M
+(        lv_obj_set_width\(motor2_label, \(MOTORS_CONTAINER_WIDTH/2\)\);) s
+13.5 256 M (71:) s
+24.165 256 M
+(        lv_obj_set_height\(motor2_label, 20\);) s
+13.5 250 M (72:) s
+24.165 250 M
+(        lv_label_set_align\(motor2_label, LV_LABEL_ALIGN_CENTER\);) s
+13.5 244 M (73:) s
+24.165 244 M
+(        lv_label_set_text\(motor2_label, titles.at\(1\).c_str\(\)\);) s
+13.5 238 M (74:) s
+13.5 232 M (75:) s
+24.165 232 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 232 M
+(//init motor 2 info label) s
+/F-gs-font 5 5 SF
+13.5 226 M (76:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 226 M
+(        motor2_info = lv_label_create\(container, NULL\);) s
+13.5 220 M (77:) s
+24.165 220 M
+(        lv_obj_set_style\(motor2_info, &toggle_tabbtn_pressed\);) s
+13.5 214 M (78:) s
+24.165 214 M
+(        lv_obj_set_width\(motor2_info, \(MOTORS_CONTAINER_WIDTH/2\)\);) s
+13.5 208 M (79:) s
+24.165 208 M
+(        lv_obj_set_height\(motor2_info, 20\);) s
+13.5 202 M (80:) s
+24.165 202 M
+(        lv_label_set_align\(motor2_info, LV_LABEL_ALIGN_LEFT\);) s
+13.5 196 M (81:) s
+24.165 196 M
+(        lv_label_set_text\(motor2_info, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+102.3 196 M
+("None") s
+/F-gs-font 5 5 SF
+0 setgray
+118.82 196 M
+(\);) s
+13.5 190 M (82:) s
+24.165 190 M
+(    }) s
+13.5 184 M (83:) s
+13.5 178 M (84:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 178 M
+(//align objects on container) s
+/F-gs-font 5 5 SF
+13.5 172 M (85:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 172 M
+(    lv_obj_set_pos\(motor1_label, 60, 0\);) s
+13.5 166 M (86:) s
+24.165 166 M
+(    lv_obj_set_pos\(motor1_info, 10, 15\);) s
+13.5 160 M (87:) s
+24.165 160 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 160 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 160 M
+(\( motors.size\(\) > 1 \)) s
+13.5 154 M (88:) s
+24.165 154 M
+(    {) s
+13.5 148 M (89:) s
+24.165 148 M
+(        lv_obj_set_pos\(motor2_label, 315, 0\);) s
+13.5 142 M (90:) s
+24.165 142 M
+(        lv_obj_set_pos\(motor2_info, 255, 15\);) s
+13.5 136 M (91:) s
+24.165 136 M
+(    }) s
+13.5 130 M (92:) s
+24.165 130 M
+(}) s
+13.5 124 M (93:) s
+13.5 118 M (94:) s
+13.5 112 M (95:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 112 M
+(/**) s
+/F-gs-font 5 5 SF
+13.5 106 M (96:) s
+/Palatino-Italic 5 5 SUF
+24.165 106 M
+( * function to be called in main loop so that data about motors will be updated) s
+/F-gs-font 5 5 SF
+13.5 100 M (97:) s
+/Palatino-Italic 5 5 SUF
+24.165 100 M
+( * sets velocity, updates data, and updates velocity label) s
+/F-gs-font 5 5 SF
+13.5 94 M (98:) s
+/Palatino-Italic 5 5 SUF
+24.165 94 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 88 M (99:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 88 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 88 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 88 M
+(MotorsDebugTab::update_label) s
+/F-gs-font 5 5 SF
+0 setgray
+108.745 88 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+110.41 88 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+116.795 88 M
+( target_velocity, lv_obj_t *velocity_label\)) s
+11 82 M (100:) s
+24.165 82 M
+({) s
+11 76 M (101:) s
+24.165 76 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 76 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 76 M
+(::string info1 = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.515 76 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+73.535 76 M
+(;) s
+11 70 M (102:) s
+24.165 70 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 70 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 70 M
+(::string info2 = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.515 70 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+73.535 70 M
+(;) s
+11 64 M (103:) s
+11 58 M (104:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 58 M
+(//set velocity to move at) s
+/F-gs-font 5 5 SF
+11 52 M (105:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 52 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 52 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 52 M
+(::int32_t vel = target_velocity;) s
+11 46 M (106:) s
+24.165 46 M
+(    motors.at\(0\)->move_velocity\(vel\);) s
+11 40 M (107:) s
+24.165 40 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 40 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 40 M
+( \( motors.size\(\) > 1 \)) s
+11 34 M (108:) s
+24.165 34 M
+(    {) s
+11 28 M (109:) s
+24.165 28 M
+(        motors.at\(1\)->move_velocity\(vel\);) s
+11 22 M (110:) s
+24.165 22 M
+(    }) s
+11 16 M (111:) s
+11 10 M (112:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 10 M
+(//info for first motor) s
+/F-gs-font 5 5 SF
+11 4 M (113:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 4 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 4 M
+("Current Draw: ") s
+/F-gs-font 5 5 SF
+0 setgray
+87.305 4 M
+( + std::to_string\(motors.at\(0\)->get_current_draw\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+205.19 4 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+215.295 4 M
+(;) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 676 M
+("Voltage \(mV\): ") s
+/F-gs-font 5 5 SF
+0 setgray
+86.2 676 M
+( + std::to_string\(motors.at\(0\)->get_voltage\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+190.08 676 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+200.185 676 M
+(;) s
+11 670 M (115:) s
+24.165 670 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 670 M
+("State: ") s
+/F-gs-font 5 5 SF
+0 setgray
+66.89 670 M
+(;) s
+11 664 M (116:) s
+24.165 664 M
+(    info1 += motors.at\(0\)->is_reversed\(\) ? ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+113.75 664 M
+("reversed\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+143.3 664 M
+( : ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+147.05 664 M
+("not reversed\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+185.35 664 M
+(;) s
+11 658 M (117:) s
+24.165 658 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 658 M
+("Temperature: ") s
+/F-gs-font 5 5 SF
+0 setgray
+84.95 658 M
+( + std::to_string\(motors.at\(0\)->get_temperature\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+199.845 658 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+209.95 658 M
+(;) s
+11 652 M (118:) s
+24.165 652 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 652 M
+("Encoder Position: ") s
+/F-gs-font 5 5 SF
+0 setgray
+94.25 652 M
+( + std::to_string\(motors.at\(0\)->get_position\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+199.85 652 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+209.955 652 M
+(;) s
+11 646 M (119:) s
+24.165 646 M
+(    info1 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+48.985 646 M
+("Torque \(Nm\): ") s
+/F-gs-font 5 5 SF
+0 setgray
+85.365 646 M
+( + std::to_string\(motors.at\(0\)->get_torque\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+187.475 646 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+197.58 646 M
+(;) s
+11 640 M (120:) s
+11 634 M (121:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 634 M
+(//info for second motor if it exists) s
+/F-gs-font 5 5 SF
+11 628 M (122:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 628 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 628 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 628 M
+( \( motors.size\(\) > 1 \)) s
+11 622 M (123:) s
+24.165 622 M
+(    {) s
+11 616 M (124:) s
+24.165 616 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 616 M
+("Current Draw: ") s
+/F-gs-font 5 5 SF
+0 setgray
+92.305 616 M
+( + std::to_string\(motors.at\(1\)->get_current_draw\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+210.19 616 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+220.295 616 M
+(;) s
+11 610 M (125:) s
+24.165 610 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 610 M
+("Voltage \(mV\): ") s
+/F-gs-font 5 5 SF
+0 setgray
+91.2 610 M
+( + std::to_string\(motors.at\(1\)->get_voltage\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+195.08 610 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+205.185 610 M
+(;) s
+11 604 M (126:) s
+24.165 604 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 604 M
+("State: ") s
+/F-gs-font 5 5 SF
+0 setgray
+71.89 604 M
+(;) s
+11 598 M (127:) s
+24.165 598 M
+(        info2 += motors.at\(1\)->is_reversed\(\) ? ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+118.75 598 M
+("reversed\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+148.3 598 M
+( : ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+152.05 598 M
+("not reversed\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+190.35 598 M
+(;) s
+11 592 M (128:) s
+24.165 592 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 592 M
+("Temperature: ") s
+/F-gs-font 5 5 SF
+0 setgray
+89.95 592 M
+( + std::to_string\(motors.at\(1\)->get_temperature\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+204.845 592 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+214.95 592 M
+(;) s
+11 586 M (129:) s
+24.165 586 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 586 M
+("Encoder Position: ") s
+/F-gs-font 5 5 SF
+0 setgray
+99.25 586 M
+( + std::to_string\(motors.at\(1\)->get_position\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+204.85 586 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+214.955 586 M
+(;) s
+11 580 M (130:) s
+24.165 580 M
+(        info2 += ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.985 580 M
+("Torque \(Nm\): ") s
+/F-gs-font 5 5 SF
+0 setgray
+90.365 580 M
+( + std::to_string\(motors.at\(1\)->get_torque\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+192.475 580 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+202.58 580 M
+(;) s
+11 574 M (131:) s
+24.165 574 M
+(    }) s
+11 568 M (132:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 568 M
+(//info for velocity label) s
+/F-gs-font 5 5 SF
+11 562 M (133:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 562 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 562 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 562 M
+(::string velocity;) s
+11 556 M (134:) s
+24.165 556 M
+(    velocity += titles.at\(0\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+82.64 556 M
+(": ") s
+/F-gs-font 5 5 SF
+0 setgray
+89.16 556 M
+( + std::to_string\(motors.at\(0\)->get_actual_velocity\(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+210.035 556 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+220.14 556 M
+(;) s
+11 550 M (135:) s
+24.165 550 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 550 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 550 M
+( \( motors.size\(\) > 1 \)) s
+11 544 M (136:) s
+24.165 544 M
+(    {) s
+11 538 M (137:) s
+24.165 538 M
+(        velocity += titles.at\(1\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.64 538 M
+(": ") s
+/F-gs-font 5 5 SF
+0 setgray
+94.16 538 M
+( + std::to_string\(motors.at\(1\)->get_actual_velocity\(\)\);) s
+11 532 M (138:) s
+24.165 532 M
+(    }) s
+11 526 M (139:) s
+11 520 M (140:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 520 M
+(//set labels) s
+/F-gs-font 5 5 SF
+11 514 M (141:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 514 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 514 M
+(//casts info strings to c strings to make them compatible with lvgl) s
+/F-gs-font 5 5 SF
+11 508 M (142:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 508 M
+(    lv_label_set_text\(motor1_info, info1.c_str\(\)\);) s
+11 502 M (143:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 502 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 502 M
+( \( motors.size\(\) > 1 \)) s
+11 496 M (144:) s
+24.165 496 M
+(    {) s
+11 490 M (145:) s
+24.165 490 M
+(        lv_label_set_text\(motor2_info, info2.c_str\(\)\);) s
+11 484 M (146:) s
+24.165 484 M
+(    }) s
+11 478 M (147:) s
+24.165 478 M
+(    lv_label_set_text\(velocity_label, velocity.c_str\(\)\);) s
+11 472 M (148:) s
+11 466 M (149:) s
+24.165 466 M
+(}) s
+11 460 M (150:) s
+11 454 M (151:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 454 M
+(MotorsDebugTab::~MotorsDebugTab) s
+/F-gs-font 5 5 SF
+0 setgray
+110 454 M
+(\(\)) s
+11 448 M (152:) s
+24.165 448 M
+({) s
+11 442 M (153:) s
+11 436 M (154:) s
+24.165 436 M
+(}) s
+11 430 M (155:) s
+11 424 M (156:) s
+11 418 M (157:) s
+11 412 M (158:) s
+11 406 M (159:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 406 M
+(MotorsDebug::MotorsDebug) s
+/F-gs-font 5 5 SF
+0 setgray
+90.555 406 M
+(\(\)) s
+11 400 M (160:) s
+24.165 400 M
+({) s
+11 394 M (161:) s
+24.165 394 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 394 M
+(//set default for statics) s
+/F-gs-font 5 5 SF
+11 388 M (162:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(    cont = true;) s
+11 382 M (163:) s
+24.165 382 M
+(    target_velocity = 0;) s
+11 376 M (164:) s
+24.165 376 M
+(    tab_loaded = 0;) s
+11 370 M (165:) s
+11 364 M (166:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 364 M
+(//init screen) s
+/F-gs-font 5 5 SF
+11 358 M (167:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 358 M
+(    motor_debug_screen = lv_obj_create\(NULL, NULL\);) s
+11 352 M (168:) s
+24.165 352 M
+(    lv_obj_set_style\(motor_debug_screen, &gray\);) s
+11 346 M (169:) s
+11 340 M (170:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 340 M
+(//init title label) s
+/F-gs-font 5 5 SF
+11 334 M (171:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 334 M
+(    title_label = lv_label_create\(motor_debug_screen, NULL\);) s
+11 328 M (172:) s
+24.165 328 M
+(    lv_label_set_style\(title_label, &heading_text\);) s
+11 322 M (173:) s
+24.165 322 M
+(    lv_obj_set_width\(title_label, MOTORS_CONTAINER_WIDTH\);) s
+11 316 M (174:) s
+24.165 316 M
+(    lv_obj_set_height\(title_label, 20\);) s
+11 310 M (175:) s
+24.165 310 M
+(    lv_label_set_align\(title_label, LV_LABEL_ALIGN_CENTER\);) s
+11 304 M (176:) s
+24.165 304 M
+(    lv_label_set_text\(title_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+91.695 304 M
+("Motors - Debug") s
+/F-gs-font 5 5 SF
+0 setgray
+131.825 304 M
+(\);) s
+11 298 M (177:) s
+11 292 M (178:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 292 M
+(//init tabview) s
+/F-gs-font 5 5 SF
+11 286 M (179:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 286 M
+(    tabview = lv_tabview_create\(motor_debug_screen, NULL\);) s
+11 280 M (180:) s
+24.165 280 M
+(    lv_tabview_set_style\(tabview, LV_TABVIEW_STYLE_BG, &gray\);) s
+11 274 M (181:) s
+24.165 274 M
+(    lv_tabview_set_style\(tabview, LV_TABVIEW_STYLE_BTN_REL, &toggle_tabbtn_released\);) s
+11 268 M (182:) s
+24.165 268 M
+(    lv_tabview_set_style\(tabview, LV_TABVIEW_STYLE_BTN_PR, &toggle_tabbtn_pressed\);) s
+11 262 M (183:) s
+24.165 262 M
+(    lv_tabview_set_style\(tabview, LV_TABVIEW_STYLE_INDIC, &sw_indic\);) s
+11 256 M (184:) s
+24.165 256 M
+(    lv_tabview_set_style\(tabview, LV_TABVIEW_STYLE_BTN_TGL_REL, &toggle_tabbtn_pressed\);) s
+11 250 M (185:) s
+24.165 250 M
+(    lv_tabview_set_tab_load_action\(tabview, tab_load_action\);) s
+11 244 M (186:) s
+24.165 244 M
+(    lv_obj_set_width\(tabview, MOTORS_CONTAINER_WIDTH\);) s
+11 238 M (187:) s
+24.165 238 M
+(    lv_obj_set_height\(tabview, 200\);) s
+11 232 M (188:) s
+11 226 M (189:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 226 M
+(//init tabs) s
+/F-gs-font 5 5 SF
+11 220 M (190:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 220 M
+(    l_chassis_tab = lv_tabview_add_tab\(tabview, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+130.42 220 M
+("Chassis \(L\)") s
+/F-gs-font 5 5 SF
+0 setgray
+159.565 220 M
+(\);) s
+11 214 M (191:) s
+24.165 214 M
+(    r_chassis_tab = lv_tabview_add_tab\(tabview, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+130.94 214 M
+("Chassis \(R\)") s
+/F-gs-font 5 5 SF
+0 setgray
+160.64 214 M
+(\);) s
+11 208 M (192:) s
+24.165 208 M
+(    tilter_tab = lv_tabview_add_tab\(tabview, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+121.56 208 M
+("Tilter") s
+/F-gs-font 5 5 SF
+0 setgray
+138.355 208 M
+(\);) s
+11 202 M (193:) s
+24.165 202 M
+(    intake_tab = lv_tabview_add_tab\(tabview, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+124.69 202 M
+("Intake") s
+/F-gs-font 5 5 SF
+0 setgray
+143.43 202 M
+(\);) s
+11 196 M (194:) s
+24.165 196 M
+(    lift_tab = lv_tabview_add_tab\(tabview, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+117.225 196 M
+("Lift") s
+/F-gs-font 5 5 SF
+0 setgray
+129.575 196 M
+(\);) s
+11 190 M (195:) s
+11 184 M (196:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 184 M
+(//init back button) s
+/F-gs-font 5 5 SF
+11 178 M (197:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 178 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 178 M
+(//button) s
+/F-gs-font 5 5 SF
+11 172 M (198:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 172 M
+(    btn_back = lv_btn_create\(motor_debug_screen, NULL\);) s
+11 166 M (199:) s
+24.165 166 M
+(    lv_btn_set_style\(btn_back, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 160 M (200:) s
+24.165 160 M
+(    lv_btn_set_style\(btn_back, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 154 M (201:) s
+24.165 154 M
+(    lv_btn_set_action\(btn_back, LV_BTN_ACTION_CLICK, btn_back_action\);) s
+11 148 M (202:) s
+24.165 148 M
+(    lv_obj_set_width\(btn_back, 75\);) s
+11 142 M (203:) s
+24.165 142 M
+(    lv_obj_set_height\(btn_back, 25\);) s
+11 136 M (204:) s
+11 130 M (205:) s
+24.165 130 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 130 M
+(//label) s
+/F-gs-font 5 5 SF
+11 124 M (206:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 124 M
+(    btn_back_label = lv_label_create\(btn_back, NULL\);) s
+11 118 M (207:) s
+24.165 118 M
+(    lv_obj_set_style\(btn_back_label, &heading_text\);) s
+11 112 M (208:) s
+24.165 112 M
+(    lv_label_set_text\(btn_back_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+103.2 112 M
+("Back") s
+/F-gs-font 5 5 SF
+0 setgray
+118.33 112 M
+(\);) s
+11 106 M (209:) s
+11 100 M (210:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 100 M
+(//init velocity label) s
+/F-gs-font 5 5 SF
+11 94 M (211:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 94 M
+(    velocity_label = lv_label_create\(motor_debug_screen, NULL\);) s
+11 88 M (212:) s
+24.165 88 M
+(    lv_obj_set_style\(velocity_label, &subheading_text\);) s
+11 82 M (213:) s
+24.165 82 M
+(    lv_obj_set_width\(velocity_label, 100\);) s
+11 76 M (214:) s
+24.165 76 M
+(    lv_obj_set_height\(velocity_label, 40\);) s
+11 70 M (215:) s
+24.165 70 M
+(    lv_label_set_align\(velocity_label, LV_LABEL_ALIGN_LEFT\);) s
+11 64 M (216:) s
+24.165 64 M
+(    lv_label_set_text\(velocity_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+100.62 64 M
+("Velocity: ") s
+/F-gs-font 5 5 SF
+0 setgray
+126.305 64 M
+(\);) s
+11 58 M (217:) s
+11 52 M (218:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 52 M
+(//init velocity increase button) s
+/F-gs-font 5 5 SF
+11 46 M (219:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 46 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 46 M
+(//button) s
+/F-gs-font 5 5 SF
+11 40 M (220:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 40 M
+(    btn_pos_increase =  lv_btn_create\(motor_debug_screen, NULL\);) s
+11 34 M (221:) s
+24.165 34 M
+(    lv_btn_set_style\(btn_pos_increase, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 28 M (222:) s
+24.165 28 M
+(    lv_btn_set_style\(btn_pos_increase, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 22 M (223:) s
+24.165 22 M
+(    lv_btn_set_action\(btn_pos_increase, LV_BTN_ACTION_CLICK, btn_pos_increase_action\);) s
+11 16 M (224:) s
+24.165 16 M
+(    lv_obj_set_width\(btn_pos_increase, 40\);) s
+11 10 M (225:) s
+24.165 10 M
+(    lv_obj_set_height\(btn_pos_increase, 25\);) s
+11 4 M (226:) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (227:) s
+24.165 676 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 676 M
+(//label) s
+/F-gs-font 5 5 SF
+11 670 M (228:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 670 M
+(    btn_pos_increase_label = lv_label_create\(btn_pos_increase, NULL\);) s
+11 664 M (229:) s
+24.165 664 M
+(    lv_obj_set_style\(btn_pos_increase_label, &heading_text\);) s
+11 658 M (230:) s
+24.165 658 M
+(    lv_label_set_text\(btn_pos_increase_label, SYMBOL_RIGHT\);) s
+11 652 M (231:) s
+11 646 M (232:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 646 M
+(//init velocity decrease button) s
+/F-gs-font 5 5 SF
+11 640 M (233:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 640 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 640 M
+(//button) s
+/F-gs-font 5 5 SF
+11 634 M (234:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 634 M
+(    btn_neg_increase =  lv_btn_create\(motor_debug_screen, NULL\);) s
+11 628 M (235:) s
+24.165 628 M
+(    lv_btn_set_style\(btn_neg_increase, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 622 M (236:) s
+24.165 622 M
+(    lv_btn_set_style\(btn_neg_increase, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 616 M (237:) s
+24.165 616 M
+(    lv_btn_set_action\(btn_neg_increase, LV_BTN_ACTION_CLICK, btn_neg_increase_action\);) s
+11 610 M (238:) s
+24.165 610 M
+(    lv_obj_set_width\(btn_neg_increase, 40\);) s
+11 604 M (239:) s
+24.165 604 M
+(    lv_obj_set_height\(btn_neg_increase, 25\);) s
+11 598 M (240:) s
+11 592 M (241:) s
+24.165 592 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 592 M
+(//label) s
+/F-gs-font 5 5 SF
+11 586 M (242:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 586 M
+(    btn_neg_increase_label = lv_label_create\(btn_neg_increase, NULL\);) s
+11 580 M (243:) s
+24.165 580 M
+(    lv_obj_set_style\(btn_neg_increase_label, &heading_text\);) s
+11 574 M (244:) s
+24.165 574 M
+(    lv_label_set_text\(btn_neg_increase_label, SYMBOL_LEFT\);) s
+11 568 M (245:) s
+11 562 M (246:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 562 M
+(//init zero velocity button) s
+/F-gs-font 5 5 SF
+11 556 M (247:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 556 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 556 M
+(//button) s
+/F-gs-font 5 5 SF
+11 550 M (248:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 550 M
+(    btn_stp =  lv_btn_create\(motor_debug_screen, NULL\);) s
+11 544 M (249:) s
+24.165 544 M
+(    lv_btn_set_style\(btn_stp, LV_BTN_STYLE_REL, &toggle_btn_released\);) s
+11 538 M (250:) s
+24.165 538 M
+(    lv_btn_set_style\(btn_stp, LV_BTN_STYLE_PR, &toggle_btn_pressed\);) s
+11 532 M (251:) s
+24.165 532 M
+(    lv_btn_set_action\(btn_stp, LV_BTN_ACTION_CLICK, btn_stp_action\);) s
+11 526 M (252:) s
+24.165 526 M
+(    lv_obj_set_width\(btn_stp, 40\);) s
+11 520 M (253:) s
+24.165 520 M
+(    lv_obj_set_height\(btn_stp, 25\);) s
+11 514 M (254:) s
+11 508 M (255:) s
+24.165 508 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 508 M
+(//label) s
+/F-gs-font 5 5 SF
+11 502 M (256:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 502 M
+(    btn_stp_label = lv_label_create\(btn_stp, NULL\);) s
+11 496 M (257:) s
+24.165 496 M
+(    lv_obj_set_style\(btn_stp_label, &heading_text\);) s
+11 490 M (258:) s
+24.165 490 M
+(    lv_label_set_text\(btn_stp_label, SYMBOL_STOP\);) s
+11 484 M (259:) s
+11 478 M (260:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 478 M
+(//init brake mode label) s
+/F-gs-font 5 5 SF
+11 472 M (261:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 472 M
+(    brake_mode_label = lv_label_create\(motor_debug_screen, NULL\);) s
+11 466 M (262:) s
+24.165 466 M
+(    lv_obj_set_style\(brake_mode_label, &heading_text\);) s
+11 460 M (263:) s
+24.165 460 M
+(    lv_obj_set_width\(brake_mode_label, 100\);) s
+11 454 M (264:) s
+24.165 454 M
+(    lv_obj_set_height\(brake_mode_label, 20\);) s
+11 448 M (265:) s
+24.165 448 M
+(    lv_label_set_align\(brake_mode_label, LV_LABEL_ALIGN_CENTER\);) s
+11 442 M (266:) s
+24.165 442 M
+(    lv_label_set_text\(brake_mode_label, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+110.64 442 M
+("Brakemode: ") s
+/F-gs-font 5 5 SF
+0 setgray
+143.275 442 M
+(\);) s
+11 436 M (267:) s
+11 430 M (268:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 430 M
+(//init drop down list) s
+/F-gs-font 5 5 SF
+11 424 M (269:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 424 M
+(    ddlist_brake_mode = lv_ddlist_create\(motor_debug_screen, NULL\);) s
+11 418 M (270:) s
+24.165 418 M
+(    lv_ddlist_set_options\(ddlist_brake_mode, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+123.385 418 M
+("Coast\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+11 412 M (271:) s
+24.165 412 M
+(                                             ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+80.415 412 M
+("Brake\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+11 406 M (272:) s
+24.165 406 M
+(                                             ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+80.415 406 M
+("PID Hold") s
+/F-gs-font 5 5 SF
+0 setgray
+106.515 406 M
+(\);) s
+11 400 M (273:) s
+24.165 400 M
+(    lv_obj_set_style\(ddlist_brake_mode, &subheading_text\);) s
+11 394 M (274:) s
+24.165 394 M
+(    lv_obj_set_width\(ddlist_brake_mode, 125\);) s
+11 388 M (275:) s
+24.165 388 M
+(    lv_obj_set_height\(ddlist_brake_mode, 18\);) s
+11 382 M (276:) s
+24.165 382 M
+(    lv_ddlist_set_action\(ddlist_brake_mode, ddlist_brake_mode_action\);) s
+11 376 M (277:) s
+11 370 M (278:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 370 M
+(//set positions) s
+/F-gs-font 5 5 SF
+11 364 M (279:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 364 M
+(    lv_obj_set_pos\(btn_back, 30, 210\);) s
+11 358 M (280:) s
+24.165 358 M
+(    lv_obj_set_pos\(btn_pos_increase, 270, 210\);) s
+11 352 M (281:) s
+24.165 352 M
+(    lv_obj_set_pos\(btn_stp, 220, 210\);) s
+11 346 M (282:) s
+24.165 346 M
+(    lv_obj_set_pos\(btn_neg_increase, 170, 210\);) s
+11 340 M (283:) s
+11 334 M (284:) s
+24.165 334 M
+(    lv_obj_set_pos\(velocity_label, 330, 177\);) s
+11 328 M (285:) s
+11 322 M (286:) s
+24.165 322 M
+(    lv_obj_set_pos\(brake_mode_label, 60, 177\);) s
+11 316 M (287:) s
+24.165 316 M
+(    lv_obj_set_pos\(ddlist_brake_mode, 170, 177\);) s
+11 310 M (288:) s
+11 304 M (289:) s
+24.165 304 M
+(    lv_obj_set_pos\(title_label, 180, 5\);) s
+11 298 M (290:) s
+11 292 M (291:) s
+24.165 292 M
+(    lv_obj_set_pos\(tabview, 20, 25\);) s
+11 286 M (292:) s
+11 280 M (293:) s
+24.165 280 M
+(}) s
+11 274 M (294:) s
+11 268 M (295:) s
+11 262 M (296:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 262 M
+(MotorsDebug::~MotorsDebug) s
+/F-gs-font 5 5 SF
+0 setgray
+92.22 262 M
+(\(\)) s
+11 256 M (297:) s
+24.165 256 M
+({) s
+11 250 M (298:) s
+24.165 250 M
+(    Motors *motors = Motors::get_instance\(\);) s
+11 244 M (299:) s
+24.165 244 M
+(    ) s
+11 238 M (300:) s
+24.165 238 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 238 M
+(//sets motors to off) s
+/F-gs-font 5 5 SF
+11 232 M (301:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 232 M
+(    motors->frontLeft->move_velocity\(0\);) s
+11 226 M (302:) s
+24.165 226 M
+(    motors->backLeft->move_velocity\(0\);) s
+11 220 M (303:) s
+24.165 220 M
+(    motors->frontRight->move_velocity\(0\);) s
+11 214 M (304:) s
+24.165 214 M
+(    motors->backRight->move_velocity\(0\);) s
+11 208 M (305:) s
+24.165 208 M
+(    motors->right_intake->move_velocity\(0\);) s
+11 202 M (306:) s
+24.165 202 M
+(    motors->left_intake->move_velocity\(0\);) s
+11 196 M (307:) s
+24.165 196 M
+(    motors->tilter->move_velocity\(0\);) s
+11 190 M (308:) s
+24.165 190 M
+(    motors->lift->move_velocity\(0\);) s
+11 184 M (309:) s
+11 178 M (310:) s
+24.165 178 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 178 M
+(//allow motor to go to zero for driver control if it is not set) s
+/F-gs-font 5 5 SF
+11 172 M (311:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 172 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 172 M
+(//already) s
+/F-gs-font 5 5 SF
+11 166 M (312:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 166 M
+(    motors->allow_left_chassis = true;) s
+11 160 M (313:) s
+24.165 160 M
+(    motors->allow_right_chassis = true;) s
+11 154 M (314:) s
+24.165 154 M
+(    motors->allow_intake = true;) s
+11 148 M (315:) s
+24.165 148 M
+(    motors->allow_tilter = true;) s
+11 142 M (316:) s
+24.165 142 M
+(    motors->allow_lift = true;) s
+11 136 M (317:) s
+11 130 M (318:) s
+24.165 130 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 130 M
+(//deletes widgets instantiated by class) s
+/F-gs-font 5 5 SF
+11 124 M (319:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 124 M
+(    lv_obj_del\(title_label\);) s
+11 118 M (320:) s
+11 112 M (321:) s
+24.165 112 M
+(    lv_obj_del\(btn_back_label\);) s
+11 106 M (322:) s
+24.165 106 M
+(    lv_obj_del\(btn_back\);) s
+11 100 M (323:) s
+11 94 M (324:) s
+24.165 94 M
+(    lv_obj_del\(l_chassis_tab\);) s
+11 88 M (325:) s
+24.165 88 M
+(    lv_obj_del\(r_chassis_tab\);) s
+11 82 M (326:) s
+24.165 82 M
+(    lv_obj_del\(tilter_tab\);) s
+11 76 M (327:) s
+24.165 76 M
+(    lv_obj_del\(intake_tab\);) s
+11 70 M (328:) s
+24.165 70 M
+(    lv_obj_del\(lift_tab\);) s
+11 64 M (329:) s
+24.165 64 M
+(    lv_obj_del\(tabview\);) s
+11 58 M (330:) s
+11 52 M (331:) s
+24.165 52 M
+(    lv_obj_del\(velocity_label\);) s
+11 46 M (332:) s
+11 40 M (333:) s
+24.165 40 M
+(    lv_obj_del\(btn_pos_increase_label\);) s
+11 34 M (334:) s
+24.165 34 M
+(    lv_obj_del\(btn_neg_increase_label\);) s
+11 28 M (335:) s
+24.165 28 M
+(    lv_obj_del\(btn_stp_label\);) s
+11 22 M (336:) s
+24.165 22 M
+(    lv_obj_del\(btn_pos_increase\);) s
+11 16 M (337:) s
+24.165 16 M
+(    lv_obj_del\(btn_neg_increase\);) s
+11 10 M (338:) s
+24.165 10 M
+(    lv_obj_del\(btn_stp\);) s
+11 4 M (339:) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (4) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (340:) s
+24.165 676 M
+(    lv_obj_del\(brake_mode_label\);) s
+11 670 M (341:) s
+24.165 670 M
+(    lv_obj_del\(ddlist_brake_mode\);) s
+11 664 M (342:) s
+11 658 M (343:) s
+11 652 M (344:) s
+24.165 652 M
+(    lv_obj_del\(motor_debug_screen\);) s
+11 646 M (345:) s
+24.165 646 M
+(}) s
+11 640 M (346:) s
+11 634 M (347:) s
+11 628 M (348:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 628 M
+(/**) s
+/F-gs-font 5 5 SF
+11 622 M (349:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+( * set cont to false to break main loop) s
+/F-gs-font 5 5 SF
+11 616 M (350:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 610 M (351:) s
+24.165 610 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 610 M
+(MotorsDebug::btn_back_action) s
+/F-gs-font 5 5 SF
+0 setgray
+114.75 610 M
+(\(lv_obj_t *btn\)) s
+11 604 M (352:) s
+24.165 604 M
+({) s
+11 598 M (353:) s
+24.165 598 M
+(    cont = false;) s
+11 592 M (354:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 592 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 592 M
+( LV_RES_OK;) s
+11 586 M (355:) s
+24.165 586 M
+(}) s
+11 580 M (356:) s
+11 574 M (357:) s
+11 568 M (358:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 568 M
+(/**) s
+/F-gs-font 5 5 SF
+11 562 M (359:) s
+/Palatino-Italic 5 5 SUF
+24.165 562 M
+( * callback function for when a new tab is selected) s
+/F-gs-font 5 5 SF
+11 556 M (360:) s
+/Palatino-Italic 5 5 SUF
+24.165 556 M
+( * used to set motor to default ie. brakemode, velocity) s
+/F-gs-font 5 5 SF
+11 550 M (361:) s
+/Palatino-Italic 5 5 SUF
+24.165 550 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 544 M (362:) s
+24.165 544 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 544 M
+(MotorsDebug::tab_load_action) s
+/F-gs-font 5 5 SF
+0 setgray
+113.365 544 M
+(\(lv_obj_t *tabview, uint16_t act_id\)) s
+11 538 M (363:) s
+24.165 538 M
+({) s
+11 532 M (364:) s
+24.165 532 M
+(    Motors *motors = Motors::get_instance\(\);) s
+11 526 M (365:) s
+24.165 526 M
+(    ) s
+11 520 M (366:) s
+24.165 520 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 520 M
+(//loads a new tab and sets default values for velocity of motors) s
+/F-gs-font 5 5 SF
+11 514 M (367:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 514 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 514 M
+(//and if motor is allowed to hit zero velocity) s
+/F-gs-font 5 5 SF
+11 508 M (368:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 502 M (369:) s
+24.165 502 M
+(    tab_loaded = act_id;) s
+11 496 M (370:) s
+24.165 496 M
+(    target_velocity = 0;) s
+11 490 M (371:) s
+11 484 M (372:) s
+24.165 484 M
+(    motors->frontLeft->move_velocity\(0\);) s
+11 478 M (373:) s
+24.165 478 M
+(    motors->backLeft->move_velocity\(0\);) s
+11 472 M (374:) s
+24.165 472 M
+(    motors->frontRight->move_velocity\(0\);) s
+11 466 M (375:) s
+24.165 466 M
+(    motors->backRight->move_velocity\(0\);) s
+11 460 M (376:) s
+11 454 M (377:) s
+24.165 454 M
+(    motors->allow_left_chassis = true;) s
+11 448 M (378:) s
+24.165 448 M
+(    motors->allow_right_chassis = true;) s
+11 442 M (379:) s
+24.165 442 M
+(    motors->allow_intake = true;) s
+11 436 M (380:) s
+24.165 436 M
+(    motors->allow_tilter = true;) s
+11 430 M (381:) s
+24.165 430 M
+(    motors->allow_lift = true;) s
+11 424 M (382:) s
+11 418 M (383:) s
+24.165 418 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 418 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 418 M
+( LV_RES_OK;) s
+11 412 M (384:) s
+11 406 M (385:) s
+24.165 406 M
+(}) s
+11 400 M (386:) s
+11 394 M (387:) s
+11 388 M (388:) s
+11 382 M (389:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 382 M
+(/**) s
+/F-gs-font 5 5 SF
+11 376 M (390:) s
+/Palatino-Italic 5 5 SUF
+24.165 376 M
+( * looks at the current tab loaded to decide on max velocity because the motor) s
+/F-gs-font 5 5 SF
+11 370 M (391:) s
+/Palatino-Italic 5 5 SUF
+24.165 370 M
+( * can be determined from that) s
+/F-gs-font 5 5 SF
+11 364 M (392:) s
+/Palatino-Italic 5 5 SUF
+24.165 364 M
+( * gets the step percent by looking at what STEP_PERCENT is defined as) s
+/F-gs-font 5 5 SF
+11 358 M (393:) s
+/Palatino-Italic 5 5 SUF
+24.165 358 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 352 M (394:) s
+24.165 352 M
+(std::tuple<) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+48 352 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+54.385 352 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+56.885 352 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+63.27 352 M
+(> MotorsDebug::get_velocity_step\(\)) s
+11 346 M (395:) s
+24.165 346 M
+({) s
+11 340 M (396:) s
+24.165 340 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 340 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 340 M
+( index = tab_loaded;    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.56 340 M
+(// 0 = left chassis - 200RPM) s
+/F-gs-font 5 5 SF
+11 334 M (397:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 334 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 334 M
+(// 1 = right chassis - 200RPM) s
+/F-gs-font 5 5 SF
+11 328 M (398:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 328 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 328 M
+(// 2 = tilter - 100RPM) s
+/F-gs-font 5 5 SF
+11 322 M (399:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 322 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 322 M
+(// 3 = intake - 100RPM) s
+/F-gs-font 5 5 SF
+11 316 M (400:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 316 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 316 M
+(// 4 = lift - 100RPM) s
+/F-gs-font 5 5 SF
+11 310 M (401:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 310 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 310 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 310 M
+( max;) s
+11 304 M (402:) s
+11 298 M (403:) s
+24.165 298 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 298 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 298 M
+( \( index == 0 || index == 1 \)) s
+11 292 M (404:) s
+24.165 292 M
+(    {) s
+11 286 M (405:) s
+24.165 286 M
+(        max = 250;) s
+11 280 M (406:) s
+24.165 280 M
+(    }) s
+11 274 M (407:) s
+11 268 M (408:) s
+24.165 268 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 268 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 268 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 268 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 268 M
+( \(index == 2 || index == 3 || index == 4\)) s
+11 262 M (409:) s
+24.165 262 M
+(    {) s
+11 256 M (410:) s
+24.165 256 M
+(        max = 130;) s
+11 250 M (411:) s
+24.165 250 M
+(    }) s
+11 244 M (412:) s
+11 238 M (413:) s
+24.165 238 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 238 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+11 232 M (414:) s
+24.165 232 M
+(    {) s
+11 226 M (415:) s
+24.165 226 M
+(        max = 650;) s
+11 220 M (416:) s
+24.165 220 M
+(    }) s
+11 214 M (417:) s
+11 208 M (418:) s
+24.165 208 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 208 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 208 M
+( step = static_cast<) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+77.035 208 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+83.42 208 M
+(>\(max / STEP_PERCENT\);) s
+11 202 M (419:) s
+24.165 202 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 202 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 202 M
+( std::make_tuple\(step, max\);) s
+11 196 M (420:) s
+24.165 196 M
+(}) s
+11 190 M (421:) s
+11 184 M (422:) s
+11 178 M (423:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 178 M
+(/**) s
+/F-gs-font 5 5 SF
+11 172 M (424:) s
+/Palatino-Italic 5 5 SUF
+24.165 172 M
+( * increses velocity of motor by calling get_velocity_step but limits it to) s
+/F-gs-font 5 5 SF
+11 166 M (425:) s
+/Palatino-Italic 5 5 SUF
+24.165 166 M
+( * the max velocity) s
+/F-gs-font 5 5 SF
+11 160 M (426:) s
+/Palatino-Italic 5 5 SUF
+24.165 160 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 154 M (427:) s
+24.165 154 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 154 M
+(MotorsDebug::btn_pos_increase_action) s
+/F-gs-font 5 5 SF
+0 setgray
+133.08 154 M
+(\(lv_obj_t *btn\)) s
+11 148 M (428:) s
+24.165 148 M
+({) s
+11 142 M (429:) s
+24.165 142 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 142 M
+(//increases velocity by user defined percent) s
+/F-gs-font 5 5 SF
+11 136 M (430:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 136 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 136 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 136 M
+( step;) s
+11 130 M (431:) s
+24.165 130 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 130 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 130 M
+( max;) s
+11 124 M (432:) s
+11 118 M (433:) s
+24.165 118 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 118 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 118 M
+(::tie\(step, max\) = get_velocity_step\(\);) s
+11 112 M (434:) s
+24.165 112 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 112 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 112 M
+( \( target_velocity < max \)) s
+11 106 M (435:) s
+24.165 106 M
+(    {) s
+11 100 M (436:) s
+24.165 100 M
+(        target_velocity = target_velocity + step;) s
+11 94 M (437:) s
+24.165 94 M
+(    }) s
+11 88 M (438:) s
+11 82 M (439:) s
+24.165 82 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 82 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 82 M
+( LV_RES_OK;) s
+11 76 M (440:) s
+24.165 76 M
+(}) s
+11 70 M (441:) s
+11 64 M (442:) s
+11 58 M (443:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 58 M
+(/**) s
+/F-gs-font 5 5 SF
+11 52 M (444:) s
+/Palatino-Italic 5 5 SUF
+24.165 52 M
+( * decreases velocity of motor by calling get_velocity_step but limits it to) s
+/F-gs-font 5 5 SF
+11 46 M (445:) s
+/Palatino-Italic 5 5 SUF
+24.165 46 M
+( * the max velocity in the negative direction) s
+/F-gs-font 5 5 SF
+11 40 M (446:) s
+/Palatino-Italic 5 5 SUF
+24.165 40 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 34 M (447:) s
+24.165 34 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 34 M
+(MotorsDebug::btn_neg_increase_action) s
+/F-gs-font 5 5 SF
+0 setgray
+133.36 34 M
+(\(lv_obj_t *btn\)) s
+11 28 M (448:) s
+24.165 28 M
+({) s
+11 22 M (449:) s
+24.165 22 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 22 M
+(//decreases velocity by user defined percent) s
+/F-gs-font 5 5 SF
+11 16 M (450:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 16 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 16 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 16 M
+( step;) s
+11 10 M (451:) s
+24.165 10 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 10 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+35.55 10 M
+( max;) s
+11 4 M (452:) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (5) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (453:) s
+24.165 676 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 676 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 676 M
+(::tie\(step, max\) = get_velocity_step\(\);) s
+11 670 M (454:) s
+24.165 670 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 670 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 670 M
+( \( target_velocity > 0-max \)) s
+11 664 M (455:) s
+24.165 664 M
+(    {) s
+11 658 M (456:) s
+24.165 658 M
+(        target_velocity = target_velocity - step;) s
+11 652 M (457:) s
+24.165 652 M
+(    }) s
+11 646 M (458:) s
+11 640 M (459:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 640 M
+( LV_RES_OK;) s
+11 634 M (460:) s
+24.165 634 M
+(}) s
+11 628 M (461:) s
+11 622 M (462:) s
+11 616 M (463:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 616 M
+(/**) s
+/F-gs-font 5 5 SF
+11 610 M (464:) s
+/Palatino-Italic 5 5 SUF
+24.165 610 M
+( * sets velocity of motor to zero, used so that user does not have to click) s
+/F-gs-font 5 5 SF
+11 604 M (465:) s
+/Palatino-Italic 5 5 SUF
+24.165 604 M
+( * many times to stop the motor) s
+/F-gs-font 5 5 SF
+11 598 M (466:) s
+/Palatino-Italic 5 5 SUF
+24.165 598 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 592 M (467:) s
+24.165 592 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 592 M
+(MotorsDebug::btn_stp_action) s
+/F-gs-font 5 5 SF
+0 setgray
+110.86 592 M
+(\(lv_obj_t *btn\)) s
+11 586 M (468:) s
+24.165 586 M
+({) s
+11 580 M (469:) s
+24.165 580 M
+(    target_velocity = 0;) s
+11 574 M (470:) s
+24.165 574 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 574 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 574 M
+( LV_RES_OK;) s
+11 568 M (471:) s
+24.165 568 M
+(}) s
+11 562 M (472:) s
+11 556 M (473:) s
+11 550 M (474:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 550 M
+(/**) s
+/F-gs-font 5 5 SF
+11 544 M (475:) s
+/Palatino-Italic 5 5 SUF
+24.165 544 M
+( * looks at the string of the current drop down list option and compares it to) s
+/F-gs-font 5 5 SF
+11 538 M (476:) s
+/Palatino-Italic 5 5 SUF
+24.165 538 M
+( * a string to see what brakemode the user wants) s
+/F-gs-font 5 5 SF
+11 532 M (477:) s
+/Palatino-Italic 5 5 SUF
+24.165 532 M
+( * sets brake mode to this value) s
+/F-gs-font 5 5 SF
+11 526 M (478:) s
+/Palatino-Italic 5 5 SUF
+24.165 526 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 520 M (479:) s
+24.165 520 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 520 M
+(MotorsDebug::ddlist_brake_mode_action) s
+/F-gs-font 5 5 SF
+0 setgray
+137.805 520 M
+(\(lv_obj_t * ddlist\)) s
+11 514 M (480:) s
+24.165 514 M
+({) s
+11 508 M (481:) s
+24.165 508 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 508 M
+(//checks what the drop down list string is) s
+/F-gs-font 5 5 SF
+11 502 M (482:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+29.165 502 M
+(char) s
+/F-gs-font 5 5 SF
+0 setgray
+38.885 502 M
+( sel_cstr[32];) s
+11 496 M (483:) s
+24.165 496 M
+(    lv_ddlist_get_selected_str\(ddlist, sel_cstr\);) s
+11 490 M (484:) s
+11 484 M (485:) s
+24.165 484 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+29.165 484 M
+(std) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 484 M
+(::string sel_str = std::string\(sel_cstr\);  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+118.12 484 M
+(//convert to std::string so) s
+/F-gs-font 5 5 SF
+11 478 M (486:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 478 M
+(                                                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+86.665 478 M
+(//that the strings can be) s
+/F-gs-font 5 5 SF
+11 472 M (487:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 472 M
+(                                                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+86.665 472 M
+(//compared) s
+/F-gs-font 5 5 SF
+11 466 M (488:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 460 M (489:) s
+24.165 460 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 460 M
+(//sets brake mode for motor) s
+/F-gs-font 5 5 SF
+11 454 M (490:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 454 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 454 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 454 M
+( \( sel_str == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.695 454 M
+("PID Hold") s
+/F-gs-font 5 5 SF
+0 setgray
+85.795 454 M
+( \)) s
+11 448 M (491:) s
+24.165 448 M
+(    {) s
+11 442 M (492:) s
+24.165 442 M
+(        current_brake_mode = pros::E_MOTOR_BRAKE_HOLD;) s
+11 436 M (493:) s
+24.165 436 M
+(    }) s
+11 430 M (494:) s
+11 424 M (495:) s
+24.165 424 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 424 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 424 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 424 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 424 M
+( \( sel_str == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.83 424 M
+("Brake") s
+/F-gs-font 5 5 SF
+0 setgray
+87.185 424 M
+( \)) s
+11 418 M (496:) s
+24.165 418 M
+(    {) s
+11 412 M (497:) s
+24.165 412 M
+(        current_brake_mode = pros::E_MOTOR_BRAKE_BRAKE;) s
+11 406 M (498:) s
+24.165 406 M
+(    }) s
+11 400 M (499:) s
+11 394 M (500:) s
+24.165 394 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 394 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+11 388 M (501:) s
+24.165 388 M
+(    {) s
+11 382 M (502:) s
+24.165 382 M
+(        current_brake_mode = pros::E_MOTOR_BRAKE_COAST;) s
+11 376 M (503:) s
+24.165 376 M
+(    }) s
+11 370 M (504:) s
+11 364 M (505:) s
+24.165 364 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 364 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 364 M
+( LV_RES_OK; ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+75.325 364 M
+(//Return OK if the drop down list is not deleted) s
+/F-gs-font 5 5 SF
+11 358 M (506:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 358 M
+(}) s
+11 352 M (507:) s
+11 346 M (508:) s
+11 340 M (509:) s
+11 334 M (510:) s
+11 328 M (511:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 328 M
+(/**) s
+/F-gs-font 5 5 SF
+11 322 M (512:) s
+/Palatino-Italic 5 5 SUF
+24.165 322 M
+( * has a main loop that updates internal data as user cycles through tabs) s
+/F-gs-font 5 5 SF
+11 316 M (513:) s
+/Palatino-Italic 5 5 SUF
+24.165 316 M
+( * to keep data relevent and motors following the function they are supposed to) s
+/F-gs-font 5 5 SF
+11 310 M (514:) s
+/Palatino-Italic 5 5 SUF
+24.165 310 M
+( * loads tabs for each motor set) s
+/F-gs-font 5 5 SF
+11 304 M (515:) s
+/Palatino-Italic 5 5 SUF
+24.165 304 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 298 M (516:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 298 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 298 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 298 M
+(MotorsDebug::debug) s
+/F-gs-font 5 5 SF
+0 setgray
+84.585 298 M
+(\(\)) s
+11 292 M (517:) s
+24.165 292 M
+({) s
+11 286 M (518:) s
+24.165 286 M
+(    Motors *motors = Motors::get_instance\(\);) s
+11 280 M (519:) s
+24.165 280 M
+(    ) s
+11 274 M (520:) s
+24.165 274 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 274 M
+(//used to check if user wants to continue cycling through) s
+/F-gs-font 5 5 SF
+11 268 M (521:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 268 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 268 M
+(//tabs. Will be set to zero and loop will break if user hits) s
+/F-gs-font 5 5 SF
+11 262 M (522:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 262 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 262 M
+(//the back button) s
+/F-gs-font 5 5 SF
+11 256 M (523:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 256 M
+(    cont = true;) s
+11 250 M (524:) s
+11 244 M (525:) s
+24.165 244 M
+(    lv_tabview_set_tab_act\(tabview, 0, NULL\);) s
+11 238 M (526:) s
+24.165 238 M
+(    lv_scr_load\(motor_debug_screen\);) s
+11 232 M (527:) s
+11 226 M (528:) s
+24.165 226 M
+(    MotorsDebugTab l_chassis_tab_debug\( {motors->frontLeft, motors->backLeft}, {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+206.955 226 M
+("Front Left") s
+/F-gs-font 5 5 SF
+0 setgray
+233.615 226 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+236.115 226 M
+("Back Left") s
+/F-gs-font 5 5 SF
+0 setgray
+261.66 226 M
+(}, l_chassis_tab \);) s
+11 220 M (529:) s
+24.165 220 M
+(    MotorsDebugTab r_chassis_tab_debug\( {motors->frontRight, motors->backRight}, {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+214.215 220 M
+("Front Right") s
+/F-gs-font 5 5 SF
+0 setgray
+244.485 220 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+246.985 220 M
+("Back Right") s
+/F-gs-font 5 5 SF
+0 setgray
+276.14 220 M
+(}, r_chassis_tab \);) s
+11 214 M (530:) s
+24.165 214 M
+(    MotorsDebugTab intake_tab_debug\( {motors->right_intake, motors->left_intake}, {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+212.795 214 M
+("Right Intake") s
+/F-gs-font 5 5 SF
+0 setgray
+245.56 214 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+248.06 214 M
+("Left Intake") s
+/F-gs-font 5 5 SF
+0 setgray
+277.215 214 M
+(}, intake_tab \);) s
+11 208 M (531:) s
+24.165 208 M
+(    MotorsDebugTab tilter_tab_debug\( {motors->tilter}, {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+147.175 208 M
+("Tilter") s
+/F-gs-font 5 5 SF
+0 setgray
+163.97 208 M
+(}, intake_tab \);) s
+11 202 M (532:) s
+24.165 202 M
+(    MotorsDebugTab lift_tab_debug\( {motors->lift}, {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+138.505 202 M
+("Lift") s
+/F-gs-font 5 5 SF
+0 setgray
+150.855 202 M
+(}, lift_tab \);) s
+11 196 M (533:) s
+11 190 M (534:) s
+24.165 190 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 190 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 190 M
+( \( cont \)) s
+11 184 M (535:) s
+24.165 184 M
+(    {) s
+11 178 M (536:) s
+11 172 M (537:) s
+24.165 172 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 172 M
+(switch) s
+/F-gs-font 5 5 SF
+0 setgray
+49.155 172 M
+( \( tab_loaded \) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+82.07 172 M
+(//switches to tab user wants to go to) s
+/F-gs-font 5 5 SF
+11 166 M (538:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 166 M
+(        {) s
+11 160 M (539:) s
+24.165 160 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 160 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+48.605 160 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+49.855 160 M
+(0) s
+/F-gs-font 5 5 SF
+0 setgray
+52.355 160 M
+(:) s
+11 154 M (540:) s
+24.165 154 M
+(                l_chassis_tab_debug.update_label\(target_velocity, velocity_label\);) s
+11 148 M (541:) s
+24.165 148 M
+(                motors->allow_left_chassis = motors->frontLeft->get_target_velocity\(\) != 0 ? false : true;) s
+11 142 M (542:) s
+24.165 142 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 142 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+57.22 142 M
+(;) s
+11 136 M (543:) s
+24.165 136 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 136 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+48.605 136 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+49.855 136 M
+(1) s
+/F-gs-font 5 5 SF
+0 setgray
+52.355 136 M
+(:) s
+11 130 M (544:) s
+24.165 130 M
+(                r_chassis_tab_debug.update_label\(target_velocity, velocity_label\);) s
+11 124 M (545:) s
+24.165 124 M
+(                motors->allow_right_chassis = motors->frontRight->get_target_velocity\(\) != 0 ? false : true;) s
+11 118 M (546:) s
+24.165 118 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 118 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+57.22 118 M
+(;) s
+11 112 M (547:) s
+24.165 112 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 112 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+48.605 112 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+49.855 112 M
+(2) s
+/F-gs-font 5 5 SF
+0 setgray
+52.355 112 M
+(:) s
+11 106 M (548:) s
+24.165 106 M
+(                intake_tab_debug.update_label\(target_velocity, velocity_label\);) s
+11 100 M (549:) s
+24.165 100 M
+(                motors->allow_intake = motors->right_intake->get_target_velocity\(\) != 0 ? false : true;) s
+11 94 M (550:) s
+24.165 94 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 94 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+57.22 94 M
+(;) s
+11 88 M (551:) s
+24.165 88 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 88 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+48.605 88 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+49.855 88 M
+(3) s
+/F-gs-font 5 5 SF
+0 setgray
+52.355 88 M
+(:) s
+11 82 M (552:) s
+24.165 82 M
+(                tilter_tab_debug.update_label\(target_velocity, velocity_label\);) s
+11 76 M (553:) s
+24.165 76 M
+(                motors->allow_tilter = motors->tilter->get_target_velocity\(\) != 0 ? false : true;) s
+11 70 M (554:) s
+24.165 70 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 70 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+57.22 70 M
+(;) s
+11 64 M (555:) s
+24.165 64 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 64 M
+(case) s
+/F-gs-font 5 5 SF
+0 setgray
+48.605 64 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+49.855 64 M
+(4) s
+/F-gs-font 5 5 SF
+0 setgray
+52.355 64 M
+(:) s
+11 58 M (556:) s
+24.165 58 M
+(                lift_tab_debug.update_label\(target_velocity, velocity_label\);) s
+11 52 M (557:) s
+24.165 52 M
+(                motors->allow_lift = motors->lift->get_target_velocity\(\) != 0 ? false : true;) s
+11 46 M (558:) s
+24.165 46 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 46 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+57.22 46 M
+(;) s
+11 40 M (559:) s
+24.165 40 M
+(        }) s
+11 34 M (560:) s
+11 28 M (561:) s
+24.165 28 M
+(        motors->frontLeft->set_brake_mode\(current_brake_mode\);) s
+11 22 M (562:) s
+24.165 22 M
+(        motors->backLeft->set_brake_mode\(current_brake_mode\);) s
+11 16 M (563:) s
+24.165 16 M
+(        motors->frontRight->set_brake_mode\(current_brake_mode\);) s
+11 10 M (564:) s
+24.165 10 M
+(        motors->backRight->set_brake_mode\(current_brake_mode\);) s
+11 4 M (565:) s
+24.165 4 M
+(        motors->right_intake->set_brake_mode\(current_brake_mode\);) s
+_R
+S
+%%Page: (6) 6
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 6 def
+/fname (../RobotCode/src/objects/lcdCode/Debug/MotorsDebug.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode/Debug) def
+/ftail (MotorsDebug.cpp) def
+% User defined strings:
+/pagenumstr (6) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (566:) s
+24.165 676 M
+(        motors->left_intake->set_brake_mode\(current_brake_mode\);) s
+11 670 M (567:) s
+24.165 670 M
+(        motors->tilter->set_brake_mode\(current_brake_mode\);) s
+11 664 M (568:) s
+24.165 664 M
+(        motors->lift->set_brake_mode\(current_brake_mode\);) s
+11 658 M (569:) s
+11 652 M (570:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 652 M
+(/*        std::cout << current_brake_mode << "\\n";) s
+/F-gs-font 5 5 SF
+11 646 M (571:) s
+/Palatino-Italic 5 5 SUF
+24.165 646 M
+(        std::cout << motors->frontLeft.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 640 M (572:) s
+/Palatino-Italic 5 5 SUF
+24.165 640 M
+(        std::cout << motors->backLeft.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 634 M (573:) s
+/Palatino-Italic 5 5 SUF
+24.165 634 M
+(        std::cout << motors->frontRight.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 628 M (574:) s
+/Palatino-Italic 5 5 SUF
+24.165 628 M
+(        std::cout << motors->backRight.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 622 M (575:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+(        std::cout << motors->right_intake.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 616 M (576:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+(        std::cout << motors->left_intake.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 610 M (577:) s
+/Palatino-Italic 5 5 SUF
+24.165 610 M
+(        std::cout << motors->tilter.get_brake_mode\(\) << "\\n";) s
+/F-gs-font 5 5 SF
+11 604 M (578:) s
+/Palatino-Italic 5 5 SUF
+24.165 604 M
+(        std::cout << motors->lift.get_brake_mode\(\) << "\\n\\n\\n";*/) s
+/F-gs-font 5 5 SF
+0 setgray
+11 598 M (579:) s
+11 592 M (580:) s
+24.165 592 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 592 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+44.165 592 M
+(::delay\(200\);) s
+11 586 M (581:) s
+24.165 586 M
+(    }) s
+11 580 M (582:) s
+11 574 M (583:) s
+24.165 574 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 574 M
+(//reallow motor to hit zero velocity for driver controll) s
+/F-gs-font 5 5 SF
+11 568 M (584:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 568 M
+(    motors->allow_left_chassis = true;) s
+11 562 M (585:) s
+24.165 562 M
+(    motors->allow_right_chassis = true;) s
+11 556 M (586:) s
+24.165 556 M
+(    motors->allow_intake = true;) s
+11 550 M (587:) s
+24.165 550 M
+(    motors->allow_tilter = true;) s
+11 544 M (588:) s
+24.165 544 M
+(    motors->allow_lift = true;) s
+11 538 M (589:) s
+24.165 538 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 6
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

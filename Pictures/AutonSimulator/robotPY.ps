@@ -1,0 +1,3334 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../AutonSimulator/robot.py) def
+/fdir (../AutonSimulator) def
+/ftail (robot.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 664 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 664 M
+( time) s
+16 658 M (4:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 658 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 658 M
+( math) s
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 652 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 652 M
+( stopwatch) s
+16 646 M (6:) s
+16 640 M (7:) s
+16 634 M (8:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 634 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 634 M
+( robot:) s
+16 628 M (9:) s
+24.165 628 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+29.165 628 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Bold 5 5 SUF
+24.165 622 M
+(    contains all robot move functions) s
+/F-gs-font 5 5 SF
+13.5 616 M (11:) s
+/Palatino-Bold 5 5 SUF
+24.165 616 M
+(    """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+24.165 610 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 610 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 610 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 610 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 610 M
+(\(self, fieldSize=None, tkobj=None, canvas=None, diameterOfWheel=4.1, controlPanelFrame=None, robotInfoFrame=None\):) s
+13.5 604 M (13:) s
+24.165 604 M
+(        self.controlPanelFrame = controlPanelFrame) s
+13.5 598 M (14:) s
+24.165 598 M
+(        self.robotInfoFrame = robotInfoFrame) s
+13.5 592 M (15:) s
+13.5 586 M (16:) s
+24.165 586 M
+(        self.canvas = canvas) s
+13.5 580 M (17:) s
+24.165 580 M
+(        self.master = tkobj) s
+13.5 574 M (18:) s
+13.5 568 M (19:) s
+24.165 568 M
+(        self.diameterOfWheel = diameterOfWheel) s
+13.5 562 M (20:) s
+24.165 562 M
+(        self.fieldSize = fieldSize) s
+13.5 556 M (21:) s
+24.165 556 M
+(        self.reversed = 0) s
+13.5 550 M (22:) s
+13.5 544 M (23:) s
+24.165 544 M
+(        self.sqaure = None) s
+13.5 538 M (24:) s
+24.165 538 M
+(        self.line = None) s
+13.5 532 M (25:) s
+13.5 526 M (26:) s
+24.165 526 M
+(        self.squareVertexes = []) s
+13.5 520 M (27:) s
+24.165 520 M
+(        self.lineVertexes = []) s
+13.5 514 M (28:) s
+13.5 508 M (29:) s
+13.5 502 M (30:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 502 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 502 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 502 M
+(__calcSleepTime) s
+/F-gs-font 5 5 SF
+0 setgray
+76.24 502 M
+(\(self, distance, iterations\):) s
+13.5 496 M (31:) s
+24.165 496 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 496 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 496 M
+( \(distance / \(10*\(2 ** self.controlPanelFrame.speed\)\)\) / iterations) s
+13.5 490 M (32:) s
+13.5 484 M (33:) s
+13.5 478 M (34:) s
+13.5 472 M (35:) s
+24.165 472 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 472 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 472 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 472 M
+(__calcCenters) s
+/F-gs-font 5 5 SF
+0 setgray
+69.015 472 M
+(\(self\):) s
+13.5 466 M (36:) s
+24.165 466 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 466 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 460 M (37:) s
+/Palatino-Bold 5 5 SUF
+24.165 460 M
+(        returns center of each polygon) s
+/F-gs-font 5 5 SF
+13.5 454 M (38:) s
+/Palatino-Bold 5 5 SUF
+24.165 454 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 448 M (39:) s
+24.165 448 M
+(        xVals = []) s
+13.5 442 M (40:) s
+24.165 442 M
+(        yVals = []) s
+13.5 436 M (41:) s
+13.5 430 M (42:) s
+24.165 430 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 430 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 430 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 430 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 430 M
+( range\(0, len\(self.squareVertexes\)\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+127.03 430 M
+(#calculates square center) s
+/F-gs-font 5 5 SF
+13.5 424 M (43:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 424 M
+(            xVals.append\(self.squareVertexes[i][0]\)) s
+13.5 418 M (44:) s
+24.165 418 M
+(            yVals.append\(self.squareVertexes[i][1]\)) s
+13.5 412 M (45:) s
+13.5 406 M (46:) s
+24.165 406 M
+(        xVals.sort\(reverse=True\)) s
+13.5 400 M (47:) s
+24.165 400 M
+(        yVals.sort\(reverse=True\)) s
+13.5 394 M (48:) s
+13.5 388 M (49:) s
+24.165 388 M
+(        greatestX = xVals[0]) s
+13.5 382 M (50:) s
+24.165 382 M
+(        greatestY = yVals[0]) s
+13.5 376 M (51:) s
+13.5 370 M (52:) s
+24.165 370 M
+(        xVals.sort\(\)) s
+13.5 364 M (53:) s
+24.165 364 M
+(        yVals.sort\(\)) s
+13.5 358 M (54:) s
+13.5 352 M (55:) s
+24.165 352 M
+(        leastX = xVals[0]) s
+13.5 346 M (56:) s
+24.165 346 M
+(        leastY = yVals[0]) s
+13.5 340 M (57:) s
+13.5 334 M (58:) s
+24.165 334 M
+(        x = abs\(\(\(greatestX - leastX\)/2\)\) + leastX) s
+13.5 328 M (59:) s
+24.165 328 M
+(        y = abs\(\(\(greatestY - leastY\)/2\)\) + leastY) s
+13.5 322 M (60:) s
+13.5 316 M (61:) s
+24.165 316 M
+(        center = [x, y]) s
+13.5 310 M (62:) s
+13.5 304 M (63:) s
+13.5 298 M (64:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 298 M
+( center) s
+13.5 292 M (65:) s
+13.5 286 M (66:) s
+13.5 280 M (67:) s
+13.5 274 M (68:) s
+13.5 268 M (69:) s
+13.5 262 M (70:) s
+24.165 262 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 262 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 262 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 262 M
+(__rotate) s
+/F-gs-font 5 5 SF
+0 setgray
+55.97 262 M
+(\(self, Angle, pivotPoint\):) s
+13.5 256 M (71:) s
+24.165 256 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 256 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 250 M (72:) s
+/Palatino-Bold 5 5 SUF
+24.165 250 M
+(        rotates the robot simulating one side of the) s
+/F-gs-font 5 5 SF
+13.5 244 M (73:) s
+/Palatino-Bold 5 5 SUF
+24.165 244 M
+(        chassis moving) s
+/F-gs-font 5 5 SF
+13.5 238 M (74:) s
+/Palatino-Bold 5 5 SUF
+24.165 238 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 232 M (75:) s
+24.165 232 M
+(        center = \(pivotPoint[0], pivotPoint[1]\)) s
+13.5 226 M (76:) s
+24.165 226 M
+(        angle = math.radians\(Angle\)) s
+13.5 220 M (77:) s
+24.165 220 M
+(        cos_val = math.cos\(angle\)) s
+13.5 214 M (78:) s
+24.165 214 M
+(        sin_val = math.sin\(angle\)) s
+13.5 208 M (79:) s
+24.165 208 M
+(        cx, cy = center) s
+13.5 202 M (80:) s
+13.5 196 M (81:) s
+24.165 196 M
+(        new_points = []) s
+13.5 190 M (82:) s
+24.165 190 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 190 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 190 M
+( x_old, y_old ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+70.675 190 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+75.395 190 M
+( self.squareVertexes:) s
+13.5 184 M (83:) s
+24.165 184 M
+(            x_old -= cx) s
+13.5 178 M (84:) s
+24.165 178 M
+(            y_old -= cy) s
+13.5 172 M (85:) s
+24.165 172 M
+(            x_new = x_old * cos_val - y_old * sin_val) s
+13.5 166 M (86:) s
+24.165 166 M
+(            y_new = x_old * sin_val + y_old * cos_val) s
+13.5 160 M (87:) s
+24.165 160 M
+(            new_points.append\([x_new + cx, y_new + cy]\)) s
+13.5 154 M (88:) s
+13.5 148 M (89:) s
+13.5 142 M (90:) s
+24.165 142 M
+(        angle = math.radians\(Angle\)) s
+13.5 136 M (91:) s
+24.165 136 M
+(        cos_val = math.cos\(angle\)) s
+13.5 130 M (92:) s
+24.165 130 M
+(        sin_val = math.sin\(angle\)) s
+13.5 124 M (93:) s
+24.165 124 M
+(        cx, cy = center) s
+13.5 118 M (94:) s
+13.5 112 M (95:) s
+24.165 112 M
+(        new_points2 = []) s
+13.5 106 M (96:) s
+24.165 106 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 106 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 106 M
+( x_old, y_old ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+70.675 106 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+75.395 106 M
+( self.lineVertexes:) s
+13.5 100 M (97:) s
+24.165 100 M
+(            x_old -= cx) s
+13.5 94 M (98:) s
+24.165 94 M
+(            y_old -= cy) s
+13.5 88 M (99:) s
+24.165 88 M
+(            x_new = x_old * cos_val - y_old * sin_val) s
+11 82 M (100:) s
+24.165 82 M
+(            y_new = x_old * sin_val + y_old * cos_val) s
+11 76 M (101:) s
+24.165 76 M
+(            new_points2.append\([x_new + cx, y_new + cy]\)) s
+11 70 M (102:) s
+11 64 M (103:) s
+24.165 64 M
+(        self.squareVertexes = new_points) s
+11 58 M (104:) s
+24.165 58 M
+(        self.lineVertexes = new_points2) s
+11 52 M (105:) s
+11 46 M (106:) s
+11 40 M (107:) s
+11 34 M (108:) s
+11 28 M (109:) s
+24.165 28 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 28 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 28 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 28 M
+(__rotateInPlace) s
+/F-gs-font 5 5 SF
+0 setgray
+72.91 28 M
+(\(self, Angle\):) s
+11 22 M (110:) s
+24.165 22 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 22 M
+(""") s
+/F-gs-font 5 5 SF
+11 16 M (111:) s
+/Palatino-Bold 5 5 SUF
+24.165 16 M
+(        rotates the robot in place simulating both sides of the chassis) s
+/F-gs-font 5 5 SF
+11 10 M (112:) s
+/Palatino-Bold 5 5 SUF
+24.165 10 M
+(        moving) s
+/F-gs-font 5 5 SF
+11 4 M (113:) s
+/Palatino-Bold 5 5 SUF
+24.165 4 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../AutonSimulator/robot.py) def
+/fdir (../AutonSimulator) def
+/ftail (robot.py) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+(        center = self.__calcCenters\(\)) s
+11 670 M (115:) s
+11 664 M (116:) s
+11 658 M (117:) s
+24.165 658 M
+(        center = \(center[0], center[1]\)) s
+11 652 M (118:) s
+11 646 M (119:) s
+24.165 646 M
+(        angle = math.radians\(Angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+98.965 646 M
+(#moves square) s
+/F-gs-font 5 5 SF
+11 640 M (120:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 640 M
+(        cos_val = math.cos\(angle\)) s
+11 634 M (121:) s
+24.165 634 M
+(        sin_val = math.sin\(angle\)) s
+11 628 M (122:) s
+24.165 628 M
+(        cx, cy = center) s
+11 622 M (123:) s
+24.165 622 M
+(        new_points = []) s
+11 616 M (124:) s
+24.165 616 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 616 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 616 M
+( x_old, y_old ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+70.675 616 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+75.395 616 M
+( self.squareVertexes:) s
+11 610 M (125:) s
+24.165 610 M
+(            x_old -= cx) s
+11 604 M (126:) s
+24.165 604 M
+(            y_old -= cy) s
+11 598 M (127:) s
+24.165 598 M
+(            x_new = x_old * cos_val - y_old * sin_val) s
+11 592 M (128:) s
+24.165 592 M
+(            y_new = x_old * sin_val + y_old * cos_val) s
+11 586 M (129:) s
+24.165 586 M
+(            new_points.append\([x_new + cx, y_new + cy]\)) s
+11 580 M (130:) s
+11 574 M (131:) s
+24.165 574 M
+(        angle = math.radians\(Angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+98.965 574 M
+(#moves line) s
+/F-gs-font 5 5 SF
+11 568 M (132:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 568 M
+(        cos_val = math.cos\(angle\)) s
+11 562 M (133:) s
+24.165 562 M
+(        sin_val = math.sin\(angle\)) s
+11 556 M (134:) s
+24.165 556 M
+(        cx, cy = center) s
+11 550 M (135:) s
+24.165 550 M
+(        new_points2 = []) s
+11 544 M (136:) s
+24.165 544 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 544 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 544 M
+( x_old, y_old ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+70.675 544 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+75.395 544 M
+( self.lineVertexes:) s
+11 538 M (137:) s
+24.165 538 M
+(            x_old -= cx) s
+11 532 M (138:) s
+24.165 532 M
+(            y_old -= cy) s
+11 526 M (139:) s
+24.165 526 M
+(            x_new = x_old * cos_val - y_old * sin_val) s
+11 520 M (140:) s
+24.165 520 M
+(            y_new = x_old * sin_val + y_old * cos_val) s
+11 514 M (141:) s
+24.165 514 M
+(            new_points2.append\([x_new + cx, y_new + cy]\)) s
+11 508 M (142:) s
+11 502 M (143:) s
+11 496 M (144:) s
+24.165 496 M
+(        self.squareVertexes = new_points) s
+11 490 M (145:) s
+24.165 490 M
+(        self.lineVertexes = new_points2) s
+11 484 M (146:) s
+11 478 M (147:) s
+11 472 M (148:) s
+11 466 M (149:) s
+24.165 466 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 466 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 466 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 466 M
+(__move) s
+/F-gs-font 5 5 SF
+0 setgray
+55.42 466 M
+(\(self, units\):) s
+11 460 M (150:) s
+24.165 460 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 460 M
+(""") s
+/F-gs-font 5 5 SF
+11 454 M (151:) s
+/Palatino-Bold 5 5 SUF
+24.165 454 M
+(        simulates the robot moving in a straight line) s
+/F-gs-font 5 5 SF
+11 448 M (152:) s
+/Palatino-Bold 5 5 SUF
+24.165 448 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 442 M (153:) s
+24.165 442 M
+(        quadrants = {  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+66.365 442 M
+(#quadrant: [xVal, yVal]) s
+/F-gs-font 5 5 SF
+11 436 M (154:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 436 M
+(            1:[1, -1],) s
+11 430 M (155:) s
+24.165 430 M
+(            2:[-1, -1],) s
+11 424 M (156:) s
+24.165 424 M
+(            3:[-1, 1],) s
+11 418 M (157:) s
+24.165 418 M
+(            4:[1, 1]) s
+11 412 M (158:) s
+24.165 412 M
+(            }) s
+11 406 M (159:) s
+11 400 M (160:) s
+11 394 M (161:) s
+24.165 394 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 394 M
+(#determine quadrant of final position) s
+/F-gs-font 5 5 SF
+11 388 M (162:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 388 M
+(#used to determine if robot needs to add or subtract) s
+/F-gs-font 5 5 SF
+11 382 M (163:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 382 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 382 M
+(#x and y value to move in that direction) s
+/F-gs-font 5 5 SF
+11 376 M (164:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 370 M (165:) s
+24.165 370 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 370 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 370 M
+( units > 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.435 370 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+68.045 370 M
+( \(self.orientationDegrees >= 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+134.405 370 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+143.015 370 M
+( self.orientationDegrees < 90\):) s
+11 364 M (166:) s
+24.165 364 M
+(            quadrant = 1) s
+11 358 M (167:) s
+24.165 358 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 358 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 358 M
+( units < 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 358 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 358 M
+( \(self.orientationDegrees >= 180 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+143.57 358 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+152.18 358 M
+( self.orientationDegrees <= 270\):) s
+11 352 M (168:) s
+24.165 352 M
+(            quadrant = 1) s
+11 346 M (169:) s
+11 340 M (170:) s
+24.165 340 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 340 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 340 M
+( units > 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 340 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 340 M
+( \(self.orientationDegrees >= 90 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+141.07 340 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+149.68 340 M
+( self.orientationDegrees <= 180\):) s
+11 334 M (171:) s
+24.165 334 M
+(            quadrant = 2) s
+11 328 M (172:) s
+24.165 328 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 328 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 328 M
+( units < 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 328 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 328 M
+( \(self.orientationDegrees > 270 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+140.54 328 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+149.15 328 M
+( self.orientationDegrees < 360\):) s
+11 322 M (173:) s
+24.165 322 M
+(            quadrant = 2) s
+11 316 M (174:) s
+11 310 M (175:) s
+24.165 310 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 310 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 310 M
+( units > 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 310 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 310 M
+( \(self.orientationDegrees >= 180 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+143.57 310 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+152.18 310 M
+( self.orientationDegrees < 270\):) s
+11 304 M (176:) s
+24.165 304 M
+(            quadrant = 3) s
+11 298 M (177:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 298 M
+( units < 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 298 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 298 M
+( \(self.orientationDegrees >= 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+138.57 298 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+147.18 298 M
+( self.orientationDegrees <= 90\):) s
+11 292 M (178:) s
+24.165 292 M
+(            quadrant = 3) s
+11 286 M (179:) s
+11 280 M (180:) s
+24.165 280 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 280 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 280 M
+( units > 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 280 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 280 M
+( \(self.orientationDegrees >= 270 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+143.57 280 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+152.18 280 M
+( self.orientationDegrees < 360\):) s
+11 274 M (181:) s
+24.165 274 M
+(            quadrant = 4) s
+11 268 M (182:) s
+24.165 268 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 268 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 268 M
+( units < 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.6 268 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+72.21 268 M
+( \(self.orientationDegrees > 90 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+138.04 268 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+146.65 268 M
+( self.orientationDegrees < 180\):) s
+11 262 M (183:) s
+24.165 262 M
+(            quadrant = 4) s
+11 256 M (184:) s
+11 250 M (185:) s
+11 244 M (186:) s
+11 238 M (187:) s
+24.165 238 M
+(        vals = quadrants.get\(quadrant\)) s
+11 232 M (188:) s
+24.165 232 M
+(        xPol = vals[0]) s
+11 226 M (189:) s
+24.165 226 M
+(        yPol = vals[1]) s
+11 220 M (190:) s
+11 214 M (191:) s
+24.165 214 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 214 M
+(#absolute value simulates reference angle) s
+/F-gs-font 5 5 SF
+11 208 M (192:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 208 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 208 M
+(#trig functions of reference angles are positive) s
+/F-gs-font 5 5 SF
+11 202 M (193:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 202 M
+(        x = xPol * abs\(math.cos\(math.radians\(self.orientationDegrees\)\)\)) s
+11 196 M (194:) s
+24.165 196 M
+(        y = yPol * abs\(math.sin\(math.radians\(self.orientationDegrees\)\)\)) s
+11 190 M (195:) s
+11 184 M (196:) s
+24.165 184 M
+(        d = \(math.sqrt\(\(x**2\) + \(y**2\)\)\)) s
+11 178 M (197:) s
+24.165 178 M
+(        distanceMoved = 0) s
+11 172 M (198:) s
+11 166 M (199:) s
+24.165 166 M
+(        stp = stopwatch.stopwatch\(\)) s
+11 160 M (200:) s
+24.165 160 M
+(        stp.start\(\)) s
+11 154 M (201:) s
+11 148 M (202:) s
+24.165 148 M
+(        iterations = int\(abs\(units\)/d\)) s
+11 142 M (203:) s
+24.165 142 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 142 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 142 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 142 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 142 M
+( range\(0, iterations\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.95 142 M
+(#move animation) s
+/F-gs-font 5 5 SF
+11 136 M (204:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 136 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 136 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 136 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.025 136 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+51.525 136 M
+( self.controlPanelFrame.keepRunning: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+137.3 136 M
+(#allows for pause) s
+/F-gs-font 5 5 SF
+11 130 M (205:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 130 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 130 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+57.215 130 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+58.465 130 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+65.965 130 M
+( self.controlPanelFrame.keepRunning:) s
+11 124 M (206:) s
+24.165 124 M
+(                    time.sleep\(0.1\)) s
+11 118 M (207:) s
+24.165 118 M
+(                    self.master.update\(\)) s
+11 112 M (208:) s
+11 106 M (209:) s
+24.165 106 M
+(            self.canvas.move\(self.square, x, y\)) s
+11 100 M (210:) s
+24.165 100 M
+(            self.canvas.move\(self.line, x, y\)) s
+11 94 M (211:) s
+11 88 M (212:) s
+24.165 88 M
+(            self.master.update\(\)) s
+11 82 M (213:) s
+24.165 82 M
+(            time.sleep\(self.__calcSleepTime\(self.__encoderTicks\(abs\(units\)\), iterations\)\)) s
+11 76 M (214:) s
+11 70 M (215:) s
+24.165 70 M
+(            eus = self.__encoderTicks\(d\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+103.065 70 M
+(#shows distance moved) s
+/F-gs-font 5 5 SF
+11 64 M (216:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 64 M
+(            distanceMoved = distanceMoved + eus) s
+11 58 M (217:) s
+11 52 M (218:) s
+24.165 52 M
+(            self.__updateDistanceLabel\(str\(round\(distanceMoved, 2\)\) ,) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+169.175 52 M
+("encoder ticks") s
+/F-gs-font 5 5 SF
+0 setgray
+203.325 52 M
+(\)) s
+11 46 M (219:) s
+11 40 M (220:) s
+11 34 M (221:) s
+24.165 34 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 34 M
+(#updates vertices of square and line) s
+/F-gs-font 5 5 SF
+11 28 M (222:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 28 M
+(        xChange = xPol * abs\(math.cos\(math.radians\(self.orientationDegrees\)\) * abs\(units\)\)) s
+11 22 M (223:) s
+24.165 22 M
+(        yChange = yPol * abs\(math.sin\(math.radians\(self.orientationDegrees\)\) * abs\(units\)\)) s
+11 16 M (224:) s
+11 10 M (225:) s
+24.165 10 M
+(        self.squareVertexes = [) s
+11 4 M (226:) s
+24.165 4 M
+(            [self.squareVertexes[0][0] + xChange, self.squareVertexes[0][1] + yChange],) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../AutonSimulator/robot.py) def
+/fdir (../AutonSimulator) def
+/ftail (robot.py) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (227:) s
+24.165 676 M
+(            [self.squareVertexes[1][0] + xChange, self.squareVertexes[1][1] + yChange],) s
+11 670 M (228:) s
+24.165 670 M
+(            [self.squareVertexes[2][0] + xChange, self.squareVertexes[2][1] + yChange],) s
+11 664 M (229:) s
+24.165 664 M
+(            [self.squareVertexes[3][0] + xChange, self.squareVertexes[3][1] + yChange]) s
+11 658 M (230:) s
+24.165 658 M
+(            ]) s
+11 652 M (231:) s
+11 646 M (232:) s
+24.165 646 M
+(        self.lineVertexes = [) s
+11 640 M (233:) s
+24.165 640 M
+(            [self.lineVertexes[0][0] + xChange, self.lineVertexes[0][1] + yChange],) s
+11 634 M (234:) s
+24.165 634 M
+(            [self.lineVertexes[1][0] + xChange, self.lineVertexes[1][1] + yChange],) s
+11 628 M (235:) s
+24.165 628 M
+(            [self.lineVertexes[2][0] + xChange, self.lineVertexes[2][1] + yChange],) s
+11 622 M (236:) s
+24.165 622 M
+(            [self.lineVertexes[3][0] + xChange, self.lineVertexes[3][1] + yChange]) s
+11 616 M (237:) s
+24.165 616 M
+(            ]) s
+11 610 M (238:) s
+11 604 M (239:) s
+11 598 M (240:) s
+11 592 M (241:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 592 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 592 M
+(__update) s
+/F-gs-font 5 5 SF
+0 setgray
+58.745 592 M
+(\(self\):) s
+11 586 M (242:) s
+24.165 586 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 586 M
+(""") s
+/F-gs-font 5 5 SF
+11 580 M (243:) s
+/Palatino-Bold 5 5 SUF
+24.165 580 M
+(        updates tkinter canvas so robot can be seen moving) s
+/F-gs-font 5 5 SF
+11 574 M (244:) s
+/Palatino-Bold 5 5 SUF
+24.165 574 M
+(        and also allows for a pause) s
+/F-gs-font 5 5 SF
+11 568 M (245:) s
+/Palatino-Bold 5 5 SUF
+24.165 568 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 562 M (246:) s
+24.165 562 M
+(        self.canvas.delete\(self.square\)) s
+11 556 M (247:) s
+24.165 556 M
+(        self.canvas.delete\(self.line\)) s
+11 550 M (248:) s
+11 544 M (249:) s
+24.165 544 M
+(        self.square = self.canvas.create_polygon\(self.squareVertexes,) s
+11 538 M (250:) s
+24.165 538 M
+(                                                 outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.035 538 M
+("black") s
+/F-gs-font 5 5 SF
+0 setgray
+120.55 538 M
+(,) s
+11 532 M (251:) s
+24.165 532 M
+(                                                 fill=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.475 532 M
+("#949596") s
+/F-gs-font 5 5 SF
+0 setgray
+115.995 532 M
+(,) s
+11 526 M (252:) s
+24.165 526 M
+(                                                 width=3\)) s
+11 520 M (253:) s
+11 514 M (254:) s
+24.165 514 M
+(        self.line = self.canvas.create_polygon\(self.lineVertexes, width=3\)) s
+11 508 M (255:) s
+11 502 M (256:) s
+11 496 M (257:) s
+24.165 496 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 496 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 496 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.025 496 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+46.525 496 M
+( self.controlPanelFrame.keepRunning: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+132.3 496 M
+(#allows for pause during turns) s
+/F-gs-font 5 5 SF
+11 490 M (258:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 490 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 490 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+52.215 490 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+53.465 490 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+60.965 490 M
+( self.controlPanelFrame.keepRunning:) s
+11 484 M (259:) s
+24.165 484 M
+(                time.sleep\(0.1\)) s
+11 478 M (260:) s
+24.165 478 M
+(                self.master.update\(\)) s
+11 472 M (261:) s
+11 466 M (262:) s
+24.165 466 M
+(        self.master.update\(\)) s
+11 460 M (263:) s
+11 454 M (264:) s
+11 448 M (265:) s
+24.165 448 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 448 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 448 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 448 M
+(__updateDistanceLabel) s
+/F-gs-font 5 5 SF
+0 setgray
+91.51 448 M
+(\(self, distance=0, units=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+143.785 448 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+147.805 448 M
+(\):) s
+11 442 M (266:) s
+24.165 442 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 442 M
+(""") s
+/F-gs-font 5 5 SF
+11 436 M (267:) s
+/Palatino-Bold 5 5 SUF
+24.165 436 M
+(        updates distance travelled label) s
+/F-gs-font 5 5 SF
+11 430 M (268:) s
+/Palatino-Bold 5 5 SUF
+24.165 430 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 424 M (269:) s
+24.165 424 M
+(        text = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+47.93 424 M
+("distance moved: ") s
+/F-gs-font 5 5 SF
+0 setgray
+90.14 424 M
+( + str\(distance\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+128.54 424 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+133.81 424 M
+( + units) s
+11 418 M (270:) s
+24.165 418 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 418 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+47.215 418 M
+( len\(text\) < 38:) s
+11 412 M (271:) s
+24.165 412 M
+(            text = text + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+66.695 412 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 406 M (272:) s
+24.165 406 M
+(        self.robotInfoFrame.distanceMovedLabelText.set\(text\)) s
+11 400 M (273:) s
+11 394 M (274:) s
+24.165 394 M
+(        self.master.update\(\)) s
+11 388 M (275:) s
+11 382 M (276:) s
+11 376 M (277:) s
+24.165 376 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 376 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 376 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 376 M
+(__pixels) s
+/F-gs-font 5 5 SF
+0 setgray
+56.52 376 M
+(\(self, rotationUnits\):) s
+11 370 M (278:) s
+24.165 370 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 370 M
+(""") s
+/F-gs-font 5 5 SF
+11 364 M (279:) s
+/Palatino-Bold 5 5 SUF
+24.165 364 M
+(        converts encoder ticks to pixels) s
+/F-gs-font 5 5 SF
+11 358 M (280:) s
+/Palatino-Bold 5 5 SUF
+24.165 358 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 352 M (281:) s
+24.165 352 M
+(        revolutions = rotationUnits / 360) s
+11 346 M (282:) s
+24.165 346 M
+(        inches = revolutions * \(self.diameterOfWheel * math.pi\)) s
+11 340 M (283:) s
+24.165 340 M
+(        pixelsToMove = \(inches * self.fieldSize\) / 144) s
+11 334 M (284:) s
+24.165 334 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 334 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+45.55 334 M
+(\(rotationUnits, pixelsToMove\)) s
+11 328 M (285:) s
+24.165 328 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 328 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 328 M
+( pixelsToMove) s
+11 322 M (286:) s
+11 316 M (287:) s
+11 310 M (288:) s
+24.165 310 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 310 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 310 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 310 M
+(__encoderTicks) s
+/F-gs-font 5 5 SF
+0 setgray
+73.465 310 M
+(\(self, pixels\):) s
+11 304 M (289:) s
+24.165 304 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 304 M
+(""") s
+/F-gs-font 5 5 SF
+11 298 M (290:) s
+/Palatino-Bold 5 5 SUF
+24.165 298 M
+(        converts pixels to encoder ticks) s
+/F-gs-font 5 5 SF
+11 292 M (291:) s
+/Palatino-Bold 5 5 SUF
+24.165 292 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 286 M (292:) s
+24.165 286 M
+(        inches = pixels * \(144 / self.fieldSize\)) s
+11 280 M (293:) s
+24.165 280 M
+(        revolutions = inches / \(self.diameterOfWheel * math.pi\)) s
+11 274 M (294:) s
+24.165 274 M
+(        encoderTicks = revolutions * 360) s
+11 268 M (295:) s
+11 262 M (296:) s
+24.165 262 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 262 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 262 M
+( encoderTicks) s
+11 256 M (297:) s
+11 250 M (298:) s
+11 244 M (299:) s
+24.165 244 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 244 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 244 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 244 M
+(inches) s
+/F-gs-font 5 5 SF
+0 setgray
+52.63 244 M
+(\(self, pixels\):) s
+11 238 M (300:) s
+24.165 238 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 238 M
+(""") s
+/F-gs-font 5 5 SF
+11 232 M (301:) s
+/Palatino-Bold 5 5 SUF
+24.165 232 M
+(        converts pixels to inches) s
+/F-gs-font 5 5 SF
+11 226 M (302:) s
+/Palatino-Bold 5 5 SUF
+24.165 226 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 220 M (303:) s
+24.165 220 M
+(        inches = pixels * \(144 / self.fieldSize\)) s
+11 214 M (304:) s
+11 208 M (305:) s
+24.165 208 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 208 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 208 M
+( inches) s
+11 202 M (306:) s
+11 196 M (307:) s
+11 190 M (308:) s
+24.165 190 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 190 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 190 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 190 M
+(show) s
+/F-gs-font 5 5 SF
+0 setgray
+50.135 190 M
+(\(self, angle=0, position=[[0, 0], [0, 0]]\):) s
+11 184 M (309:) s
+24.165 184 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 184 M
+(""") s
+/F-gs-font 5 5 SF
+11 178 M (310:) s
+/Palatino-Bold 5 5 SUF
+24.165 178 M
+(        starting function that shows the robot based on two coordinates) s
+/F-gs-font 5 5 SF
+11 172 M (311:) s
+/Palatino-Bold 5 5 SUF
+24.165 172 M
+(        if more than two coordinates are given use different show function) s
+/F-gs-font 5 5 SF
+11 166 M (312:) s
+/Palatino-Bold 5 5 SUF
+24.165 166 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 160 M (313:) s
+11 154 M (314:) s
+24.165 154 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 154 M
+(#if len\(position\) > 2:) s
+/F-gs-font 5 5 SF
+11 148 M (315:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 148 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 148 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 148 M
+( 1:) s
+11 142 M (316:) s
+24.165 142 M
+(            x1 = position[0][0]) s
+11 136 M (317:) s
+24.165 136 M
+(            y1 = position[0][1]) s
+11 130 M (318:) s
+24.165 130 M
+(            x2 = position[1][0]) s
+11 124 M (319:) s
+24.165 124 M
+(            y2 = position[1][1]) s
+11 118 M (320:) s
+11 112 M (321:) s
+24.165 112 M
+(            self.orientationDegrees = 90) s
+11 106 M (322:) s
+24.165 106 M
+(            self.squareVertexes = [) s
+11 100 M (323:) s
+24.165 100 M
+(                [x1, y1],) s
+11 94 M (324:) s
+24.165 94 M
+(                [x2, y1],) s
+11 88 M (325:) s
+24.165 88 M
+(                [x2, y2],) s
+11 82 M (326:) s
+24.165 82 M
+(                [x1, y2]) s
+11 76 M (327:) s
+24.165 76 M
+(                ]) s
+11 70 M (328:) s
+11 64 M (329:) s
+24.165 64 M
+(            self.sizeOfSquare = abs\(self.squareVertexes[0][0] - self.squareVertexes[1][0]\)) s
+11 58 M (330:) s
+11 52 M (331:) s
+24.165 52 M
+(            y2 = \(y2 - y1\) / 4) s
+11 46 M (332:) s
+24.165 46 M
+(            self.lineVertexes = [) s
+11 40 M (333:) s
+24.165 40 M
+(                [x1, y1+y2],) s
+11 34 M (334:) s
+24.165 34 M
+(                [x2, y1+y2],) s
+11 28 M (335:) s
+24.165 28 M
+(                [x2, y1+y2+4],) s
+11 22 M (336:) s
+24.165 22 M
+(                [x1, y1+y2+4]) s
+11 16 M (337:) s
+24.165 16 M
+(                ]) s
+11 10 M (338:) s
+11 4 M (339:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 4 M
+(#        else:) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (../AutonSimulator/robot.py) def
+/fdir (../AutonSimulator) def
+/ftail (robot.py) def
+/Palatino-Italic 5 5 SUF
+% User defined strings:
+/pagenumstr (4) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.698039 0.133333 0.133333 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (340:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#            x1 = position[0][0]) s
+/F-gs-font 5 5 SF
+11 670 M (341:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(#            x2 = position[1][0]) s
+/F-gs-font 5 5 SF
+11 664 M (342:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 664 M
+(#            x3 = position[2][0]) s
+/F-gs-font 5 5 SF
+11 658 M (343:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 658 M
+(#            x4 = position[3][0]) s
+/F-gs-font 5 5 SF
+11 652 M (344:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 652 M
+(#) s
+/F-gs-font 5 5 SF
+11 646 M (345:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 646 M
+(#            y1 = position[0][1]) s
+/F-gs-font 5 5 SF
+11 640 M (346:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 640 M
+(#            y2 = position[1][1]) s
+/F-gs-font 5 5 SF
+11 634 M (347:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 634 M
+(#            y3 = position[2][1]) s
+/F-gs-font 5 5 SF
+11 628 M (348:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 628 M
+(#            y4 = position[3][1]) s
+/F-gs-font 5 5 SF
+11 622 M (349:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 622 M
+(#) s
+/F-gs-font 5 5 SF
+11 616 M (350:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 616 M
+(#            self.squareVertexes = position) s
+/F-gs-font 5 5 SF
+11 610 M (351:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 610 M
+(#            self.lineVertexes = []) s
+/F-gs-font 5 5 SF
+11 604 M (352:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 598 M (353:) s
+11 592 M (354:) s
+24.165 592 M
+(        self.square = self.canvas.create_polygon\(self.squareVertexes,) s
+11 586 M (355:) s
+24.165 586 M
+(                                                 outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.035 586 M
+("black") s
+/F-gs-font 5 5 SF
+0 setgray
+120.55 586 M
+(,) s
+11 580 M (356:) s
+24.165 580 M
+(                                                 fill=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.475 580 M
+("#949596") s
+/F-gs-font 5 5 SF
+0 setgray
+115.995 580 M
+(,) s
+11 574 M (357:) s
+24.165 574 M
+(                                                 width=3\)) s
+11 568 M (358:) s
+11 562 M (359:) s
+24.165 562 M
+(        turn = 90 - \(angle % 360\)) s
+11 556 M (360:) s
+11 550 M (361:) s
+24.165 550 M
+(        self.line = self.canvas.create_polygon\(self.lineVertexes, width=3\)) s
+11 544 M (362:) s
+24.165 544 M
+(        self.__rotateInPlace\(turn\)) s
+11 538 M (363:) s
+24.165 538 M
+(        self.__update\(\)) s
+11 532 M (364:) s
+11 526 M (365:) s
+24.165 526 M
+(        self.orientationDegrees = angle % 360) s
+11 520 M (366:) s
+11 514 M (367:) s
+11 508 M (368:) s
+11 502 M (369:) s
+11 496 M (370:) s
+24.165 496 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 496 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 496 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 496 M
+(reverse) s
+/F-gs-font 5 5 SF
+0 setgray
+54.305 496 M
+(\(self\):) s
+11 490 M (371:) s
+24.165 490 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 490 M
+(""") s
+/F-gs-font 5 5 SF
+11 484 M (372:) s
+/Palatino-Bold 5 5 SUF
+24.165 484 M
+(        reverses orientation of the robot) s
+/F-gs-font 5 5 SF
+11 478 M (373:) s
+/Palatino-Bold 5 5 SUF
+24.165 478 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 472 M (374:) s
+24.165 472 M
+(        self.reversed = ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+67.715 472 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+75.215 472 M
+(\(self.reversed\)) s
+11 466 M (375:) s
+11 460 M (376:) s
+11 454 M (377:) s
+11 448 M (378:) s
+11 442 M (379:) s
+24.165 442 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 442 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 442 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 442 M
+(forward) s
+/F-gs-font 5 5 SF
+0 setgray
+56.25 442 M
+(\(self, rotationUnits\):) s
+11 436 M (380:) s
+24.165 436 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 436 M
+(""") s
+/F-gs-font 5 5 SF
+11 430 M (381:) s
+/Palatino-Bold 5 5 SUF
+24.165 430 M
+(        moves the robot forward and straight) s
+/F-gs-font 5 5 SF
+11 424 M (382:) s
+/Palatino-Bold 5 5 SUF
+24.165 424 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 418 M (383:) s
+24.165 418 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 418 M
+("forward ") s
+/F-gs-font 5 5 SF
+0 setgray
+157.6 418 M
+( + str\(rotationUnits\)\)\)) s
+11 412 M (384:) s
+11 406 M (385:) s
+24.165 406 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 406 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 406 M
+( self.reversed:) s
+11 400 M (386:) s
+24.165 400 M
+(            rotationUnits = 0 - rotationUnits) s
+11 394 M (387:) s
+11 388 M (388:) s
+24.165 388 M
+(        pixelsToMove = self.__pixels\(\(rotationUnits\)\)) s
+11 382 M (389:) s
+11 376 M (390:) s
+24.165 376 M
+(        self.__move\(pixelsToMove\)) s
+11 370 M (391:) s
+24.165 370 M
+(        self.__update\(\)) s
+11 364 M (392:) s
+11 358 M (393:) s
+11 352 M (394:) s
+11 346 M (395:) s
+11 340 M (396:) s
+24.165 340 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 340 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 340 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 340 M
+(backward) s
+/F-gs-font 5 5 SF
+0 setgray
+60.41 340 M
+(\(self, rotationUnits\):) s
+11 334 M (397:) s
+24.165 334 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 334 M
+(""") s
+/F-gs-font 5 5 SF
+11 328 M (398:) s
+/Palatino-Bold 5 5 SUF
+24.165 328 M
+(        moves the robot backwards and straight) s
+/F-gs-font 5 5 SF
+11 322 M (399:) s
+/Palatino-Bold 5 5 SUF
+24.165 322 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 316 M (400:) s
+24.165 316 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 316 M
+("backward ") s
+/F-gs-font 5 5 SF
+0 setgray
+161.76 316 M
+( + str\(rotationUnits\)\)\)) s
+11 310 M (401:) s
+11 304 M (402:) s
+24.165 304 M
+(        rotationUnits = 0 - rotationUnits) s
+11 298 M (403:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 298 M
+( self.reversed:) s
+11 292 M (404:) s
+24.165 292 M
+(            rotationUnits = 0 - rotationUnits) s
+11 286 M (405:) s
+11 280 M (406:) s
+24.165 280 M
+(        pixelsToMove = self.__pixels\(rotationUnits\)) s
+11 274 M (407:) s
+11 268 M (408:) s
+11 262 M (409:) s
+24.165 262 M
+(        self.__move\(pixelsToMove\)) s
+11 256 M (410:) s
+24.165 256 M
+(        self.__update\(\)) s
+11 250 M (411:) s
+11 244 M (412:) s
+11 238 M (413:) s
+24.165 238 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 238 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 238 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 238 M
+(leftSide) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 238 M
+(\(self, angle\):) s
+11 232 M (414:) s
+24.165 232 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 232 M
+(""") s
+/F-gs-font 5 5 SF
+11 226 M (415:) s
+/Palatino-Bold 5 5 SUF
+24.165 226 M
+(        turns the robot right so that only one side is moving) s
+/F-gs-font 5 5 SF
+11 220 M (416:) s
+/Palatino-Bold 5 5 SUF
+24.165 220 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 214 M (417:) s
+24.165 214 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 214 M
+("leftSide ") s
+/F-gs-font 5 5 SF
+0 setgray
+157.315 214 M
+( + str\(angle\)\)\)) s
+11 208 M (418:) s
+11 202 M (419:) s
+24.165 202 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 202 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 202 M
+( self.reversed:) s
+11 196 M (420:) s
+24.165 196 M
+(            angle = 0 - angle) s
+11 190 M (421:) s
+11 184 M (422:) s
+24.165 184 M
+(        pivotPoints = self.squareVertexes[2]) s
+11 178 M (423:) s
+11 172 M (424:) s
+24.165 172 M
+(        turned = 0) s
+11 166 M (425:) s
+24.165 166 M
+(        orientation = angle / abs\(angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+105.59 166 M
+(#to account for negative turns) s
+/F-gs-font 5 5 SF
+11 160 M (426:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 160 M
+(        toMove = orientation * .5) s
+11 154 M (427:) s
+24.165 154 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 154 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+47.215 154 M
+( turned < abs\(angle\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.23 154 M
+(#turn to specified angle) s
+/F-gs-font 5 5 SF
+11 148 M (428:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 148 M
+(            self.__rotate\(toMove, pivotPoints\)) s
+11 142 M (429:) s
+24.165 142 M
+(            self.__update\(\)) s
+11 136 M (430:) s
+24.165 136 M
+(            time.sleep\(self.__calcSleepTime\(angle, angle\)\)) s
+11 130 M (431:) s
+11 124 M (432:) s
+24.165 124 M
+(            turned += .5) s
+11 118 M (433:) s
+24.165 118 M
+(            self.__updateDistanceLabel\(str\(round\(turned, 2\)\), ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+150.135 118 M
+("degrees") s
+/F-gs-font 5 5 SF
+0 setgray
+171.655 118 M
+(\)) s
+11 112 M (434:) s
+11 106 M (435:) s
+24.165 106 M
+(            self.orientationDegrees = \(self.orientationDegrees - toMove\) % 360) s
+11 100 M (436:) s
+24.165 100 M
+(            self.robotInfoFrame.orientationLabelText.set\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+139.405 100 M
+("orientation: ") s
+/F-gs-font 5 5 SF
+0 setgray
+171.2 100 M
+( + str\(self.orientationDegrees\)\)) s
+11 94 M (437:) s
+11 88 M (438:) s
+11 82 M (439:) s
+11 76 M (440:) s
+24.165 76 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 76 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 76 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 76 M
+(rightSide) s
+/F-gs-font 5 5 SF
+0 setgray
+59.3 76 M
+(\(self, angle\):) s
+11 70 M (441:) s
+24.165 70 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 70 M
+(""") s
+/F-gs-font 5 5 SF
+11 64 M (442:) s
+/Palatino-Bold 5 5 SUF
+24.165 64 M
+(        turns the robot left so that only the right side is moving) s
+/F-gs-font 5 5 SF
+11 58 M (443:) s
+/Palatino-Bold 5 5 SUF
+24.165 58 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 52 M (444:) s
+24.165 52 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 52 M
+("rightSide ") s
+/F-gs-font 5 5 SF
+0 setgray
+160.65 52 M
+( + str\(angle\)\)\)) s
+11 46 M (445:) s
+11 40 M (446:) s
+24.165 40 M
+(        angle = 0 - angle) s
+11 34 M (447:) s
+24.165 34 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 34 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 34 M
+( self.reversed:) s
+11 28 M (448:) s
+24.165 28 M
+(            angle = 0 - angle) s
+11 22 M (449:) s
+11 16 M (450:) s
+24.165 16 M
+(        pivotPoints = self.squareVertexes[3]) s
+11 10 M (451:) s
+11 4 M (452:) s
+24.165 4 M
+(        turned = 0) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (../AutonSimulator/robot.py) def
+/fdir (../AutonSimulator) def
+/ftail (robot.py) def
+% User defined strings:
+/pagenumstr (5) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (453:) s
+24.165 676 M
+(        orientation = angle / abs\(angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+105.59 676 M
+(#to account for negative turns) s
+/F-gs-font 5 5 SF
+11 670 M (454:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 670 M
+(        toMove = \(-1 * orientation * .5\)) s
+11 664 M (455:) s
+24.165 664 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 664 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+47.215 664 M
+( turned < abs\(angle\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.23 664 M
+(#turn to specified angle) s
+/F-gs-font 5 5 SF
+11 658 M (456:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 658 M
+(            self.__rotate\(toMove, pivotPoints\)) s
+11 652 M (457:) s
+24.165 652 M
+(            self.__update\(\)) s
+11 646 M (458:) s
+24.165 646 M
+(            time.sleep\(self.__calcSleepTime\(angle, angle\)\)) s
+11 640 M (459:) s
+24.165 640 M
+(            turned += .5) s
+11 634 M (460:) s
+24.165 634 M
+(            self.__updateDistanceLabel\(str\(round\(turned, 2\)\), ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+150.135 634 M
+("degrees") s
+/F-gs-font 5 5 SF
+0 setgray
+171.655 634 M
+(\)) s
+11 628 M (461:) s
+11 622 M (462:) s
+24.165 622 M
+(            self.orientationDegrees = \(self.orientationDegrees + toMove\) % 360) s
+11 616 M (463:) s
+24.165 616 M
+(            self.robotInfoFrame.orientationLabelText.set\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+139.405 616 M
+("orientation: ") s
+/F-gs-font 5 5 SF
+0 setgray
+171.2 616 M
+( + str\(self.orientationDegrees\)\)) s
+11 610 M (464:) s
+11 604 M (465:) s
+11 598 M (466:) s
+11 592 M (467:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 592 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 592 M
+(turnLeft) s
+/F-gs-font 5 5 SF
+0 setgray
+56.8 592 M
+(\(self, angle\):) s
+11 586 M (468:) s
+24.165 586 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 586 M
+(""") s
+/F-gs-font 5 5 SF
+11 580 M (469:) s
+/Palatino-Bold 5 5 SUF
+24.165 580 M
+(        turn in place left) s
+/F-gs-font 5 5 SF
+11 574 M (470:) s
+/Palatino-Bold 5 5 SUF
+24.165 574 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 568 M (471:) s
+24.165 568 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 568 M
+("turnLeft ") s
+/F-gs-font 5 5 SF
+0 setgray
+158.15 568 M
+( + str\(angle\)\)\)) s
+11 562 M (472:) s
+11 556 M (473:) s
+24.165 556 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 556 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 556 M
+( self.reversed:) s
+11 550 M (474:) s
+24.165 550 M
+(            angle = 0 - angle) s
+11 544 M (475:) s
+11 538 M (476:) s
+24.165 538 M
+(        turned = 0) s
+11 532 M (477:) s
+24.165 532 M
+(        orientation = angle / abs\(angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+105.59 532 M
+(#to account for negative turns) s
+/F-gs-font 5 5 SF
+11 526 M (478:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 526 M
+(        toMove = -1 * orientation * .5) s
+11 520 M (479:) s
+11 514 M (480:) s
+24.165 514 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 514 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+47.215 514 M
+( turned < abs\(angle\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.23 514 M
+(#turn to specified angle) s
+/F-gs-font 5 5 SF
+11 508 M (481:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 508 M
+(            self.__rotateInPlace\(toMove\)) s
+11 502 M (482:) s
+24.165 502 M
+(            self.__update\(\)) s
+11 496 M (483:) s
+24.165 496 M
+(            time.sleep\(self.__calcSleepTime\(angle, angle\)\)) s
+11 490 M (484:) s
+24.165 490 M
+(            turned += .5) s
+11 484 M (485:) s
+24.165 484 M
+(            self.__updateDistanceLabel\(str\(round\(turned, 2\)\), ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+150.135 484 M
+("degrees") s
+/F-gs-font 5 5 SF
+0 setgray
+171.655 484 M
+(\)) s
+11 478 M (486:) s
+11 472 M (487:) s
+24.165 472 M
+(            self.orientationDegrees = \(self.orientationDegrees - toMove\) % 360) s
+11 466 M (488:) s
+24.165 466 M
+(            self.robotInfoFrame.orientationLabelText.set\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+139.405 466 M
+("orientation: ") s
+/F-gs-font 5 5 SF
+0 setgray
+171.2 466 M
+( + str\(self.orientationDegrees\)\)) s
+11 460 M (489:) s
+11 454 M (490:) s
+11 448 M (491:) s
+11 442 M (492:) s
+11 436 M (493:) s
+24.165 436 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 436 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 436 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 436 M
+(turnRight) s
+/F-gs-font 5 5 SF
+0 setgray
+60.41 436 M
+(\(self, angle\):) s
+11 430 M (494:) s
+24.165 430 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 430 M
+(""") s
+/F-gs-font 5 5 SF
+11 424 M (495:) s
+/Palatino-Bold 5 5 SUF
+24.165 424 M
+(        turn in place right) s
+/F-gs-font 5 5 SF
+11 418 M (496:) s
+/Palatino-Bold 5 5 SUF
+24.165 418 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 412 M (497:) s
+24.165 412 M
+(        self.robotInfoFrame.commandLabelText.set\(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+133.995 412 M
+("turnRight ") s
+/F-gs-font 5 5 SF
+0 setgray
+161.76 412 M
+( + str\(angle\)\)\)) s
+11 406 M (498:) s
+11 400 M (499:) s
+24.165 400 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 400 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 400 M
+( self.reversed:) s
+11 394 M (500:) s
+24.165 394 M
+(            angle = 0 - angle) s
+11 388 M (501:) s
+11 382 M (502:) s
+24.165 382 M
+(        turned = 0) s
+11 376 M (503:) s
+24.165 376 M
+(        orientation = angle / abs\(angle\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+105.59 376 M
+(#to account for negative turns) s
+/F-gs-font 5 5 SF
+11 370 M (504:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 370 M
+(        toMove = .5 * orientation) s
+11 364 M (505:) s
+11 358 M (506:) s
+24.165 358 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 358 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+47.215 358 M
+( turned < abs\(angle\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.23 358 M
+(#turn to specified angle) s
+/F-gs-font 5 5 SF
+11 352 M (507:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 352 M
+(            self.__rotateInPlace\(toMove\)) s
+11 346 M (508:) s
+24.165 346 M
+(            self.__update\(\)) s
+11 340 M (509:) s
+24.165 340 M
+(            time.sleep\(self.__calcSleepTime\(angle*2, angle\)\)) s
+11 334 M (510:) s
+24.165 334 M
+(            turned += .5) s
+11 328 M (511:) s
+24.165 328 M
+(            self.__updateDistanceLabel\(str\(round\(turned, 2\)\), ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+150.135 328 M
+("degrees") s
+/F-gs-font 5 5 SF
+0 setgray
+171.655 328 M
+(\)) s
+11 322 M (512:) s
+11 316 M (513:) s
+11 310 M (514:) s
+24.165 310 M
+(            self.orientationDegrees = \(self.orientationDegrees - toMove\) % 360) s
+11 304 M (515:) s
+24.165 304 M
+(            self.robotInfoFrame.orientationLabelText.set\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+139.405 304 M
+("orientation: ") s
+/F-gs-font 5 5 SF
+0 setgray
+171.2 304 M
+( + str\(self.orientationDegrees\)\)) s
+11 298 M (516:) s
+11 292 M (517:) s
+11 286 M (518:) s
+11 280 M (519:) s
+11 274 M (520:) s
+11 268 M (521:) s
+_R
+S
+%%Trailer
+%%Pages: 5
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

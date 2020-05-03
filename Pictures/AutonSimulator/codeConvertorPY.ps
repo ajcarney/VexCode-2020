@@ -1,0 +1,2575 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../AutonSimulator/codeConvertor.py) def
+/fdir (../AutonSimulator) def
+/ftail (codeConvertor.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+16 658 M (4:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 658 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 652 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 646 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 646 M
+( smtplib) s
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 640 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 640 M
+( getpass) s
+16 634 M (8:) s
+16 628 M (9:) s
+13.5 622 M (10:) s
+24.165 622 M
+(SEND_EMAIL = 0) s
+13.5 616 M (11:) s
+24.165 616 M
+(FILE = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+40.27 616 M
+('autonomous.py') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+13.5 598 M (14:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 598 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 598 M
+( email\(\):) s
+13.5 592 M (15:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 592 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 592 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 592 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 592 M
+(\(self\):) s
+13.5 586 M (16:) s
+24.165 586 M
+(        self.passwd = None) s
+13.5 580 M (17:) s
+24.165 580 M
+(        self.user_email = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+72.805 580 M
+('jg570144@gmail.com') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 574 M (18:) s
+24.165 574 M
+(        self.recipients = []) s
+13.5 568 M (19:) s
+13.5 562 M (20:) s
+24.165 562 M
+(        self.message = None) s
+13.5 556 M (21:) s
+13.5 550 M (22:) s
+24.165 550 M
+(        self.smtpObj = None) s
+13.5 544 M (23:) s
+24.165 544 M
+(        self.check = None) s
+13.5 538 M (24:) s
+24.165 538 M
+(        self.subject = None) s
+13.5 532 M (25:) s
+24.165 532 M
+(        self.body = None) s
+13.5 526 M (26:) s
+24.165 526 M
+(        self.sent = 0) s
+13.5 520 M (27:) s
+13.5 514 M (28:) s
+13.5 508 M (29:) s
+24.165 508 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 508 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 508 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 508 M
+(getCredentials) s
+/F-gs-font 5 5 SF
+0 setgray
+71.24 508 M
+(\(self\):) s
+13.5 502 M (30:) s
+24.165 502 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 502 M
+(#self.user_email = input\("email address:\\n"\)) s
+/F-gs-font 5 5 SF
+13.5 496 M (31:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 496 M
+(        self.passwd = getpass.getpass\(\)) s
+13.5 490 M (32:) s
+13.5 484 M (33:) s
+13.5 478 M (34:) s
+24.165 478 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 478 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 478 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 478 M
+(getMessage) s
+/F-gs-font 5 5 SF
+0 setgray
+64.58 478 M
+(\(self, oldCode, newCode\):) s
+13.5 472 M (35:) s
+24.165 472 M
+(        r = int\(input\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+63.01 472 M
+("\\nEnter number of recipients\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+140.44 472 M
+(\)\)) s
+13.5 466 M (36:) s
+13.5 460 M (37:) s
+24.165 460 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 460 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 460 M
+( x ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+45.915 460 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+50.635 460 M
+( range\(r\):) s
+13.5 454 M (38:) s
+24.165 454 M
+(            remail = input\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+72.57 454 M
+("enter recipient email\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+129.885 454 M
+(\)) s
+13.5 448 M (39:) s
+24.165 448 M
+(            self.recipients.append\(remail\)) s
+13.5 442 M (40:) s
+13.5 436 M (41:) s
+24.165 436 M
+(        self.subject = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+63.895 436 M
+("translated autonomous code") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 430 M (42:) s
+13.5 424 M (43:) s
+24.165 424 M
+(        self.body = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.91 424 M
+("old auton code:\\n\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 418 M (44:) s
+13.5 412 M (45:) s
+24.165 412 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 412 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 412 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 412 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 412 M
+( oldCode:) s
+13.5 406 M (46:) s
+24.165 406 M
+(            self.body = self.body + i + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+97.64 406 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 400 M (47:) s
+24.165 400 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 400 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+50.55 400 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.215 400 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+56.235 400 M
+(\)) s
+13.5 394 M (48:) s
+13.5 388 M (49:) s
+24.165 388 M
+(        self.body = self.body + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+85.655 388 M
+('\\n\\n\\n\\nnew auton code:\\n\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 382 M (50:) s
+13.5 376 M (51:) s
+24.165 376 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 376 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 376 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 376 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 376 M
+( finalCode:) s
+13.5 370 M (52:) s
+24.165 370 M
+(            self.body = self.body + i + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+97.64 370 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 364 M (53:) s
+13.5 358 M (54:) s
+24.165 358 M
+(        self.body = self.body + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+85.655 358 M
+('\\n\\n\\nthis is an automated message\\ncourtesy of Aiden') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 352 M (55:) s
+24.165 352 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 352 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+45.55 352 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+47.215 352 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+51.235 352 M
+(\)) s
+13.5 346 M (56:) s
+13.5 340 M (57:) s
+13.5 334 M (58:) s
+13.5 328 M (59:) s
+24.165 328 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 328 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 328 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 328 M
+(login) s
+/F-gs-font 5 5 SF
+0 setgray
+49.86 328 M
+(\(self\):) s
+13.5 322 M (60:) s
+24.165 322 M
+(        self.smtpObj = smtplib.SMTP\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+100.815 322 M
+("smtp.gmail.com:587") s
+/F-gs-font 5 5 SF
+0 setgray
+149.97 322 M
+(\)) s
+13.5 316 M (61:) s
+24.165 316 M
+(        self.smtpObj.starttls\(\)) s
+13.5 310 M (62:) s
+24.165 310 M
+(        self.smtpObj.ehlo\(\)) s
+13.5 304 M (63:) s
+24.165 304 M
+(        self.smtpObj.login\(self.user_email, self.passwd\)) s
+13.5 298 M (64:) s
+13.5 292 M (65:) s
+13.5 286 M (66:) s
+24.165 286 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 286 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 286 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 286 M
+(send) s
+/F-gs-font 5 5 SF
+0 setgray
+48.745 286 M
+(\(self\):) s
+13.5 280 M (67:) s
+24.165 280 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 280 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+45.55 280 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+47.215 280 M
+("sent: ") s
+/F-gs-font 5 5 SF
+0 setgray
+63.175 280 M
+(\)) s
+13.5 274 M (68:) s
+13.5 268 M (69:) s
+24.165 268 M
+(        message = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+58.42 268 M
+("Subject: ") s
+/F-gs-font 5 5 SF
+0 setgray
+82.155 268 M
+( + self.subject + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+117.415 268 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+127.52 268 M
+( + self.body) s
+13.5 262 M (70:) s
+13.5 256 M (71:) s
+24.165 256 M
+(        self.check = self.smtpObj.sendmail\(self.user_email, self.recipients, message\)) s
+13.5 250 M (72:) s
+13.5 244 M (73:) s
+24.165 244 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 244 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 244 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 244 M
+(close) s
+/F-gs-font 5 5 SF
+0 setgray
+49.3 244 M
+(\(self\):) s
+13.5 238 M (74:) s
+24.165 238 M
+(        self.smtpObj.quit\(\)) s
+13.5 232 M (75:) s
+13.5 226 M (76:) s
+13.5 220 M (77:) s
+13.5 214 M (78:) s
+13.5 208 M (79:) s
+13.5 202 M (80:) s
+13.5 196 M (81:) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+13.5 178 M (84:) s
+13.5 172 M (85:) s
+13.5 166 M (86:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 166 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 166 M
+( Translator:) s
+13.5 160 M (87:) s
+13.5 154 M (88:) s
+24.165 154 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 154 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 154 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 154 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 154 M
+(\(self, file\):) s
+13.5 148 M (89:) s
+24.165 148 M
+(        self.file = open\(file\)) s
+13.5 142 M (90:) s
+24.165 142 M
+(        self.code = self.file.readlines\(\)) s
+13.5 136 M (91:) s
+13.5 130 M (92:) s
+24.165 130 M
+(        self.oldCode = []) s
+13.5 124 M (93:) s
+24.165 124 M
+(        self.newCode = []) s
+13.5 118 M (94:) s
+13.5 112 M (95:) s
+24.165 112 M
+(        self.conversion = {) s
+13.5 106 M (96:) s
+24.165 106 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 106 M
+("turnRight") s
+/F-gs-font 5 5 SF
+0 setgray
+65.68 106 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+68.18 106 M
+("turnRightV") s
+/F-gs-font 5 5 SF
+0 setgray
+98.585 106 M
+(,) s
+13.5 100 M (97:) s
+24.165 100 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 100 M
+("turnLeft") s
+/F-gs-font 5 5 SF
+0 setgray
+62.07 100 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+64.57 100 M
+("turnLeftV") s
+/F-gs-font 5 5 SF
+0 setgray
+91.365 100 M
+(,) s
+13.5 94 M (98:) s
+24.165 94 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 94 M
+("rightSide") s
+/F-gs-font 5 5 SF
+0 setgray
+64.57 94 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+67.07 94 M
+("rs") s
+/F-gs-font 5 5 SF
+0 setgray
+75.255 94 M
+(,) s
+13.5 88 M (99:) s
+24.165 88 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 88 M
+("leftSide") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 88 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+63.735 88 M
+("ls") s
+/F-gs-font 5 5 SF
+0 setgray
+71.64 88 M
+(,) s
+11 82 M (100:) s
+24.165 82 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 82 M
+("forward") s
+/F-gs-font 5 5 SF
+0 setgray
+61.52 82 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+64.02 82 M
+("driveForward") s
+/F-gs-font 5 5 SF
+0 setgray
+99.155 82 M
+(,) s
+11 76 M (101:) s
+24.165 76 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 76 M
+("backward") s
+/F-gs-font 5 5 SF
+0 setgray
+65.68 76 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+68.18 76 M
+("driveForward") s
+/F-gs-font 5 5 SF
+0 setgray
+103.315 76 M
+(,) s
+11 70 M (102:) s
+24.165 70 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 70 M
+("reverse") s
+/F-gs-font 5 5 SF
+0 setgray
+59.575 70 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+62.075 70 M
+("changeDirection") s
+/F-gs-font 5 5 SF
+0 setgray
+103.865 70 M
+(,) s
+11 64 M (103:) s
+24.165 64 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 64 M
+("intakeStart") s
+/F-gs-font 5 5 SF
+0 setgray
+68.455 64 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.955 64 M
+("intakeStart") s
+/F-gs-font 5 5 SF
+0 setgray
+100.245 64 M
+(,) s
+11 58 M (104:) s
+24.165 58 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 58 M
+("intakeEnd") s
+/F-gs-font 5 5 SF
+0 setgray
+66.79 58 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.29 58 M
+("intakeEnd") s
+/F-gs-font 5 5 SF
+0 setgray
+96.915 58 M
+(,) s
+11 52 M (105:) s
+24.165 52 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 52 M
+("outake") s
+/F-gs-font 5 5 SF
+0 setgray
+58.74 52 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+61.24 52 M
+("intakeStart") s
+/F-gs-font 5 5 SF
+0 setgray
+90.53 52 M
+(,) s
+11 46 M (106:) s
+24.165 46 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 46 M
+("catapult") s
+/F-gs-font 5 5 SF
+0 setgray
+61.51 46 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+64.01 46 M
+("shootBall") s
+/F-gs-font 5 5 SF
+0 setgray
+89.695 46 M
+(,) s
+11 40 M (107:) s
+24.165 40 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 40 M
+("capFlipper") s
+/F-gs-font 5 5 SF
+0 setgray
+67.625 40 M
+(: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.125 40 M
+("flip") s
+/F-gs-font 5 5 SF
+0 setgray
+11 34 M (108:) s
+24.165 34 M
+(            }) s
+11 28 M (109:) s
+11 22 M (110:) s
+11 16 M (111:) s
+24.165 16 M
+(        self.functionMap = {) s
+11 10 M (112:) s
+24.165 10 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 10 M
+("value") s
+/F-gs-font 5 5 SF
+0 setgray
+55.685 10 M
+(: self.value,) s
+11 4 M (113:) s
+24.165 4 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 4 M
+("sleep100RPM") s
+/F-gs-font 5 5 SF
+0 setgray
+74.29 4 M
+(: self.sleep100RPM,) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../AutonSimulator/codeConvertor.py) def
+/fdir (../AutonSimulator) def
+/ftail (codeConvertor.py) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+() s
+25 676 M
+() s
+35 676 M
+() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45 676 M
+("sleep200RPM") s
+/F-gs-font 5 5 SF
+0 setgray
+80.125 676 M
+(: self.sleep200RPM,) s
+11 670 M (115:) s
+24.165 670 M
+() s
+25 670 M
+() s
+35 670 M
+() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45 670 M
+("sleep600RPM") s
+/F-gs-font 5 5 SF
+0 setgray
+80.125 670 M
+(: self.sleep600RPM,) s
+11 664 M (116:) s
+24.165 664 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 664 M
+("negativeValue") s
+/F-gs-font 5 5 SF
+0 setgray
+76.24 664 M
+(: self.negativeValue,) s
+11 658 M (117:) s
+24.165 658 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 658 M
+("noParam") s
+/F-gs-font 5 5 SF
+0 setgray
+63.465 658 M
+(: self.noParam) s
+11 652 M (118:) s
+24.165 652 M
+(             }) s
+11 646 M (119:) s
+11 640 M (120:) s
+11 634 M (121:) s
+24.165 634 M
+(        self.specialInstructions = {) s
+11 628 M (122:) s
+24.165 628 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 628 M
+("forward") s
+/F-gs-font 5 5 SF
+0 setgray
+61.52 628 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.685 628 M
+("value") s
+/F-gs-font 5 5 SF
+0 setgray
+82.205 628 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.705 628 M
+("sleep200RPM") s
+/F-gs-font 5 5 SF
+0 setgray
+119.83 628 M
+(],) s
+11 622 M (123:) s
+24.165 622 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 622 M
+("backward") s
+/F-gs-font 5 5 SF
+0 setgray
+65.68 622 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.845 622 M
+("negativeValue") s
+/F-gs-font 5 5 SF
+0 setgray
+106.92 622 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+109.42 622 M
+("sleep200RPM") s
+/F-gs-font 5 5 SF
+0 setgray
+144.545 622 M
+(],) s
+11 616 M (124:) s
+24.165 616 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 616 M
+("turnLeft") s
+/F-gs-font 5 5 SF
+0 setgray
+62.07 616 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+66.235 616 M
+("noParam") s
+/F-gs-font 5 5 SF
+0 setgray
+90.535 616 M
+(],) s
+11 610 M (125:) s
+24.165 610 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 610 M
+("turnRight") s
+/F-gs-font 5 5 SF
+0 setgray
+65.68 610 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.845 610 M
+("noParam") s
+/F-gs-font 5 5 SF
+0 setgray
+94.145 610 M
+(],) s
+11 604 M (126:) s
+24.165 604 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 604 M
+("intakeStart") s
+/F-gs-font 5 5 SF
+0 setgray
+68.455 604 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+72.62 604 M
+("negativeValue") s
+/F-gs-font 5 5 SF
+0 setgray
+109.695 604 M
+(],) s
+11 598 M (127:) s
+24.165 598 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 598 M
+("outakeStart") s
+/F-gs-font 5 5 SF
+0 setgray
+69.57 598 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+73.735 598 M
+("value") s
+/F-gs-font 5 5 SF
+0 setgray
+90.255 598 M
+(],) s
+11 592 M (128:) s
+24.165 592 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 592 M
+("intakeEnd") s
+/F-gs-font 5 5 SF
+0 setgray
+66.79 592 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.955 592 M
+("sleep600") s
+/F-gs-font 5 5 SF
+0 setgray
+94.415 592 M
+(],) s
+11 586 M (129:) s
+24.165 586 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 586 M
+("catapult") s
+/F-gs-font 5 5 SF
+0 setgray
+61.51 586 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.675 586 M
+("value") s
+/F-gs-font 5 5 SF
+0 setgray
+82.195 586 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.695 586 M
+("sleep100") s
+/F-gs-font 5 5 SF
+0 setgray
+108.155 586 M
+(],) s
+11 580 M (130:) s
+24.165 580 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 580 M
+("capFlipper") s
+/F-gs-font 5 5 SF
+0 setgray
+67.625 580 M
+(: [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+71.79 580 M
+("value") s
+/F-gs-font 5 5 SF
+0 setgray
+88.31 580 M
+(],) s
+11 574 M (131:) s
+24.165 574 M
+(            }) s
+11 568 M (132:) s
+11 562 M (133:) s
+11 556 M (134:) s
+11 550 M (135:) s
+24.165 550 M
+(        self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.345 550 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 544 M (136:) s
+24.165 544 M
+(        self.sleepTime = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+71.28 544 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 538 M (137:) s
+24.165 538 M
+(        self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.41 538 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 532 M (138:) s
+24.165 532 M
+(        self.instructions = []) s
+11 526 M (139:) s
+11 520 M (140:) s
+11 514 M (141:) s
+24.165 514 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 514 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 514 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 514 M
+(value) s
+/F-gs-font 5 5 SF
+0 setgray
+50.415 514 M
+(\(self\):) s
+11 508 M (142:) s
+24.165 508 M
+(        self.parameterValue = str\(self.parameterValue\)) s
+11 502 M (143:) s
+24.165 502 M
+(        self.sleepTime = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+71.28 502 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 496 M (144:) s
+24.165 496 M
+(        self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.41 496 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 490 M (145:) s
+11 484 M (146:) s
+24.165 484 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 484 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 484 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 484 M
+(sleep100RPM) s
+/F-gs-font 5 5 SF
+0 setgray
+69.02 484 M
+(\(self\):) s
+11 478 M (147:) s
+24.165 478 M
+(        RPM = 100) s
+11 472 M (148:) s
+24.165 472 M
+(        RPS = RPM / 60) s
+11 466 M (149:) s
+24.165 466 M
+(        revolutions = \(abs\(float\(self.parameterValue\)\) / 360\)) s
+11 460 M (150:) s
+24.165 460 M
+(        self.sleepTime = \(1000 * \(revolutions / RPS\)\) + 50) s
+11 454 M (151:) s
+24.165 454 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 454 M
+(#self.sleepTime = str\(int\(\(1000 * abs\(\(float\(self.parameterValue\)\)/360\)\)\) + 200\)) s
+/F-gs-font 5 5 SF
+11 448 M (152:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 448 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 448 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 448 M
+( len\(self.instructions\) == 1:) s
+11 442 M (153:) s
+24.165 442 M
+(            self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.345 442 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 436 M (154:) s
+24.165 436 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 436 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 430 M (155:) s
+24.165 430 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 430 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 430 M
+(:) s
+11 424 M (156:) s
+24.165 424 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 424 M
+(", ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 418 M (157:) s
+11 412 M (158:) s
+24.165 412 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 412 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 412 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 412 M
+(sleep200RPM) s
+/F-gs-font 5 5 SF
+0 setgray
+69.02 412 M
+(\(self\):) s
+11 406 M (159:) s
+24.165 406 M
+(        RPM = 200) s
+11 400 M (160:) s
+24.165 400 M
+(        RPS = RPM / 60) s
+11 394 M (161:) s
+24.165 394 M
+(        revolutions = \(abs\(float\(self.parameterValue\)\) / 360\)) s
+11 388 M (162:) s
+24.165 388 M
+(        self.sleepTime = \(1000 * \(revolutions / RPS\)\) + 50) s
+11 382 M (163:) s
+24.165 382 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 382 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 382 M
+( len\(self.instructions\) == 1:) s
+11 376 M (164:) s
+24.165 376 M
+(            self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.345 376 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 370 M (165:) s
+24.165 370 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 370 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 364 M (166:) s
+24.165 364 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 364 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 364 M
+(:) s
+11 358 M (167:) s
+24.165 358 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 358 M
+(", ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 352 M (168:) s
+11 346 M (169:) s
+24.165 346 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 346 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 346 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 346 M
+(sleep600RPM) s
+/F-gs-font 5 5 SF
+0 setgray
+69.02 346 M
+(\(self\):) s
+11 340 M (170:) s
+24.165 340 M
+(        RPM = 600) s
+11 334 M (171:) s
+24.165 334 M
+(        RPS = RPM / 60) s
+11 328 M (172:) s
+24.165 328 M
+(        revolutions = \(abs\(float\(self.parameterValue\)\) / 360\)) s
+11 322 M (173:) s
+24.165 322 M
+(        self.sleepTime = \(1000 * \(revolutions / RPS\)\) + 50) s
+11 316 M (174:) s
+24.165 316 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 316 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 316 M
+( len\(self.instructions\) == 1:) s
+11 310 M (175:) s
+24.165 310 M
+(            self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.345 310 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 304 M (176:) s
+24.165 304 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 304 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 298 M (177:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 298 M
+(:) s
+11 292 M (178:) s
+24.165 292 M
+(            self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.41 292 M
+(", ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 286 M (179:) s
+11 280 M (180:) s
+11 274 M (181:) s
+24.165 274 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 274 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 274 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 274 M
+(negativeValue) s
+/F-gs-font 5 5 SF
+0 setgray
+70.97 274 M
+(\(self\):) s
+11 268 M (182:) s
+24.165 268 M
+(        self.parameterValue = str\(0 - float\(self.parameterValue\)\)) s
+11 262 M (183:) s
+24.165 262 M
+(        self.sleepTime = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+71.28 262 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 256 M (184:) s
+24.165 256 M
+(        self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.41 256 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 250 M (185:) s
+11 244 M (186:) s
+24.165 244 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 244 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 244 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 244 M
+(noParam) s
+/F-gs-font 5 5 SF
+0 setgray
+58.195 244 M
+(\(self\):) s
+11 238 M (187:) s
+24.165 238 M
+(        self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.345 238 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 232 M (188:) s
+24.165 232 M
+(        self.sleepTime = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+71.28 232 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 226 M (189:) s
+24.165 226 M
+(        self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.41 226 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 220 M (190:) s
+11 214 M (191:) s
+11 208 M (192:) s
+11 202 M (193:) s
+11 196 M (194:) s
+11 190 M (195:) s
+24.165 190 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 190 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 190 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 190 M
+(translate) s
+/F-gs-font 5 5 SF
+0 setgray
+57.63 190 M
+(\(self\):) s
+11 184 M (196:) s
+11 178 M (197:) s
+24.165 178 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 178 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 178 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 178 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 178 M
+( self.code:) s
+11 172 M (198:) s
+11 166 M (199:) s
+24.165 166 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 166 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+45.555 166 M
+(:) s
+11 160 M (200:) s
+24.165 160 M
+(                oldCommand = i.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.54 160 M
+(".") s
+/F-gs-font 5 5 SF
+0 setgray
+99.81 160 M
+(\)[1]) s
+11 154 M (201:) s
+24.165 154 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 154 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 154 M
+(:) s
+11 148 M (202:) s
+24.165 148 M
+(                    rawCommand = i.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+100.945 148 M
+(".") s
+/F-gs-font 5 5 SF
+0 setgray
+106.215 148 M
+(\)[2]) s
+11 142 M (203:) s
+24.165 142 M
+(                    oldCommand = oldCommand + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+121.845 142 M
+(".") s
+/F-gs-font 5 5 SF
+0 setgray
+127.115 142 M
+( + rawCommand) s
+11 136 M (204:) s
+24.165 136 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 136 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 136 M
+(:) s
+11 130 M (205:) s
+24.165 130 M
+(                    rawCommand = i.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+100.945 130 M
+(".") s
+/F-gs-font 5 5 SF
+0 setgray
+106.215 130 M
+(\)[1]) s
+11 124 M (206:) s
+11 118 M (207:) s
+24.165 118 M
+(                oldCommand = oldCommand.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+123.895 118 M
+("\)") s
+/F-gs-font 5 5 SF
+0 setgray
+129.58 118 M
+(\)[0]) s
+11 112 M (208:) s
+24.165 112 M
+(                oldCommand = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+80.505 112 M
+('self.') s
+/F-gs-font 5 5 SF
+0 setgray
+92.865 112 M
+( + oldCommand + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+134.735 112 M
+("\)") s
+/F-gs-font 5 5 SF
+0 setgray
+11 106 M (209:) s
+11 100 M (210:) s
+24.165 100 M
+(                command = rawCommand.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+116.735 100 M
+("\(") s
+/F-gs-font 5 5 SF
+0 setgray
+122.42 100 M
+(\)[0]) s
+11 94 M (211:) s
+24.165 94 M
+(                value = rawCommand.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+106.68 94 M
+("\(") s
+/F-gs-font 5 5 SF
+0 setgray
+112.365 94 M
+(\)[1]) s
+11 88 M (212:) s
+24.165 88 M
+(                self.parameterValue = value.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+119.115 88 M
+("\)") s
+/F-gs-font 5 5 SF
+0 setgray
+124.8 88 M
+(\)[0]) s
+11 82 M (213:) s
+11 76 M (214:) s
+24.165 76 M
+(                self.instructions = list\(self.specialInstructions.get\(command\)\)) s
+11 70 M (215:) s
+24.165 70 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 70 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+50.835 70 M
+( j ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.505 70 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+59.225 70 M
+( self.instructions:) s
+11 64 M (216:) s
+24.165 64 M
+(                    self.functionMap[str\(j\)]\(\)) s
+11 58 M (217:) s
+11 52 M (218:) s
+24.165 52 M
+(                newCommand = self.conversion.get\(command\)) s
+11 46 M (219:) s
+24.165 46 M
+(                newCommand = \(newCommand) s
+11 40 M (220:) s
+24.165 40 M
+(                              + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.945 40 M
+("\(") s
+/F-gs-font 5 5 SF
+0 setgray
+71.63 40 M
+( + str\(self.parameterValue\)) s
+11 34 M (221:) s
+24.165 34 M
+(                              + str\(self.separator\)) s
+11 28 M (222:) s
+24.165 28 M
+(                              + str\(self.sleepTime\)) s
+11 22 M (223:) s
+24.165 22 M
+(                              + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.945 22 M
+("\);") s
+/F-gs-font 5 5 SF
+0 setgray
+11 16 M (224:) s
+24.165 16 M
+(                              \)) s
+11 10 M (225:) s
+11 4 M (226:) s
+24.165 4 M
+(                self.oldCode.append\(oldCommand\)) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../AutonSimulator/codeConvertor.py) def
+/fdir (../AutonSimulator) def
+/ftail (codeConvertor.py) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (227:) s
+24.165 676 M
+(                self.newCode.append\(newCommand\)) s
+11 670 M (228:) s
+24.165 670 M
+(                self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.345 670 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 664 M (229:) s
+24.165 664 M
+(                self.sleep = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.95 664 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 658 M (230:) s
+24.165 658 M
+(                self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.41 658 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 652 M (231:) s
+11 646 M (232:) s
+24.165 646 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 646 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 646 M
+(:) s
+11 640 M (233:) s
+24.165 640 M
+(                self.parameterValue = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.345 640 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 634 M (234:) s
+24.165 634 M
+(                self.sleep = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.95 634 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 628 M (235:) s
+24.165 628 M
+(                self.separator = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.41 628 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+11 622 M (236:) s
+11 616 M (237:) s
+24.165 616 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 616 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 616 M
+( self.oldCode, self.newCode) s
+11 610 M (238:) s
+11 604 M (239:) s
+11 598 M (240:) s
+11 592 M (241:) s
+24.165 592 M
+(t = Translator\(FILE\)) s
+11 586 M (242:) s
+24.165 586 M
+(oldCode, finalCode = t.translate\(\)) s
+11 580 M (243:) s
+11 574 M (244:) s
+11 568 M (245:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 568 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+27.775 568 M
+( SEND_EMAIL:) s
+11 562 M (246:) s
+24.165 562 M
+(    s = email\(\)) s
+11 556 M (247:) s
+24.165 556 M
+(    s.getCredentials\(\)) s
+11 550 M (248:) s
+24.165 550 M
+(    s.getMessage\(oldCode, finalCode\)) s
+11 544 M (249:) s
+24.165 544 M
+(    s.login\(\)) s
+11 538 M (250:) s
+24.165 538 M
+(    s.send\(\)) s
+11 532 M (251:) s
+24.165 532 M
+(    s.close\(\)) s
+11 526 M (252:) s
+11 520 M (253:) s
+24.165 520 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 520 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 520 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+42.215 520 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+46.235 520 M
+(\)) s
+11 514 M (254:) s
+24.165 514 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 514 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 514 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+42.215 514 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+46.235 514 M
+(\)) s
+11 508 M (255:) s
+24.165 508 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 508 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 508 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+42.215 508 M
+("done") s
+/F-gs-font 5 5 SF
+0 setgray
+57.625 508 M
+(\)) s
+11 502 M (256:) s
+11 496 M (257:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 496 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+33.05 496 M
+(:) s
+11 490 M (258:) s
+24.165 490 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 490 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+35.835 490 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.79 490 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+44.51 490 M
+( oldCode:) s
+11 484 M (259:) s
+24.165 484 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 484 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+45.55 484 M
+(\(i\)) s
+11 478 M (260:) s
+24.165 478 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 478 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 478 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+42.215 478 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+46.235 478 M
+(\)) s
+11 472 M (261:) s
+24.165 472 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 472 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+35.835 472 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.79 472 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+44.51 472 M
+( finalCode:) s
+11 466 M (262:) s
+24.165 466 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 466 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+45.55 466 M
+(\(i\)) s
+11 460 M (263:) s
+11 454 M (264:) s
+11 448 M (265:) s
+11 442 M (266:) s
+11 436 M (267:) s
+11 430 M (268:) s
+11 424 M (269:) s
+11 418 M (270:) s
+11 412 M (271:) s
+11 406 M (272:) s
+11 400 M (273:) s
+11 394 M (274:) s
+_R
+S
+%%Trailer
+%%Pages: 3
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

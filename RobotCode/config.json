@@ -1,0 +1,33 @@
+{
+    "internal_motor_pid":[1, 0, 0, 0],
+    "tilter_pid_consts":[1, 0, 0, 0],
+    
+    "front_right_port":20,
+    "back_left_port":4,
+    "front_left_port":18,
+    "back_right_port":2,
+    "left_intake_port":6,
+    "right_intake_port":8,
+    "tilter_port":19,
+    "lift_port":9,
+    
+    "front_right_reversed":0,
+    "back_left_reversed":1,
+    "front_left_reversed":1,
+    "back_right_reversed":0,
+    "left_intake_reversed":1,
+    "right_intake_reversed":0,
+    "tilter_reversed":1,
+    "lift_reversed":0,
+    
+    "tilter_setpoints":[100, 300, 400, 500],
+    "lift_setpoints":[100, 300, 400, 500],
+    "intake_speeds":[-63, -30, 0, 30, 63],
+    
+    "autons":{
+        "auton1":"location_of_auton1.json",
+        "auton2":"location_of_auton2.json",
+        "auton3":"location_of_auton3.json",
+        "auton4":"location_of_auton4.json"
+    }
+}

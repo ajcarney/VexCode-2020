@@ -1,0 +1,4774 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../Scouting/Scout.py) def
+/fdir (../Scouting) def
+/ftail (Scout.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (05/02/20) def
+/modtimestr (20:20:55) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+24.165 664 M
+(""") s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(Created on Wed Apr 24 22:08:27 2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(@author: aiden) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(""") s
+/F-gs-font 5 5 SF
+0 setgray
+16 634 M (8:) s
+16 628 M (9:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 628 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 628 M
+( requests) s
+13.5 622 M (10:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 622 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 622 M
+( json) s
+13.5 616 M (11:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 616 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 616 M
+( stopwatch) s
+13.5 610 M (12:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 610 M
+(from) s
+/F-gs-font 5 5 SF
+0 setgray
+35.28 610 M
+( usefultools ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+62.11 610 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+77.665 610 M
+( split) s
+13.5 604 M (13:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 604 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 604 M
+( multiprocessing as mp) s
+13.5 598 M (14:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 598 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 598 M
+( gspread) s
+13.5 592 M (15:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 592 M
+(from) s
+/F-gs-font 5 5 SF
+0 setgray
+35.28 592 M
+( oauth2client.client ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+78.445 592 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+94 592 M
+( SignedJwtAssertionCredentials) s
+13.5 586 M (16:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 586 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 586 M
+( time) s
+13.5 580 M (17:) s
+13.5 574 M (18:) s
+13.5 568 M (19:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 568 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 568 M
+( getData:) s
+13.5 562 M (20:) s
+24.165 562 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 562 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 562 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 562 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 562 M
+(\(self\):) s
+13.5 556 M (21:) s
+24.165 556 M
+(        self.sku = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+56.495 556 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 550 M (22:) s
+24.165 550 M
+(        ) s
+13.5 544 M (23:) s
+24.165 544 M
+(        self.sheet_name = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+74.75 544 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 538 M (24:) s
+24.165 538 M
+(        ) s
+13.5 532 M (25:) s
+24.165 532 M
+(        self.matchesWonUrl = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.73 532 M
+('https://api.vexdb.io/v1/get_matches?round=2') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 526 M (26:) s
+24.165 526 M
+(        self.skillsUrl = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+67.285 526 M
+('https://api.vexdb.io/v1/get_skills?') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 520 M (27:) s
+24.165 520 M
+(        self.pointsUrl = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.75 520 M
+('https://api.vexdb.io/v1/get_rankings?sku=') s
+/F-gs-font 5 5 SF
+0 setgray
+167.995 520 M
+( + self.sku) s
+13.5 514 M (28:) s
+13.5 508 M (29:) s
+24.165 508 M
+(        self.teams = []) s
+13.5 502 M (30:) s
+24.165 502 M
+(        self.allTeams = []) s
+13.5 496 M (31:) s
+24.165 496 M
+(        self.ranges ={}) s
+13.5 490 M (32:) s
+13.5 484 M (33:) s
+24.165 484 M
+(        self.matchesWonData = {}) s
+13.5 478 M (34:) s
+24.165 478 M
+(        self.matchesWonOverallData = {}) s
+13.5 472 M (35:) s
+24.165 472 M
+(        self.combinedSkillsScoreData = {}) s
+13.5 466 M (36:) s
+24.165 466 M
+(        self.driverSkillsScoreData = {}) s
+13.5 460 M (37:) s
+24.165 460 M
+(        self.pointsData = {}) s
+13.5 454 M (38:) s
+24.165 454 M
+(        self.rankingData = {}) s
+13.5 448 M (39:) s
+13.5 442 M (40:) s
+24.165 442 M
+(        self.NUM_PROCESSES = 20) s
+13.5 436 M (41:) s
+24.165 436 M
+(        self.TEAM_NUM_COL = 2) s
+13.5 430 M (42:) s
+13.5 424 M (43:) s
+24.165 424 M
+(        self.sheet = None) s
+13.5 418 M (44:) s
+13.5 412 M (45:) s
+13.5 406 M (46:) s
+24.165 406 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 406 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 406 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 406 M
+(__calcWin) s
+/F-gs-font 5 5 SF
+0 setgray
+61.24 406 M
+(\(self, team, data\):) s
+13.5 400 M (47:) s
+24.165 400 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 400 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 394 M (48:) s
+/Palatino-Bold 5 5 SUF
+24.165 394 M
+(        calculates if a match was won or not by finding what) s
+/F-gs-font 5 5 SF
+13.5 388 M (49:) s
+/Palatino-Bold 5 5 SUF
+24.165 388 M
+(        color a team was and the score of the match) s
+/F-gs-font 5 5 SF
+13.5 382 M (50:) s
+/Palatino-Bold 5 5 SUF
+24.165 382 M
+(        it is a win if the teams color score more points) s
+/F-gs-font 5 5 SF
+13.5 376 M (51:) s
+/Palatino-Bold 5 5 SUF
+24.165 376 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 370 M (52:) s
+24.165 370 M
+(        colors = [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+54.59 370 M
+('red1') s
+/F-gs-font 5 5 SF
+0 setgray
+67.37 370 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+69.87 370 M
+('red2') s
+/F-gs-font 5 5 SF
+0 setgray
+82.65 370 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+85.15 370 M
+('blue1') s
+/F-gs-font 5 5 SF
+0 setgray
+100.705 370 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+103.205 370 M
+('blue2') s
+/F-gs-font 5 5 SF
+0 setgray
+118.76 370 M
+(]) s
+13.5 364 M (53:) s
+24.165 364 M
+(        teamColor = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+63.07 364 M
+('') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 358 M (54:) s
+24.165 358 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 358 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 358 M
+( color ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.445 358 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+59.165 358 M
+( colors:) s
+13.5 352 M (55:) s
+24.165 352 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 352 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 352 M
+( data.get\(color\) == team:) s
+13.5 346 M (56:) s
+24.165 346 M
+(                c = color.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+75.605 346 M
+('1') s
+/F-gs-font 5 5 SF
+0 setgray
+80.885 346 M
+(\)[0]) s
+13.5 340 M (57:) s
+24.165 340 M
+(                c = c.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+66.715 340 M
+('2') s
+/F-gs-font 5 5 SF
+0 setgray
+71.995 340 M
+(\)[0]) s
+13.5 334 M (58:) s
+24.165 334 M
+(                teamColor = c) s
+13.5 328 M (59:) s
+24.165 328 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 328 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 322 M (60:) s
+13.5 316 M (61:) s
+24.165 316 M
+(        redScore = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.47 316 M
+('redscore') s
+/F-gs-font 5 5 SF
+0 setgray
+100.415 316 M
+(\)) s
+13.5 310 M (62:) s
+24.165 310 M
+(        blueScore = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+80.675 310 M
+('bluescore') s
+/F-gs-font 5 5 SF
+0 setgray
+105.395 310 M
+(\)) s
+13.5 304 M (63:) s
+13.5 298 M (64:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 298 M
+( redScore != blueScore:) s
+13.5 292 M (65:) s
+24.165 292 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 292 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 292 M
+( redScore > blueScore:) s
+13.5 286 M (66:) s
+24.165 286 M
+(                winner = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.51 286 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 280 M (67:) s
+24.165 280 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 280 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+48.05 280 M
+(:) s
+13.5 274 M (68:) s
+24.165 274 M
+(                winner = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+65.51 274 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 268 M (69:) s
+13.5 262 M (70:) s
+24.165 262 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 262 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 262 M
+( teamColor == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+75.96 262 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+86.24 262 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+87.49 262 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+96.1 262 M
+( winner == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+121.725 262 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+132.005 262 M
+(:) s
+13.5 256 M (71:) s
+24.165 256 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 256 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+58.33 256 M
+( 1) s
+13.5 250 M (72:) s
+24.165 250 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 250 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+46.94 250 M
+( teamColor == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+80.125 250 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+93.18 250 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+94.43 250 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+103.04 250 M
+( winner == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+128.665 250 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+141.72 250 M
+(:) s
+13.5 244 M (73:) s
+24.165 244 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 244 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+58.33 244 M
+( 1) s
+13.5 238 M (74:) s
+24.165 238 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 238 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+48.05 238 M
+(:) s
+13.5 232 M (75:) s
+24.165 232 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 232 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+58.33 232 M
+( 0) s
+13.5 226 M (76:) s
+13.5 220 M (77:) s
+24.165 220 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 220 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 220 M
+( redScore == blueScore ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+93.945 220 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+102.555 220 M
+( \(redScore != 0 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+135.51 220 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+144.12 220 M
+( blueScore != 0\):) s
+13.5 214 M (78:) s
+24.165 214 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 214 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+53.33 214 M
+( -1) s
+13.5 208 M (79:) s
+13.5 202 M (80:) s
+24.165 202 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 202 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 202 M
+(:) s
+13.5 196 M (81:) s
+24.165 196 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 196 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+53.33 196 M
+( None) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+13.5 178 M (84:) s
+13.5 172 M (85:) s
+13.5 166 M (86:) s
+24.165 166 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 166 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 166 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 166 M
+(__getMatchesWon) s
+/F-gs-font 5 5 SF
+0 setgray
+79.855 166 M
+(\(self, teams, q\):) s
+13.5 160 M (87:) s
+24.165 160 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 160 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 154 M (88:) s
+/Palatino-Bold 5 5 SUF
+24.165 154 M
+(        gets win/loss/tie data for a team) s
+/F-gs-font 5 5 SF
+13.5 148 M (89:) s
+/Palatino-Bold 5 5 SUF
+24.165 148 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 142 M (90:) s
+24.165 142 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 142 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 142 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.275 142 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.995 142 M
+( teams:) s
+13.5 136 M (91:) s
+24.165 136 M
+(            team = team.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.155 136 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+88.02 136 M
+(\)[0]) s
+13.5 130 M (92:) s
+24.165 130 M
+(            url = self.matchesWonUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+101.705 130 M
+('&team=') s
+/F-gs-font 5 5 SF
+0 setgray
+122.79 130 M
+( + team + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+144.79 130 M
+('&season=Tower Takeover') s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 124 M (93:) s
+13.5 118 M (94:) s
+24.165 118 M
+(            data = requests.get\(url\)) s
+13.5 112 M (95:) s
+24.165 112 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 112 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 112 M
+( data.status_code == 200 ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+98.185 112 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+106.795 112 M
+( team != ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+125.905 112 M
+('') s
+/F-gs-font 5 5 SF
+0 setgray
+128.685 112 M
+(:) s
+13.5 106 M (96:) s
+13.5 100 M (97:) s
+24.165 100 M
+(                winStruct = {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+72.99 100 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+86.875 100 M
+(:0,) s
+13.5 94 M (98:) s
+24.165 94 M
+(                             ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.415 94 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+76.8 94 M
+(:0,) s
+13.5 88 M (99:) s
+24.165 88 M
+(                             ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+60.415 88 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+71.245 88 M
+(:0) s
+11 82 M (100:) s
+24.165 82 M
+(                        }) s
+11 76 M (101:) s
+11 70 M (102:) s
+24.165 70 M
+(                data = json.loads\(data.content.decode\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.21 70 M
+('utf-8') s
+/F-gs-font 5 5 SF
+0 setgray
+142.82 70 M
+(\)\)) s
+11 64 M (103:) s
+24.165 64 M
+(                data = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.785 64 M
+('result') s
+/F-gs-font 5 5 SF
+0 setgray
+94.615 64 M
+(\)) s
+11 58 M (104:) s
+11 52 M (105:) s
+24.165 52 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 52 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+50.835 52 M
+( entry ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+65.025 52 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+69.745 52 M
+( data:) s
+11 46 M (106:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 46 M
+(#                    print\(team, entry\)) s
+/F-gs-font 5 5 SF
+11 40 M (107:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 40 M
+(                    x = self.__calcWin\(team, entry\)) s
+11 34 M (108:) s
+24.165 34 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 34 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+52.775 34 M
+( x == 1:) s
+11 28 M (109:) s
+24.165 28 M
+(                        winStruct[) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.46 28 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+91.345 28 M
+(] = winStruct.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.89 28 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+143.775 28 M
+(\) + 1) s
+11 22 M (110:) s
+24.165 22 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 22 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+56.94 22 M
+( x == 0:) s
+11 16 M (111:) s
+24.165 16 M
+(                        winStruct[) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.46 16 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+93.845 16 M
+(] = winStruct.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+132.39 16 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+148.775 16 M
+(\) + 1) s
+11 10 M (112:) s
+24.165 10 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 10 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+56.94 10 M
+( x == -1:) s
+11 4 M (113:) s
+24.165 4 M
+(                        winStruct[) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.46 4 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+88.29 4 M
+(] = winStruct.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+126.835 4 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+137.665 4 M
+(\) + 1) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../Scouting/Scout.py) def
+/fdir (../Scouting) def
+/ftail (Scout.py) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (05/02/20) def
+/modtimestr (20:20:55) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 676 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+58.05 676 M
+(:) s
+11 670 M (115:) s
+24.165 670 M
+(                        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.165 670 M
+(pass) s
+/F-gs-font 5 5 SF
+0 setgray
+11 664 M (116:) s
+24.165 664 M
+(                q.put\({team: winStruct}\)) s
+11 658 M (117:) s
+11 652 M (118:) s
+11 646 M (119:) s
+11 640 M (120:) s
+24.165 640 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 640 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 640 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 640 M
+(__getDriverSkillsScore) s
+/F-gs-font 5 5 SF
+0 setgray
+90.685 640 M
+(\(self, teams, q\):) s
+11 634 M (121:) s
+24.165 634 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 634 M
+(""") s
+/F-gs-font 5 5 SF
+11 628 M (122:) s
+/Palatino-Bold 5 5 SUF
+24.165 628 M
+(        gets driver skills score for a team) s
+/F-gs-font 5 5 SF
+11 622 M (123:) s
+/Palatino-Bold 5 5 SUF
+24.165 622 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 616 M (124:) s
+24.165 616 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 616 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 616 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.275 616 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.995 616 M
+( teams:) s
+11 610 M (125:) s
+24.165 610 M
+(            team = team.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.155 610 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+88.02 610 M
+(\)[0]) s
+11 604 M (126:) s
+24.165 604 M
+(            url = self.skillsUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.26 604 M
+('team=') s
+/F-gs-font 5 5 SF
+0 setgray
+101.18 604 M
+( + team + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+123.18 604 M
+('&season=Tower Takeover&type=0') s
+/F-gs-font 5 5 SF
+0 setgray
+11 598 M (127:) s
+11 592 M (128:) s
+24.165 592 M
+(            data = requests.get\(url\)) s
+11 586 M (129:) s
+24.165 586 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 586 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 586 M
+( data.status_code == 200:) s
+11 580 M (130:) s
+11 574 M (131:) s
+24.165 574 M
+(                data = json.loads\(data.content.decode\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.21 574 M
+('utf-8') s
+/F-gs-font 5 5 SF
+0 setgray
+142.82 574 M
+(\)\)) s
+11 568 M (132:) s
+24.165 568 M
+(                data = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.785 568 M
+('result') s
+/F-gs-font 5 5 SF
+0 setgray
+94.615 568 M
+(\)) s
+11 562 M (133:) s
+24.165 562 M
+(                highest = 0) s
+11 556 M (134:) s
+11 550 M (135:) s
+24.165 550 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 550 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+50.835 550 M
+( item ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.23 550 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+67.95 550 M
+( data:) s
+11 544 M (136:) s
+24.165 544 M
+(                    value = item.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.5 544 M
+('score') s
+/F-gs-font 5 5 SF
+0 setgray
+100.945 544 M
+(\)) s
+11 538 M (137:) s
+24.165 538 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 538 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+52.775 538 M
+( value > highest:) s
+11 532 M (138:) s
+24.165 532 M
+(                        highest = value) s
+11 526 M (139:) s
+11 520 M (140:) s
+24.165 520 M
+(                q.put\({team: highest}\)) s
+11 514 M (141:) s
+11 508 M (142:) s
+11 502 M (143:) s
+24.165 502 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 502 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 502 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 502 M
+(__getCombinedSkillsScore) s
+/F-gs-font 5 5 SF
+0 setgray
+99.85 502 M
+(\(self, teams, q\):) s
+11 496 M (144:) s
+24.165 496 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 496 M
+(""") s
+/F-gs-font 5 5 SF
+11 490 M (145:) s
+/Palatino-Bold 5 5 SUF
+24.165 490 M
+(        gets the combined skills score for a team) s
+/F-gs-font 5 5 SF
+11 484 M (146:) s
+/Palatino-Bold 5 5 SUF
+24.165 484 M
+(        \(driver and programming\)) s
+/F-gs-font 5 5 SF
+11 478 M (147:) s
+/Palatino-Bold 5 5 SUF
+24.165 478 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 472 M (148:) s
+24.165 472 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 472 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 472 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.275 472 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.995 472 M
+( teams:) s
+11 466 M (149:) s
+24.165 466 M
+(            team = team.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.155 466 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+88.02 466 M
+(\)[0]) s
+11 460 M (150:) s
+24.165 460 M
+(            url2 = self.skillsUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.76 460 M
+('team=') s
+/F-gs-font 5 5 SF
+0 setgray
+103.68 460 M
+( + team + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+125.68 460 M
+('&season=Tower Takeover&type=2') s
+/F-gs-font 5 5 SF
+0 setgray
+11 454 M (151:) s
+11 448 M (152:) s
+24.165 448 M
+(            data = requests.get\(url2\)) s
+11 442 M (153:) s
+24.165 442 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 442 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 442 M
+( data.status_code == 200:) s
+11 436 M (154:) s
+11 430 M (155:) s
+11 424 M (156:) s
+24.165 424 M
+(                data = json.loads\(data.content.decode\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.21 424 M
+('utf-8') s
+/F-gs-font 5 5 SF
+0 setgray
+142.82 424 M
+(\)\)) s
+11 418 M (157:) s
+24.165 418 M
+(                data = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.785 418 M
+('result') s
+/F-gs-font 5 5 SF
+0 setgray
+94.615 418 M
+(\)) s
+11 412 M (158:) s
+24.165 412 M
+(                highest = 0) s
+11 406 M (159:) s
+11 400 M (160:) s
+24.165 400 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 400 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+50.835 400 M
+( item ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.23 400 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+67.95 400 M
+( data:) s
+11 394 M (161:) s
+24.165 394 M
+(                    value = item.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.5 394 M
+('score') s
+/F-gs-font 5 5 SF
+0 setgray
+100.945 394 M
+(\)) s
+11 388 M (162:) s
+24.165 388 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 388 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+52.775 388 M
+( value > highest:) s
+11 382 M (163:) s
+24.165 382 M
+(                        highest = value) s
+11 376 M (164:) s
+24.165 376 M
+(                q.put\({team: highest}\)) s
+11 370 M (165:) s
+11 364 M (166:) s
+11 358 M (167:) s
+24.165 358 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 358 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 358 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 358 M
+(__getPoints) s
+/F-gs-font 5 5 SF
+0 setgray
+64.3 358 M
+(\(self, teams, q\):) s
+11 352 M (168:) s
+24.165 352 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 352 M
+(""") s
+/F-gs-font 5 5 SF
+11 346 M (169:) s
+/Palatino-Bold 5 5 SUF
+24.165 346 M
+(        gets win points/auton points/strength points/calculated ) s
+/F-gs-font 5 5 SF
+11 340 M (170:) s
+/Palatino-Bold 5 5 SUF
+24.165 340 M
+(        contribution to win margin data for a team) s
+/F-gs-font 5 5 SF
+11 334 M (171:) s
+/Palatino-Bold 5 5 SUF
+24.165 334 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 328 M (172:) s
+24.165 328 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 328 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 328 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.275 328 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.995 328 M
+( teams:) s
+11 322 M (173:) s
+24.165 322 M
+(            team = team.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.155 322 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+88.02 322 M
+(\)[0]) s
+11 316 M (174:) s
+24.165 316 M
+(            url = self.pointsUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.725 316 M
+('&team=') s
+/F-gs-font 5 5 SF
+0 setgray
+107.81 316 M
+( + team + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.81 316 M
+('&season=Tower Takeover&type=2') s
+/F-gs-font 5 5 SF
+0 setgray
+11 310 M (175:) s
+11 304 M (176:) s
+24.165 304 M
+(            data = requests.get\(url\)) s
+11 298 M (177:) s
+24.165 298 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 298 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 298 M
+( data.status_code == 200:) s
+11 292 M (178:) s
+24.165 292 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 292 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 292 M
+(:) s
+11 286 M (179:) s
+24.165 286 M
+(                    data = json.loads\(data.content.decode\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+134.21 286 M
+('utf-8') s
+/F-gs-font 5 5 SF
+0 setgray
+147.82 286 M
+(\)\)) s
+11 280 M (180:) s
+24.165 280 M
+(                    data = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+83.785 280 M
+('result') s
+/F-gs-font 5 5 SF
+0 setgray
+99.615 280 M
+(\)[0]) s
+11 274 M (181:) s
+24.165 274 M
+(                    pointsStruct = {) s
+11 268 M (182:) s
+24.165 268 M
+(                            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.165 268 M
+('wp') s
+/F-gs-font 5 5 SF
+0 setgray
+69.165 268 M
+(:data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.82 268 M
+('wp') s
+/F-gs-font 5 5 SF
+0 setgray
+99.82 268 M
+(\),) s
+11 262 M (183:) s
+24.165 262 M
+(                            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.165 262 M
+('ap') s
+/F-gs-font 5 5 SF
+0 setgray
+67.5 262 M
+(:data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+88.155 262 M
+('ap') s
+/F-gs-font 5 5 SF
+0 setgray
+96.49 262 M
+(\),) s
+11 256 M (184:) s
+24.165 256 M
+(                            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.165 256 M
+('sp') s
+/F-gs-font 5 5 SF
+0 setgray
+67.22 256 M
+(:data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.875 256 M
+('sp') s
+/F-gs-font 5 5 SF
+0 setgray
+95.93 256 M
+(\),) s
+11 250 M (185:) s
+24.165 250 M
+(                            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.165 250 M
+('ccwm') s
+/F-gs-font 5 5 SF
+0 setgray
+74.995 250 M
+(:data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+95.65 250 M
+('ccwm') s
+/F-gs-font 5 5 SF
+0 setgray
+111.48 250 M
+(\)) s
+11 244 M (186:) s
+24.165 244 M
+(                            }) s
+11 238 M (187:) s
+24.165 238 M
+(                    q.put\({team: pointsStruct}\)) s
+11 232 M (188:) s
+11 226 M (189:) s
+24.165 226 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 226 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 226 M
+( IndexError:) s
+11 220 M (190:) s
+24.165 220 M
+(                    q.put\({team: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.635 220 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+89.95 220 M
+(}\)) s
+11 214 M (191:) s
+11 208 M (192:) s
+24.165 208 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 208 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 208 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 208 M
+(__getRanking) s
+/F-gs-font 5 5 SF
+0 setgray
+69.58 208 M
+(\(self, teams, q\):) s
+11 202 M (193:) s
+24.165 202 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 202 M
+(""") s
+/F-gs-font 5 5 SF
+11 196 M (194:) s
+/Palatino-Bold 5 5 SUF
+24.165 196 M
+(        gets the ranking of a team at an event) s
+/F-gs-font 5 5 SF
+11 190 M (195:) s
+/Palatino-Bold 5 5 SUF
+24.165 190 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 184 M (196:) s
+24.165 184 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 184 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 184 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+54.275 184 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+58.995 184 M
+( teams:) s
+11 178 M (197:) s
+24.165 178 M
+(            team = team.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+79.155 178 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+88.02 178 M
+(\)[0]) s
+11 172 M (198:) s
+24.165 172 M
+(            url = self.pointsUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.725 172 M
+('&team=') s
+/F-gs-font 5 5 SF
+0 setgray
+107.81 172 M
+( + team + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.81 172 M
+('&season=Tower Takeover&type=2') s
+/F-gs-font 5 5 SF
+0 setgray
+11 166 M (199:) s
+24.165 166 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 166 M
+(#print\(url\)) s
+/F-gs-font 5 5 SF
+11 160 M (200:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 154 M (201:) s
+24.165 154 M
+(            data = requests.get\(url\)) s
+11 148 M (202:) s
+24.165 148 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 148 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 148 M
+( data.status_code == 200:) s
+11 142 M (203:) s
+11 136 M (204:) s
+24.165 136 M
+(                data = json.loads\(data.content.decode\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.21 136 M
+('utf-8') s
+/F-gs-font 5 5 SF
+0 setgray
+142.82 136 M
+(\)\)) s
+11 130 M (205:) s
+24.165 130 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 130 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 130 M
+(:) s
+11 124 M (206:) s
+24.165 124 M
+(                    data = data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+83.785 124 M
+('result') s
+/F-gs-font 5 5 SF
+0 setgray
+99.615 124 M
+(\)[0]) s
+11 118 M (207:) s
+24.165 118 M
+(                    q.put\({team: data.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+97.04 118 M
+('rank') s
+/F-gs-font 5 5 SF
+0 setgray
+110.375 118 M
+(\)}\)) s
+11 112 M (208:) s
+11 106 M (209:) s
+24.165 106 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 106 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 106 M
+( IndexError:) s
+11 100 M (210:) s
+24.165 100 M
+(                    q.put\({team: ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.635 100 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+89.95 100 M
+(}\)) s
+11 94 M (211:) s
+11 88 M (212:) s
+11 82 M (213:) s
+24.165 82 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 82 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 82 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 82 M
+(__parralellise) s
+/F-gs-font 5 5 SF
+0 setgray
+68.74 82 M
+(\(self, func, returnDict\):) s
+11 76 M (214:) s
+24.165 76 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 76 M
+(""") s
+/F-gs-font 5 5 SF
+11 70 M (215:) s
+/Palatino-Bold 5 5 SUF
+24.165 70 M
+(        processes the data in parrallel so that if there is a lot of) s
+/F-gs-font 5 5 SF
+11 64 M (216:) s
+/Palatino-Bold 5 5 SUF
+24.165 64 M
+(        teams the operation can be performed quickly) s
+/F-gs-font 5 5 SF
+11 58 M (217:) s
+/Palatino-Bold 5 5 SUF
+24.165 58 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 52 M (218:) s
+24.165 52 M
+(        queues = []) s
+11 46 M (219:) s
+24.165 46 M
+(        processes = []) s
+11 40 M (220:) s
+24.165 40 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 40 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 40 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.79 40 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+49.51 40 M
+( range\(len\(self.teams\)\):) s
+11 34 M (221:) s
+24.165 34 M
+(            queues.append\(mp.Queue\(\)\)) s
+11 28 M (222:) s
+24.165 28 M
+(            p = mp.Process\(target=func, args=\(self.teams[i], queues[i],\)\)) s
+11 22 M (223:) s
+24.165 22 M
+(            processes.append\(p\)) s
+11 16 M (224:) s
+24.165 16 M
+(            p.daemon = True) s
+11 10 M (225:) s
+24.165 10 M
+(            p.start\(\)) s
+11 4 M (226:) s
+24.165 4 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 4 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 4 M
+( process ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.9 4 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+64.62 4 M
+( processes:) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../Scouting/Scout.py) def
+/fdir (../Scouting) def
+/ftail (Scout.py) def
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (05/02/20) def
+/modtimestr (20:20:55) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (227:) s
+24.165 676 M
+(            process.join\(\)) s
+11 670 M (228:) s
+11 664 M (229:) s
+24.165 664 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 664 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 664 M
+( q ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+46.135 664 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+50.855 664 M
+( queues:) s
+11 658 M (230:) s
+24.165 658 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 658 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+52.215 658 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+53.465 658 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+60.965 658 M
+( q.empty\(\):) s
+11 652 M (231:) s
+24.165 652 M
+(                returnDict.update\(q.get\(timeout=.1\)\)) s
+11 646 M (232:) s
+11 640 M (233:) s
+11 634 M (234:) s
+11 628 M (235:) s
+11 622 M (236:) s
+11 616 M (237:) s
+24.165 616 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 616 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 616 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 616 M
+(openSheet) s
+/F-gs-font 5 5 SF
+0 setgray
+62.08 616 M
+(\(self\):) s
+11 610 M (238:) s
+24.165 610 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 610 M
+(""") s
+/F-gs-font 5 5 SF
+11 604 M (239:) s
+/Palatino-Bold 5 5 SUF
+24.165 604 M
+(        opens the sheet) s
+/F-gs-font 5 5 SF
+11 598 M (240:) s
+/Palatino-Bold 5 5 SUF
+24.165 598 M
+(        need to change workbook to the sheet that will be edited) s
+/F-gs-font 5 5 SF
+11 592 M (241:) s
+/Palatino-Bold 5 5 SUF
+24.165 592 M
+(        and the sheet name to the sheet that corresponds with the) s
+/F-gs-font 5 5 SF
+11 586 M (242:) s
+/Palatino-Bold 5 5 SUF
+24.165 586 M
+(        data that will be collected) s
+/F-gs-font 5 5 SF
+11 580 M (243:) s
+/Palatino-Bold 5 5 SUF
+24.165 580 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 574 M (244:) s
+24.165 574 M
+(        json_key = json.load\(open\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+93.37 574 M
+('/home/aiden/Documents/google_credentials/creds.json') s
+/F-gs-font 5 5 SF
+0 setgray
+220.895 574 M
+(\)\)) s
+11 568 M (245:) s
+24.165 568 M
+(        scope = [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+53.83 568 M
+('https://spreadsheets.google.com/feeds') s
+/F-gs-font 5 5 SF
+0 setgray
+142.845 568 M
+(,) s
+11 562 M (246:) s
+24.165 562 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 562 M
+('https://www.googleapis.com/auth/drive') s
+/F-gs-font 5 5 SF
+0 setgray
+127.16 562 M
+(]) s
+11 556 M (247:) s
+11 550 M (248:) s
+24.165 550 M
+(        credentials = SignedJwtAssertionCredentials\(json_key[) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+155.865 550 M
+('client_email') s
+/F-gs-font 5 5 SF
+0 setgray
+186.69 550 M
+(], json_key[) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+211.905 550 M
+('private_key') s
+/F-gs-font 5 5 SF
+0 setgray
+241.63 550 M
+(].encode\(\), scope\)) s
+11 544 M (249:) s
+11 538 M (250:) s
+24.165 538 M
+(        file = gspread.authorize\(credentials\)) s
+11 532 M (251:) s
+24.165 532 M
+(        workbook = file.open\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+83.28 532 M
+("536C_Scouting") s
+/F-gs-font 5 5 SF
+0 setgray
+121.185 532 M
+(\)) s
+11 526 M (252:) s
+24.165 526 M
+(        self.sheet = workbook.worksheet\(self.sheet_name\)) s
+11 520 M (253:) s
+11 514 M (254:) s
+11 508 M (255:) s
+11 502 M (256:) s
+11 496 M (257:) s
+11 490 M (258:) s
+24.165 490 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 490 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 490 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 490 M
+(getTeams) s
+/F-gs-font 5 5 SF
+0 setgray
+59.86 490 M
+(\(self\):) s
+11 484 M (259:) s
+24.165 484 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 484 M
+(""") s
+/F-gs-font 5 5 SF
+11 478 M (260:) s
+/Palatino-Bold 5 5 SUF
+24.165 478 M
+(        gets the teams by reading the data in the sheet) s
+/F-gs-font 5 5 SF
+11 472 M (261:) s
+/Palatino-Bold 5 5 SUF
+24.165 472 M
+(        this looks for data to find by comparing the first) s
+/F-gs-font 5 5 SF
+11 466 M (262:) s
+/Palatino-Bold 5 5 SUF
+24.165 466 M
+(        row to a list of valid headers then removes the headers) s
+/F-gs-font 5 5 SF
+11 460 M (263:) s
+/Palatino-Bold 5 5 SUF
+24.165 460 M
+(        from the list of cells to be updated) s
+/F-gs-font 5 5 SF
+11 454 M (264:) s
+/Palatino-Bold 5 5 SUF
+24.165 454 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 448 M (265:) s
+24.165 448 M
+(        valid_headers = [) s
+11 442 M (266:) s
+24.165 442 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 442 M
+('Rank') s
+/F-gs-font 5 5 SF
+0 setgray
+59.165 442 M
+(,) s
+11 436 M (267:) s
+24.165 436 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 436 M
+('WP/AP/SP/CCWM') s
+/F-gs-font 5 5 SF
+0 setgray
+89.715 436 M
+(,) s
+11 430 M (268:) s
+24.165 430 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 430 M
+('W-L-T \(today\)') s
+/F-gs-font 5 5 SF
+0 setgray
+79.025 430 M
+(,) s
+11 424 M (269:) s
+24.165 424 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 424 M
+('W-L-T \(overall season\)') s
+/F-gs-font 5 5 SF
+0 setgray
+98.605 424 M
+(,) s
+11 418 M (270:) s
+24.165 418 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 418 M
+('driver skills') s
+/F-gs-font 5 5 SF
+0 setgray
+74.575 418 M
+(,) s
+11 412 M (271:) s
+24.165 412 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+44.165 412 M
+('combined skills score') s
+/F-gs-font 5 5 SF
+0 setgray
+11 406 M (272:) s
+24.165 406 M
+(                ]) s
+11 400 M (273:) s
+11 394 M (274:) s
+24.165 394 M
+(        self.allTeams = self.sheet.col_values\(1\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+120.365 394 M
+(#column that teams are stored in) s
+/F-gs-font 5 5 SF
+11 388 M (275:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 388 M
+(        self.allTeams.pop\(0\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+80.025 388 M
+(#remove header) s
+/F-gs-font 5 5 SF
+11 382 M (276:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 382 M
+(        headers = self.sheet.row_values\(1\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+111.395 382 M
+(#remove header) s
+/F-gs-font 5 5 SF
+11 376 M (277:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 376 M
+(        row = 2) s
+11 370 M (278:) s
+24.165 370 M
+(        column = 1) s
+11 364 M (279:) s
+24.165 364 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 364 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 364 M
+( header ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+58.565 364 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.285 364 M
+( headers:) s
+11 358 M (280:) s
+24.165 358 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 358 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 358 M
+( header ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+60.505 358 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+65.225 358 M
+( valid_headers:) s
+11 352 M (281:) s
+24.165 352 M
+(                start = chr\(ord\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.745 352 M
+('@') s
+/F-gs-font 5 5 SF
+0 setgray
+84.26 352 M
+(\)+column\) + str\(row\)) s
+11 346 M (282:) s
+24.165 346 M
+(                end = chr\(ord\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+76.25 346 M
+('@') s
+/F-gs-font 5 5 SF
+0 setgray
+82.765 346 M
+(\)+column\) + str\(\(len\(self.allTeams\) + 1\)\)) s
+11 340 M (283:) s
+24.165 340 M
+(                string = start + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+77.95 340 M
+(':') s
+/F-gs-font 5 5 SF
+0 setgray
+81.98 340 M
+( + end) s
+11 334 M (284:) s
+24.165 334 M
+(                range_= self.sheet.range\(string\)) s
+11 328 M (285:) s
+24.165 328 M
+(                self.ranges.update\({header:range_}\)) s
+11 322 M (286:) s
+24.165 322 M
+(            column += 1) s
+11 316 M (287:) s
+24.165 316 M
+(            ) s
+11 310 M (288:) s
+24.165 310 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 310 M
+(#limits num processes to the number of teams) s
+/F-gs-font 5 5 SF
+11 304 M (289:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 304 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 304 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 304 M
+( self.NUM_PROCESSES > len\(self.allTeams\):) s
+11 298 M (290:) s
+24.165 298 M
+(            self.NUM_PROCESSES = len\(self.allTeams\)) s
+11 292 M (291:) s
+11 286 M (292:) s
+24.165 286 M
+(        self.teams = list\(split.split\(self.allTeams, self.NUM_PROCESSES\)\)) s
+11 280 M (293:) s
+11 274 M (294:) s
+11 268 M (295:) s
+11 262 M (296:) s
+11 256 M (297:) s
+11 250 M (298:) s
+24.165 250 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 250 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 250 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 250 M
+(collect) s
+/F-gs-font 5 5 SF
+0 setgray
+52.63 250 M
+(\(self\):) s
+11 244 M (299:) s
+24.165 244 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 244 M
+(""") s
+/F-gs-font 5 5 SF
+11 238 M (300:) s
+/Palatino-Bold 5 5 SUF
+24.165 238 M
+(        collects all the data if that data is a valid header) s
+/F-gs-font 5 5 SF
+11 232 M (301:) s
+/Palatino-Bold 5 5 SUF
+24.165 232 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 226 M (302:) s
+24.165 226 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 226 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 226 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 226 M
+('W-L-T \(overall season\)') s
+/F-gs-font 5 5 SF
+0 setgray
+93.465 226 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+94.715 226 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+99.435 226 M
+( self.ranges.keys\(\):) s
+11 220 M (303:) s
+24.165 220 M
+(            self.__parralellise\(self.__getMatchesWon, self.matchesWonOverallData\)) s
+11 214 M (304:) s
+24.165 214 M
+(        ) s
+11 208 M (305:) s
+24.165 208 M
+(        self.matchesWonUrl = self.matchesWonUrl + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+135.295 208 M
+('&sku=') s
+/F-gs-font 5 5 SF
+0 setgray
+153.6 208 M
+( + self.sku) s
+11 202 M (306:) s
+11 196 M (307:) s
+24.165 196 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 196 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 196 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 196 M
+('W-L-T \(today\)') s
+/F-gs-font 5 5 SF
+0 setgray
+73.885 196 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+75.135 196 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+79.855 196 M
+( self.ranges.keys\(\):) s
+11 190 M (308:) s
+24.165 190 M
+(            self.__parralellise\(self.__getMatchesWon, self.matchesWonData\)) s
+11 184 M (309:) s
+24.165 184 M
+(            ) s
+11 178 M (310:) s
+24.165 178 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 178 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 178 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 178 M
+('combined skills score') s
+/F-gs-font 5 5 SF
+0 setgray
+91.235 178 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+92.485 178 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+97.205 178 M
+( self.ranges.keys\(\):) s
+11 172 M (311:) s
+24.165 172 M
+(            self.__parralellise\(self.__getCombinedSkillsScore, self.combinedSkillsScoreData\)) s
+11 166 M (312:) s
+24.165 166 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 166 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 166 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 166 M
+('driver skills') s
+/F-gs-font 5 5 SF
+0 setgray
+69.435 166 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+70.685 166 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+75.405 166 M
+( self.ranges.keys\(\):) s
+11 160 M (313:) s
+24.165 160 M
+(            self.__parralellise\(self.__getDriverSkillsScore, self.driverSkillsScoreData\)) s
+11 154 M (314:) s
+24.165 154 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 154 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 154 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 154 M
+('WP/AP/SP/CCWM') s
+/F-gs-font 5 5 SF
+0 setgray
+84.575 154 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+85.825 154 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+90.545 154 M
+( self.ranges.keys\(\):) s
+11 148 M (315:) s
+24.165 148 M
+(            self.__parralellise\(self.__getPoints, self.pointsData\)) s
+11 142 M (316:) s
+24.165 142 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 142 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 142 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.025 142 M
+('Rank') s
+/F-gs-font 5 5 SF
+0 setgray
+54.025 142 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+55.275 142 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+59.995 142 M
+( self.ranges.keys\(\):) s
+11 136 M (317:) s
+24.165 136 M
+(            self.__parralellise\(self.__getRanking, self.rankingData\)) s
+11 130 M (318:) s
+11 124 M (319:) s
+11 118 M (320:) s
+11 112 M (321:) s
+24.165 112 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 112 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 112 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 112 M
+(printData) s
+/F-gs-font 5 5 SF
+0 setgray
+60.13 112 M
+(\(self\):) s
+11 106 M (322:) s
+24.165 106 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 106 M
+(""") s
+/F-gs-font 5 5 SF
+11 100 M (323:) s
+/Palatino-Bold 5 5 SUF
+24.165 100 M
+(        prints the data for each team to be used for debugging) s
+/F-gs-font 5 5 SF
+11 94 M (324:) s
+/Palatino-Bold 5 5 SUF
+24.165 94 M
+(        purposes) s
+/F-gs-font 5 5 SF
+11 88 M (325:) s
+/Palatino-Bold 5 5 SUF
+24.165 88 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 82 M (326:) s
+24.165 82 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 82 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 82 M
+( self.matchesWonData:) s
+11 76 M (327:) s
+24.165 76 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 76 M
+(#print\("w-l-t"\)) s
+/F-gs-font 5 5 SF
+11 70 M (328:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 70 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 70 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 70 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.275 70 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.995 70 M
+( self.matchesWonData.keys\(\):) s
+11 64 M (329:) s
+24.165 64 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 64 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 64 M
+(:) s
+11 58 M (330:) s
+24.165 58 M
+(                    wins = self.matchesWonData.get\(team\)) s
+11 52 M (331:) s
+24.165 52 M
+(                    record = [wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+91.085 52 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+104.97 52 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+129.51 52 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+145.895 52 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+170.435 52 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+181.265 52 M
+(\)]) s
+11 46 M (332:) s
+24.165 46 M
+(                    formattedRecord = str\(record[0]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+127.17 46 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+131.615 46 M
+( + str\(record[1]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+171.91 46 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+176.355 46 M
+( + str\(record[2]\)) s
+11 40 M (333:) s
+24.165 40 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 40 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+60.55 40 M
+(\(formattedRecord\)) s
+11 34 M (334:) s
+24.165 34 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 34 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 34 M
+( AttributeError:) s
+11 28 M (335:) s
+24.165 28 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 28 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+60.55 28 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+62.215 28 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+74.53 28 M
+(\)) s
+11 22 M (336:) s
+24.165 22 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 22 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 22 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.79 22 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+54.51 22 M
+( range\(20\):) s
+11 16 M (337:) s
+24.165 16 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 16 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 16 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.215 16 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 16 M
+(\)) s
+11 10 M (338:) s
+11 4 M (339:) s
+24.165 4 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 4 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 4 M
+( self.combinedSkillsScoreData:) s
+_R
+S
+%%Page: (4) 4
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 4 def
+/fname (../Scouting/Scout.py) def
+/fdir (../Scouting) def
+/ftail (Scout.py) def
+% User defined strings:
+/pagenumstr (4) def
+/moddatestr (05/02/20) def
+/modtimestr (20:20:55) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (340:) s
+24.165 676 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 676 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+50.55 676 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.215 676 M
+("combined skills") s
+/F-gs-font 5 5 SF
+0 setgray
+92.75 676 M
+(\)) s
+11 670 M (341:) s
+24.165 670 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 670 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 670 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.275 670 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.995 670 M
+( self.combinedSkillsScoreData.keys\(\):) s
+11 664 M (342:) s
+24.165 664 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 664 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 664 M
+(\(self.combinedSkillsScoreData.get\(team\)\)) s
+11 658 M (343:) s
+11 652 M (344:) s
+11 646 M (345:) s
+24.165 646 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 646 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 646 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.79 646 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+54.51 646 M
+( range\(20\):) s
+11 640 M (346:) s
+24.165 640 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 640 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 640 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.215 640 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 640 M
+(\)) s
+11 634 M (347:) s
+11 628 M (348:) s
+24.165 628 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 628 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 628 M
+( self.driverSkillsScoreData:) s
+11 622 M (349:) s
+24.165 622 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 622 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+50.55 622 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.215 622 M
+("driver skills") s
+/F-gs-font 5 5 SF
+0 setgray
+83.865 622 M
+(\)) s
+11 616 M (350:) s
+24.165 616 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 616 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 616 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.275 616 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.995 616 M
+( self.driverSkillsScoreData.keys\(\):) s
+11 610 M (351:) s
+24.165 610 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 610 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 610 M
+(\(self.driverSkillsScoreData.get\(team\)\)) s
+11 604 M (352:) s
+11 598 M (353:) s
+24.165 598 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 598 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 598 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.79 598 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+54.51 598 M
+( range\(20\):) s
+11 592 M (354:) s
+24.165 592 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 592 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 592 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.215 592 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 592 M
+(\)) s
+11 586 M (355:) s
+11 580 M (356:) s
+11 574 M (357:) s
+24.165 574 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 574 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 574 M
+( self.rankingData:) s
+11 568 M (358:) s
+24.165 568 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 568 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+50.55 568 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.215 568 M
+("ranking") s
+/F-gs-font 5 5 SF
+0 setgray
+74.29 568 M
+(\)) s
+11 562 M (359:) s
+24.165 562 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 562 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 562 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.275 562 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.995 562 M
+( self.rankingData.keys\(\):) s
+11 556 M (360:) s
+24.165 556 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 556 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 556 M
+(\(self.rankingData.get\(team\)\)) s
+11 550 M (361:) s
+11 544 M (362:) s
+24.165 544 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 544 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 544 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.79 544 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+54.51 544 M
+( range\(20\):) s
+11 538 M (363:) s
+24.165 538 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 538 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 538 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.215 538 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 538 M
+(\)) s
+11 532 M (364:) s
+11 526 M (365:) s
+11 520 M (366:) s
+24.165 520 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 520 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 520 M
+( self.pointsData:) s
+11 514 M (367:) s
+24.165 514 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 514 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+50.55 514 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+52.215 514 M
+("point values") s
+/F-gs-font 5 5 SF
+0 setgray
+84.425 514 M
+(\)) s
+11 508 M (368:) s
+24.165 508 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 508 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 508 M
+( team ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.275 508 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.995 508 M
+( self.pointsData.keys\(\):) s
+11 502 M (369:) s
+24.165 502 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 502 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+50.555 502 M
+(:) s
+11 496 M (370:) s
+24.165 496 M
+(                    val = self.pointsData.get\(team\)) s
+11 490 M (371:) s
+24.165 490 M
+(                    points = \(str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.1 490 M
+('wp') s
+/F-gs-font 5 5 SF
+0 setgray
+104.1 490 M
+(\)\)  + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.21 490 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 484 M (372:) s
+24.165 484 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 484 M
+('ap') s
+/F-gs-font 5 5 SF
+0 setgray
+95.67 484 M
+(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.53 484 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 478 M (373:) s
+24.165 478 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 478 M
+('sp') s
+/F-gs-font 5 5 SF
+0 setgray
+95.39 478 M
+(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.25 478 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 472 M (374:) s
+24.165 472 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 472 M
+('ccwm') s
+/F-gs-font 5 5 SF
+0 setgray
+103.165 472 M
+(\)\)) s
+11 466 M (375:) s
+24.165 466 M
+(                            \)) s
+11 460 M (376:) s
+24.165 460 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 460 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+60.55 460 M
+(\(points\)) s
+11 454 M (377:) s
+24.165 454 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 454 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+58.605 454 M
+( AttributeError:) s
+11 448 M (378:) s
+24.165 448 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 448 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+60.55 448 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+62.215 448 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+74.53 448 M
+(\)) s
+11 442 M (379:) s
+24.165 442 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 442 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 442 M
+( i ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.79 442 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+54.51 442 M
+( range\(6\):) s
+11 436 M (380:) s
+24.165 436 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 436 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+55.55 436 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.215 436 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+61.235 436 M
+(\)) s
+11 430 M (381:) s
+11 424 M (382:) s
+11 418 M (383:) s
+11 412 M (384:) s
+11 406 M (385:) s
+11 400 M (386:) s
+24.165 400 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 400 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 400 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 400 M
+(writeData) s
+/F-gs-font 5 5 SF
+0 setgray
+60.685 400 M
+(\(self\):) s
+11 394 M (387:) s
+24.165 394 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 394 M
+(""") s
+/F-gs-font 5 5 SF
+11 388 M (388:) s
+/Palatino-Bold 5 5 SUF
+24.165 388 M
+(        writes the data in one chunk because the google api) s
+/F-gs-font 5 5 SF
+11 382 M (389:) s
+/Palatino-Bold 5 5 SUF
+24.165 382 M
+(        only allows so many edits) s
+/F-gs-font 5 5 SF
+11 376 M (390:) s
+/Palatino-Bold 5 5 SUF
+24.165 376 M
+(        by making it only one edit once all the data is collected) s
+/F-gs-font 5 5 SF
+11 370 M (391:) s
+/Palatino-Bold 5 5 SUF
+24.165 370 M
+(        this constraing can be worked around) s
+/F-gs-font 5 5 SF
+11 364 M (392:) s
+/Palatino-Bold 5 5 SUF
+24.165 364 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 358 M (393:) s
+24.165 358 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 358 M
+('Rank') s
+/F-gs-font 5 5 SF
+0 setgray
+104.665 358 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+107.58 358 M
+(#write rank) s
+/F-gs-font 5 5 SF
+11 352 M (394:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 352 M
+(        row = 0) s
+11 346 M (395:) s
+24.165 346 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 346 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 346 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 346 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 346 M
+( cell_list:) s
+11 340 M (396:) s
+24.165 340 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 340 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+45.555 340 M
+(:) s
+11 334 M (397:) s
+24.165 334 M
+(                team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.21 334 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+123.075 334 M
+(\)[0]) s
+11 328 M (398:) s
+24.165 328 M
+(                data = self.rankingData.get\(team\)) s
+11 322 M (399:) s
+24.165 322 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 322 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 322 M
+(:) s
+11 316 M (400:) s
+24.165 316 M
+(                data = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+59.38 316 M
+("N/A") s
+/F-gs-font 5 5 SF
+0 setgray
+11 310 M (401:) s
+24.165 310 M
+(            cell.value = data) s
+11 304 M (402:) s
+24.165 304 M
+(            row += 1) s
+11 298 M (403:) s
+11 292 M (404:) s
+24.165 292 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 286 M (405:) s
+11 280 M (406:) s
+11 274 M (407:) s
+24.165 274 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 274 M
+('WP/AP/SP/CCWM') s
+/F-gs-font 5 5 SF
+0 setgray
+135.215 274 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+138.13 274 M
+(#write points) s
+/F-gs-font 5 5 SF
+11 268 M (408:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 268 M
+(        row = 0) s
+11 262 M (409:) s
+24.165 262 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 262 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 262 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 262 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 262 M
+( cell_list:) s
+11 256 M (410:) s
+24.165 256 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 256 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+45.555 256 M
+(:) s
+11 250 M (411:) s
+24.165 250 M
+(                team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.21 250 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+123.075 250 M
+(\)[0]) s
+11 244 M (412:) s
+24.165 244 M
+(                val = self.pointsData.get\(team\)) s
+11 238 M (413:) s
+24.165 238 M
+(                data = \(str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+84.935 238 M
+('wp') s
+/F-gs-font 5 5 SF
+0 setgray
+94.935 238 M
+(\)\)  + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+105.045 238 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 232 M (414:) s
+24.165 232 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 232 M
+('ap') s
+/F-gs-font 5 5 SF
+0 setgray
+95.67 232 M
+(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.53 232 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 226 M (415:) s
+24.165 226 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 226 M
+('sp') s
+/F-gs-font 5 5 SF
+0 setgray
+95.39 226 M
+(\)\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.25 226 M
+(' / ') s
+/F-gs-font 5 5 SF
+0 setgray
+11 220 M (416:) s
+24.165 220 M
+(                            + str\(val.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+87.335 220 M
+('ccwm') s
+/F-gs-font 5 5 SF
+0 setgray
+103.165 220 M
+(\)\)) s
+11 214 M (417:) s
+24.165 214 M
+(                            \)) s
+11 208 M (418:) s
+24.165 208 M
+(                cell.value = data) s
+11 202 M (419:) s
+24.165 202 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 202 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 202 M
+( AttributeError:) s
+11 196 M (420:) s
+24.165 196 M
+(                cell.value = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.66 196 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+11 190 M (421:) s
+24.165 190 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 190 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 190 M
+( IndexError:) s
+11 184 M (422:) s
+24.165 184 M
+(                cell.value = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.66 184 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+11 178 M (423:) s
+24.165 178 M
+(            row += 1) s
+11 172 M (424:) s
+24.165 172 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 166 M (425:) s
+11 160 M (426:) s
+11 154 M (427:) s
+11 148 M (428:) s
+24.165 148 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 148 M
+('W-L-T \(today\)') s
+/F-gs-font 5 5 SF
+0 setgray
+124.525 148 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+127.44 148 M
+(#write w-l-t) s
+/F-gs-font 5 5 SF
+11 142 M (429:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 142 M
+(        row = 0) s
+11 136 M (430:) s
+24.165 136 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 136 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 136 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 136 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 136 M
+( cell_list:) s
+11 130 M (431:) s
+24.165 130 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 130 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+45.555 130 M
+(:) s
+11 124 M (432:) s
+24.165 124 M
+(                team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.21 124 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+123.075 124 M
+(\)[0]) s
+11 118 M (433:) s
+24.165 118 M
+(                wins = self.matchesWonData.get\(team\)) s
+11 112 M (434:) s
+24.165 112 M
+(                record = [wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.085 112 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+99.97 112 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+124.51 112 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+140.895 112 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+165.435 112 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+176.265 112 M
+(\)]) s
+11 106 M (435:) s
+24.165 106 M
+(                data = str\(record[0]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.145 106 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+98.59 106 M
+( + str\(record[1]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+138.885 106 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+143.33 106 M
+( + str\(record[2]\)) s
+11 100 M (436:) s
+11 94 M (437:) s
+24.165 94 M
+(                cell.value = data) s
+11 88 M (438:) s
+24.165 88 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 88 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 88 M
+( AttributeError:) s
+11 82 M (439:) s
+24.165 82 M
+(                cell.value = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.66 82 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+11 76 M (440:) s
+24.165 76 M
+(            row += 1) s
+11 70 M (441:) s
+11 64 M (442:) s
+24.165 64 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 58 M (443:) s
+11 52 M (444:) s
+11 46 M (445:) s
+11 40 M (446:) s
+24.165 40 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 40 M
+('W-L-T \(overall season\)') s
+/F-gs-font 5 5 SF
+0 setgray
+144.105 40 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+147.02 40 M
+(#write w-l-t for) s
+/F-gs-font 5 5 SF
+11 34 M (447:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 34 M
+(        row = 0                                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+109.82 34 M
+(#overall season) s
+/F-gs-font 5 5 SF
+11 28 M (448:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 28 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 28 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 28 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 28 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 28 M
+( cell_list:) s
+11 22 M (449:) s
+24.165 22 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 22 M
+(try) s
+/F-gs-font 5 5 SF
+0 setgray
+45.555 22 M
+(:) s
+11 16 M (450:) s
+24.165 16 M
+(                team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+114.21 16 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+123.075 16 M
+(\)[0]) s
+11 10 M (451:) s
+24.165 10 M
+(                wins = self.matchesWonOverallData.get\(team\)) s
+11 4 M (452:) s
+24.165 4 M
+(                record = [wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.085 4 M
+('wins') s
+/F-gs-font 5 5 SF
+0 setgray
+99.97 4 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+124.51 4 M
+('losses') s
+/F-gs-font 5 5 SF
+0 setgray
+140.895 4 M
+(\), wins.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+165.435 4 M
+('ties') s
+/F-gs-font 5 5 SF
+0 setgray
+176.265 4 M
+(\)]) s
+_R
+S
+%%Page: (5) 5
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 5 def
+/fname (../Scouting/Scout.py) def
+/fdir (../Scouting) def
+/ftail (Scout.py) def
+% User defined strings:
+/pagenumstr (5) def
+/moddatestr (05/02/20) def
+/modtimestr (20:20:55) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (453:) s
+24.165 676 M
+(                data = str\(record[0]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.145 676 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+98.59 676 M
+( + str\(record[1]\) + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+138.885 676 M
+('-') s
+/F-gs-font 5 5 SF
+0 setgray
+143.33 676 M
+( + str\(record[2]\)) s
+11 670 M (454:) s
+11 664 M (455:) s
+24.165 664 M
+(                cell.value = data) s
+11 658 M (456:) s
+24.165 658 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 658 M
+(except) s
+/F-gs-font 5 5 SF
+0 setgray
+53.605 658 M
+( AttributeError:) s
+11 652 M (457:) s
+24.165 652 M
+(                cell.value = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+70.66 652 M
+('N/A') s
+/F-gs-font 5 5 SF
+0 setgray
+11 646 M (458:) s
+24.165 646 M
+(            row += 1) s
+11 640 M (459:) s
+11 634 M (460:) s
+24.165 634 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 628 M (461:) s
+11 622 M (462:) s
+11 616 M (463:) s
+11 610 M (464:) s
+11 604 M (465:) s
+24.165 604 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 604 M
+('driver skills') s
+/F-gs-font 5 5 SF
+0 setgray
+120.075 604 M
+(\)) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+121.74 604 M
+(#write driver skills) s
+/F-gs-font 5 5 SF
+11 598 M (466:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 598 M
+(        row = 0) s
+11 592 M (467:) s
+24.165 592 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 592 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 592 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 592 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 592 M
+( cell_list:) s
+11 586 M (468:) s
+24.165 586 M
+(            team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+109.21 586 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+118.075 586 M
+(\)[0]) s
+11 580 M (469:) s
+24.165 580 M
+(            data = self.driverSkillsScoreData.get\(team\)) s
+11 574 M (470:) s
+24.165 574 M
+(            cell.value = data) s
+11 568 M (471:) s
+11 562 M (472:) s
+24.165 562 M
+(            row += 1) s
+11 556 M (473:) s
+11 550 M (474:) s
+24.165 550 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 544 M (475:) s
+11 538 M (476:) s
+11 532 M (477:) s
+11 526 M (478:) s
+24.165 526 M
+(        cell_list = self.ranges.get\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.665 526 M
+('combined skills score') s
+/F-gs-font 5 5 SF
+0 setgray
+141.875 526 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+144.79 526 M
+(#write combined skills) s
+/F-gs-font 5 5 SF
+11 520 M (479:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 520 M
+(        row = 0) s
+11 514 M (480:) s
+24.165 514 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 514 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 514 M
+( cell ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.86 514 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.58 514 M
+( cell_list:) s
+11 508 M (481:) s
+24.165 508 M
+(            team = self.allTeams[row].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+109.21 508 M
+('\\n') s
+/F-gs-font 5 5 SF
+0 setgray
+118.075 508 M
+(\)[0]) s
+11 502 M (482:) s
+24.165 502 M
+(            data = self.combinedSkillsScoreData.get\(team\)) s
+11 496 M (483:) s
+24.165 496 M
+(            cell.value = data) s
+11 490 M (484:) s
+11 484 M (485:) s
+24.165 484 M
+(            row += 1) s
+11 478 M (486:) s
+11 472 M (487:) s
+24.165 472 M
+(        self.sheet.update_cells\(cell_list\)) s
+11 466 M (488:) s
+11 460 M (489:) s
+11 454 M (490:) s
+11 448 M (491:) s
+11 442 M (492:) s
+11 436 M (493:) s
+11 430 M (494:) s
+11 424 M (495:) s
+11 418 M (496:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 418 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+37.215 418 M
+( 1: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+43.465 418 M
+(#collect data every so often) s
+/F-gs-font 5 5 SF
+11 412 M (497:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 412 M
+(    stp = stopwatch.stopwatch\(\)) s
+11 406 M (498:) s
+24.165 406 M
+(    stp.start\(\)) s
+11 400 M (499:) s
+24.165 400 M
+(    d = getData\(\)) s
+11 394 M (500:) s
+24.165 394 M
+(    d.openSheet\(\)) s
+11 388 M (501:) s
+11 382 M (502:) s
+24.165 382 M
+(    d.getTeams\(\)) s
+11 376 M (503:) s
+24.165 376 M
+(    d.collect\(\)) s
+11 370 M (504:) s
+24.165 370 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 370 M
+(#print\(d.rankingData\)) s
+/F-gs-font 5 5 SF
+11 364 M (505:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 364 M
+(    d.writeData\(\)) s
+11 358 M (506:) s
+24.165 358 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 358 M
+(print) s
+/F-gs-font 5 5 SF
+0 setgray
+40.55 358 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+42.215 358 M
+("time taken:") s
+/F-gs-font 5 5 SF
+0 setgray
+71.785 358 M
+(, stp.stop\(\), ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+97.605 358 M
+("sec") s
+/F-gs-font 5 5 SF
+0 setgray
+108.565 358 M
+(\)) s
+11 352 M (507:) s
+11 346 M (508:) s
+24.165 346 M
+(    time.sleep\(45\)) s
+11 340 M (509:) s
+11 334 M (510:) s
+11 328 M (511:) s
+_R
+S
+%%Trailer
+%%Pages: 5
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

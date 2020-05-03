@@ -1,0 +1,1293 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../RobotCode/src/objects/lcdCode/Gimmicks.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode) def
+/ftail (Gimmicks.cpp) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(/**) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+24.165 670 M
+( * @file: ./RobotCode/src/objects/lcdCode/Gimmicks.cpp) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+24.165 664 M
+( * @author: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Italic 5 5 SUF
+24.165 658 M
+( * @reviewed_on: 10/15/2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Italic 5 5 SUF
+24.165 652 M
+( * @reviewed_by: Aiden Carney) s
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Italic 5 5 SUF
+24.165 646 M
+( *) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Italic 5 5 SUF
+24.165 640 M
+( * @see: Gimmicks.hpp) s
+/F-gs-font 5 5 SF
+16 634 M (8:) s
+/Palatino-Italic 5 5 SUF
+24.165 634 M
+( *) s
+/F-gs-font 5 5 SF
+16 628 M (9:) s
+/Palatino-Italic 5 5 SUF
+24.165 628 M
+( * contains implementation for header file) s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+( *) s
+/F-gs-font 5 5 SF
+13.5 616 M (11:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+24.165 604 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 604 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 604 M
+("../../../include/main.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 598 M (14:) s
+24.165 598 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 598 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 598 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 598 M
+("../../../include/api.h") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 592 M (15:) s
+13.5 586 M (16:) s
+24.165 586 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 586 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 586 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 586 M
+("Styles.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 580 M (17:) s
+24.165 580 M
+(#) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+26.665 580 M
+(include) s
+/F-gs-font 5 5 SF
+0 setgray
+43.88 580 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+45.13 580 M
+("Gimmicks.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 574 M (18:) s
+13.5 568 M (19:) s
+13.5 562 M (20:) s
+13.5 556 M (21:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 556 M
+(const) s
+/F-gs-font 5 5 SF
+0 setgray
+36.105 556 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+37.355 556 M
+(char) s
+/F-gs-font 5 5 SF
+0 setgray
+47.075 556 M
+(* WarningMessage::buttons[] = {) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+118.665 556 M
+("Back") s
+/F-gs-font 5 5 SF
+0 setgray
+133.795 556 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+136.295 556 M
+("Continue") s
+/F-gs-font 5 5 SF
+0 setgray
+161.7 556 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+164.2 556 M
+("") s
+/F-gs-font 5 5 SF
+0 setgray
+168.22 556 M
+(};) s
+13.5 550 M (22:) s
+13.5 544 M (23:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 544 M
+(//base classes) s
+/F-gs-font 5 5 SF
+13.5 538 M (24:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 538 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+30.55 538 M
+( WarningMessage::option = 0;) s
+13.5 532 M (25:) s
+13.5 526 M (26:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 526 M
+(WarningMessage::WarningMessage) s
+/F-gs-font 5 5 SF
+0 setgray
+106.105 526 M
+(\(\)) s
+13.5 520 M (27:) s
+24.165 520 M
+({) s
+13.5 514 M (28:) s
+24.165 514 M
+(    option = 0;) s
+13.5 508 M (29:) s
+13.5 502 M (30:) s
+24.165 502 M
+(    warn_box = lv_mbox_create\(lv_scr_act\(\), NULL\);) s
+13.5 496 M (31:) s
+24.165 496 M
+(    lv_mbox_set_text\(warn_box, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+94.11 496 M
+("None") s
+/F-gs-font 5 5 SF
+0 setgray
+110.63 496 M
+(\);) s
+13.5 490 M (32:) s
+24.165 490 M
+(    lv_mbox_add_btns\(warn_box, buttons, NULL\);) s
+13.5 484 M (33:) s
+24.165 484 M
+(    lv_mbox_set_action\(warn_box, mbox_apply_action\);) s
+13.5 478 M (34:) s
+13.5 472 M (35:) s
+24.165 472 M
+(    lv_mbox_set_style\(warn_box, LV_MBOX_STYLE_BG, &warn_box_bg\);) s
+13.5 466 M (36:) s
+24.165 466 M
+(    lv_mbox_set_style\(warn_box, LV_MBOX_STYLE_BTN_REL, &warn_box_released\);) s
+13.5 460 M (37:) s
+24.165 460 M
+(    lv_mbox_set_style\(warn_box, LV_MBOX_STYLE_BTN_PR, &warn_box_pressed\);) s
+13.5 454 M (38:) s
+13.5 448 M (39:) s
+24.165 448 M
+(    lv_obj_set_width\(warn_box, 400\);) s
+13.5 442 M (40:) s
+24.165 442 M
+(    lv_obj_set_height\(warn_box, 140\);) s
+13.5 436 M (41:) s
+13.5 430 M (42:) s
+24.165 430 M
+(    lv_obj_align\(warn_box, NULL, LV_ALIGN_CENTER, 0, -50\);) s
+13.5 424 M (43:) s
+13.5 418 M (44:) s
+13.5 412 M (45:) s
+24.165 412 M
+(}) s
+13.5 406 M (46:) s
+13.5 400 M (47:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 400 M
+(WarningMessage::~WarningMessage) s
+/F-gs-font 5 5 SF
+0 setgray
+107.77 400 M
+(\(\)) s
+13.5 394 M (48:) s
+24.165 394 M
+({) s
+13.5 388 M (49:) s
+24.165 388 M
+(    lv_obj_del\(warn_box\);) s
+13.5 382 M (50:) s
+24.165 382 M
+(}) s
+13.5 376 M (51:) s
+13.5 370 M (52:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 370 M
+(/**) s
+/F-gs-font 5 5 SF
+13.5 364 M (53:) s
+/Palatino-Italic 5 5 SUF
+24.165 364 M
+( * compares text of message to set option to positive or negative) s
+/F-gs-font 5 5 SF
+13.5 358 M (54:) s
+/Palatino-Italic 5 5 SUF
+24.165 358 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 352 M (55:) s
+24.165 352 M
+(lv_res_t ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+42.815 352 M
+(WarningMessage::mbox_apply_action) s
+/F-gs-font 5 5 SF
+0 setgray
+129.755 352 M
+(\(lv_obj_t * mbox, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+168.43 352 M
+(const) s
+/F-gs-font 5 5 SF
+0 setgray
+180.37 352 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+181.62 352 M
+(char) s
+/F-gs-font 5 5 SF
+0 setgray
+191.34 352 M
+( * txt\)) s
+13.5 346 M (56:) s
+24.165 346 M
+({) s
+13.5 340 M (57:) s
+24.165 340 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 340 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 340 M
+( \( txt == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+51.34 340 M
+("Continue") s
+/F-gs-font 5 5 SF
+0 setgray
+76.745 340 M
+( \)) s
+13.5 334 M (58:) s
+24.165 334 M
+(    {) s
+13.5 328 M (59:) s
+24.165 328 M
+(        option = 1;) s
+13.5 322 M (60:) s
+24.165 322 M
+(    }) s
+13.5 316 M (61:) s
+13.5 310 M (62:) s
+24.165 310 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 310 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+38.05 310 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.3 310 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.91 310 M
+( \( txt == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+61.475 310 M
+("Back") s
+/F-gs-font 5 5 SF
+0 setgray
+76.605 310 M
+( \)) s
+13.5 304 M (63:) s
+24.165 304 M
+(    {) s
+13.5 298 M (64:) s
+24.165 298 M
+(        option = -1;) s
+13.5 292 M (65:) s
+24.165 292 M
+(    }) s
+13.5 286 M (66:) s
+13.5 280 M (67:) s
+24.165 280 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 280 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+43.33 280 M
+( LV_RES_OK;) s
+13.5 274 M (68:) s
+24.165 274 M
+(}) s
+13.5 268 M (69:) s
+13.5 262 M (70:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 262 M
+(/**) s
+/F-gs-font 5 5 SF
+13.5 256 M (71:) s
+/Palatino-Italic 5 5 SUF
+24.165 256 M
+( * dislays a message box and sets the text) s
+/F-gs-font 5 5 SF
+13.5 250 M (72:) s
+/Palatino-Italic 5 5 SUF
+24.165 250 M
+( * user can choose "continue" or "back") s
+/F-gs-font 5 5 SF
+13.5 244 M (73:) s
+/Palatino-Italic 5 5 SUF
+24.165 244 M
+( * how function works line 3) s
+/F-gs-font 5 5 SF
+13.5 238 M (74:) s
+/Palatino-Italic 5 5 SUF
+24.165 238 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 232 M (75:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 232 M
+(bool) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 232 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 232 M
+(WarningMessage::warn) s
+/F-gs-font 5 5 SF
+0 setgray
+89.58 232 M
+(\( std::string warn_msg, lv_obj_t *parent \)) s
+13.5 226 M (76:) s
+24.165 226 M
+({) s
+13.5 220 M (77:) s
+24.165 220 M
+(    option = 0;) s
+13.5 214 M (78:) s
+13.5 208 M (79:) s
+24.165 208 M
+(    lv_obj_set_hidden\(warn_box, false\);) s
+13.5 202 M (80:) s
+24.165 202 M
+(    lv_obj_set_parent\(warn_box, parent\);) s
+13.5 196 M (81:) s
+24.165 196 M
+(    lv_mbox_set_text\(warn_box, warn_msg.c_str\(\)\);) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+24.165 184 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 184 M
+(while) s
+/F-gs-font 5 5 SF
+0 setgray
+42.215 184 M
+( \( !\(option\) \)) s
+13.5 178 M (84:) s
+24.165 178 M
+(    {) s
+13.5 172 M (85:) s
+24.165 172 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.372549 0.619608 0.627451 setrgbcolor
+34.165 172 M
+(pros) s
+/F-gs-font 5 5 SF
+0 setgray
+44.165 172 M
+(::delay\(50\);) s
+13.5 166 M (86:) s
+24.165 166 M
+(    }) s
+13.5 160 M (87:) s
+13.5 154 M (88:) s
+24.165 154 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 154 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+32.775 154 M
+( \( option == 1 \)) s
+13.5 148 M (89:) s
+24.165 148 M
+(    {) s
+13.5 142 M (90:) s
+24.165 142 M
+(        lv_obj_set_hidden\(warn_box, true\);) s
+13.5 136 M (91:) s
+24.165 136 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 136 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 136 M
+( true;) s
+13.5 130 M (92:) s
+24.165 130 M
+(    }) s
+13.5 124 M (93:) s
+13.5 118 M (94:) s
+24.165 118 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 118 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 112 M (95:) s
+24.165 112 M
+(    {) s
+13.5 106 M (96:) s
+24.165 106 M
+(        lv_obj_set_hidden\(warn_box, true\);) s
+13.5 100 M (97:) s
+24.165 100 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 100 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 100 M
+( false;) s
+13.5 94 M (98:) s
+24.165 94 M
+(    }) s
+13.5 88 M (99:) s
+11 82 M (100:) s
+24.165 82 M
+(}) s
+11 76 M (101:) s
+11 70 M (102:) s
+11 64 M (103:) s
+11 58 M (104:) s
+11 52 M (105:) s
+11 46 M (106:) s
+11 40 M (107:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 40 M
+(Loading::Loading) s
+/F-gs-font 5 5 SF
+0 setgray
+64.445 40 M
+(\(\)) s
+11 34 M (108:) s
+24.165 34 M
+({) s
+11 28 M (109:) s
+24.165 28 M
+(    loader = lv_bar_create\(lv_scr_act\(\), NULL\);) s
+11 22 M (110:) s
+24.165 22 M
+(    lv_obj_set_size\(loader, 100, 20\);) s
+11 16 M (111:) s
+24.165 16 M
+(    lv_bar_set_value\(loader, 1\);) s
+11 10 M (112:) s
+24.165 10 M
+(}) s
+11 4 M (113:) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../RobotCode/src/objects/lcdCode/Gimmicks.cpp) def
+/fdir (../RobotCode/src/objects/lcdCode) def
+/ftail (Gimmicks.cpp) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:52) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+24.165 676 M
+(Loading::~Loading) s
+/F-gs-font 5 5 SF
+0 setgray
+66.11 676 M
+(\(\)) s
+11 670 M (115:) s
+24.165 670 M
+({) s
+11 664 M (116:) s
+24.165 664 M
+(    lv_obj_del\(loader\);) s
+11 658 M (117:) s
+24.165 658 M
+(}) s
+11 652 M (118:) s
+11 646 M (119:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 646 M
+(/**) s
+/F-gs-font 5 5 SF
+11 640 M (120:) s
+/Palatino-Italic 5 5 SUF
+24.165 640 M
+( * loader is shown on a parent at specified location) s
+/F-gs-font 5 5 SF
+11 634 M (121:) s
+/Palatino-Italic 5 5 SUF
+24.165 634 M
+( * animation time is set by user, so this function only works if user knows) s
+/F-gs-font 5 5 SF
+11 628 M (122:) s
+/Palatino-Italic 5 5 SUF
+24.165 628 M
+( * about how long the function will take) s
+/F-gs-font 5 5 SF
+11 622 M (123:) s
+/Palatino-Italic 5 5 SUF
+24.165 622 M
+( * this function is meant as a filler so that if some initialization occurs) s
+/F-gs-font 5 5 SF
+11 616 M (124:) s
+/Palatino-Italic 5 5 SUF
+24.165 616 M
+( * the gui does not appear like its hanging for no reason) s
+/F-gs-font 5 5 SF
+11 610 M (125:) s
+/Palatino-Italic 5 5 SUF
+24.165 610 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 604 M (126:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 604 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 604 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 604 M
+(Loading::show_load) s
+/F-gs-font 5 5 SF
+0 setgray
+81.805 604 M
+(\() s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+83.47 604 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+89.855 604 M
+( estimated_duration, lv_obj_t *parent, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+174.655 604 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+181.04 604 M
+( x, ) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+187.37 604 M
+(int) s
+/F-gs-font 5 5 SF
+0 setgray
+193.755 604 M
+( y\)) s
+11 598 M (127:) s
+24.165 598 M
+({) s
+11 592 M (128:) s
+24.165 592 M
+(    lv_obj_set_hidden\(loader, false\);) s
+11 586 M (129:) s
+24.165 586 M
+(    lv_bar_set_value\(loader, 1\);) s
+11 580 M (130:) s
+24.165 580 M
+(    lv_obj_set_parent\(loader, parent\);) s
+11 574 M (131:) s
+24.165 574 M
+(    lv_obj_set_top\(loader, true\);) s
+11 568 M (132:) s
+11 562 M (133:) s
+24.165 562 M
+(    lv_obj_set_pos\(loader, x, y\);) s
+11 556 M (134:) s
+11 550 M (135:) s
+24.165 550 M
+(    lv_bar_set_value_anim\(loader, 100, estimated_duration\);) s
+11 544 M (136:) s
+24.165 544 M
+(}) s
+11 538 M (137:) s
+11 532 M (138:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 532 M
+(/**) s
+/F-gs-font 5 5 SF
+11 526 M (139:) s
+/Palatino-Italic 5 5 SUF
+24.165 526 M
+( * hides the loader for when the initialization by user is finished) s
+/F-gs-font 5 5 SF
+11 520 M (140:) s
+/Palatino-Italic 5 5 SUF
+24.165 520 M
+( */) s
+/F-gs-font 5 5 SF
+0 setgray
+11 514 M (141:) s
+/Palatino-Bold 5 5 SUF
+0.133333 0.545098 0.133333 setrgbcolor
+24.165 514 M
+(void) s
+/F-gs-font 5 5 SF
+0 setgray
+34.445 514 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+35.695 514 M
+(Loading::hide_load) s
+/F-gs-font 5 5 SF
+0 setgray
+79.86 514 M
+(\(\)) s
+11 508 M (142:) s
+24.165 508 M
+({) s
+11 502 M (143:) s
+24.165 502 M
+(    lv_obj_set_hidden\(loader, true\);) s
+11 496 M (144:) s
+24.165 496 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

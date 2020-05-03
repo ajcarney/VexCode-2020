@@ -1,0 +1,1674 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../AutonSimulator/fieldObjects.py) def
+/fdir (../AutonSimulator) def
+/ftail (fieldObjects.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+16 658 M (4:) s
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 652 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+31.665 652 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+32.915 652 M
+(main) s
+/F-gs-font 5 5 SF
+0 setgray
+44.58 652 M
+(\(field\):) s
+16 646 M (6:) s
+24.165 646 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+29.165 646 M
+(""") s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(    creates field elements) s
+/F-gs-font 5 5 SF
+16 634 M (8:) s
+/Palatino-Bold 5 5 SUF
+24.165 634 M
+(    """) s
+/F-gs-font 5 5 SF
+0 setgray
+16 628 M (9:) s
+24.165 628 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 628 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+35.835 628 M
+( num ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+48.675 628 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+53.395 628 M
+( range\(0,6\): ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.285 628 M
+(#draw white line auton line) s
+/F-gs-font 5 5 SF
+13.5 622 M (10:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 622 M
+(        field[2][num].drawRectangle\(vertexes=[[47,0],[47,47],[47,47],[47,0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+198.315 622 M
+("#ffffff") s
+/F-gs-font 5 5 SF
+0 setgray
+216.505 622 M
+(, width=5, outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+258.875 622 M
+("#ffffff") s
+/F-gs-font 5 5 SF
+0 setgray
+277.065 622 M
+(\)) s
+13.5 616 M (11:) s
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+24.165 604 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 604 M
+(#starting spots) s
+/F-gs-font 5 5 SF
+13.5 598 M (14:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 598 M
+(    field[0][1].drawObjectTiles\(color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.205 598 M
+("red") s
+/F-gs-font 5 5 SF
+0 setgray
+115.725 598 M
+(\)) s
+13.5 592 M (15:) s
+24.165 592 M
+(    field[1][0].drawObjectTiles\(color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.205 592 M
+("red") s
+/F-gs-font 5 5 SF
+0 setgray
+115.725 592 M
+(\)) s
+13.5 586 M (16:) s
+24.165 586 M
+(    field[4][0].drawObjectTiles\(color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.205 586 M
+("blue") s
+/F-gs-font 5 5 SF
+0 setgray
+118.5 586 M
+(\)) s
+13.5 580 M (17:) s
+24.165 580 M
+(    field[5][1].drawObjectTiles\(color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.205 580 M
+("blue") s
+/F-gs-font 5 5 SF
+0 setgray
+118.5 580 M
+(\)) s
+13.5 574 M (18:) s
+13.5 568 M (19:) s
+13.5 562 M (20:) s
+24.165 562 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 562 M
+(#white tape by auton spots) s
+/F-gs-font 5 5 SF
+13.5 556 M (21:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 556 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 556 M
+(#horizontal lines) s
+/F-gs-font 5 5 SF
+13.5 550 M (22:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 550 M
+(    field[0][0].drawRectangle\(vertexes=[[0, 47], [47, 47], [47, 47], [0, 47]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 550 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 550 M
+(\)) s
+13.5 544 M (23:) s
+24.165 544 M
+(    field[0][1].drawRectangle\(vertexes=[[0, 47], [47, 47], [47, 47], [0, 47]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 544 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 544 M
+(\)) s
+13.5 538 M (24:) s
+24.165 538 M
+(    field[5][0].drawRectangle\(vertexes=[[0, 47], [47, 47], [47, 47], [0, 47]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 538 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 538 M
+(\)) s
+13.5 532 M (25:) s
+24.165 532 M
+(    field[5][1].drawRectangle\(vertexes=[[0, 47], [47, 47], [47, 47], [0, 47]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 532 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 532 M
+(\)) s
+13.5 526 M (26:) s
+13.5 520 M (27:) s
+24.165 520 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 520 M
+(#vertical lines) s
+/F-gs-font 5 5 SF
+13.5 514 M (28:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 514 M
+(    field[0][0].drawRectangle\(vertexes=[[47, 0], [47, 47], [47, 47], [47, 0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 514 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 514 M
+(\)) s
+13.5 508 M (29:) s
+24.165 508 M
+(    field[4][0].drawRectangle\(vertexes=[[47, 0], [47, 47], [47, 47], [47, 0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 508 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 508 M
+(\)) s
+13.5 502 M (30:) s
+24.165 502 M
+(    field[1][0].drawRectangle\(vertexes=[[47, 0], [47, 47], [47, 47], [47, 0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 502 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 502 M
+(\)) s
+13.5 496 M (31:) s
+24.165 496 M
+(    field[3][0].drawRectangle\(vertexes=[[47, 0], [47, 47], [47, 47], [47, 0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+194.225 496 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+210.055 496 M
+(\)) s
+13.5 490 M (32:) s
+13.5 484 M (33:) s
+24.165 484 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 484 M
+(#angled lines) s
+/F-gs-font 5 5 SF
+13.5 478 M (34:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 478 M
+(    field[1][1].drawRectangle\(vertexes=[[0, 47], [47, 0], [47, 0], [0, 47]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+189.225 478 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+205.055 478 M
+(\)) s
+13.5 472 M (35:) s
+24.165 472 M
+(    field[4][1].drawRectangle\(vertexes=[[0, 0], [47, 47], [47, 47], [0, 0]], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+189.225 472 M
+('white') s
+/F-gs-font 5 5 SF
+0 setgray
+205.055 472 M
+(\)) s
+13.5 466 M (36:) s
+13.5 460 M (37:) s
+13.5 454 M (38:) s
+13.5 448 M (39:) s
+24.165 448 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 448 M
+(#cubes) s
+/F-gs-font 5 5 SF
+13.5 442 M (40:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 442 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 442 M
+(#row 0) s
+/F-gs-font 5 5 SF
+13.5 436 M (41:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 436 M
+(    field[1][0].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 436 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 436 M
+(, size=5\)) s
+13.5 430 M (42:) s
+24.165 430 M
+(    field[2][0].drawObjectFieldElementSquare\(position=[47, 7], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 430 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+193.37 430 M
+(, size=5\)) s
+13.5 424 M (43:) s
+24.165 424 M
+(    field[4][0].drawObjectFieldElementSquare\(position=[42, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 424 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 424 M
+(, size=5\)) s
+13.5 418 M (44:) s
+13.5 412 M (45:) s
+13.5 406 M (46:) s
+24.165 406 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 406 M
+(#row 1) s
+/F-gs-font 5 5 SF
+13.5 400 M (47:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 400 M
+(    field[1][1].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 400 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 400 M
+(, size=5\)) s
+13.5 394 M (48:) s
+24.165 394 M
+(    field[2][1].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 394 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 394 M
+(, size=5\)) s
+13.5 388 M (49:) s
+13.5 382 M (50:) s
+24.165 382 M
+(    field[2][1].drawObjectFieldElementSquare\(position=[33, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 382 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+196.155 382 M
+(, size=5\)) s
+13.5 376 M (51:) s
+24.165 376 M
+(    field[2][1].drawObjectFieldElementSquare\(position=[47, 11], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 376 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 376 M
+(, size=5\)) s
+13.5 370 M (52:) s
+24.165 370 M
+(    field[2][1].drawObjectFieldElementSquare\(position=[47, 37], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 370 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 370 M
+(, size=5\)) s
+13.5 364 M (53:) s
+24.165 364 M
+(    field[3][1].drawObjectFieldElementSquare\(position=[14, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 364 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 364 M
+(, size=5\)) s
+13.5 358 M (54:) s
+13.5 352 M (55:) s
+13.5 346 M (56:) s
+24.165 346 M
+(    field[3][1].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 346 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 346 M
+(, size=5\)) s
+13.5 340 M (57:) s
+24.165 340 M
+(    field[4][1].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 340 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 340 M
+(, size=5\)) s
+13.5 334 M (58:) s
+13.5 328 M (59:) s
+13.5 322 M (60:) s
+24.165 322 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 322 M
+(#rows 2 and 3) s
+/F-gs-font 5 5 SF
+13.5 316 M (61:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 316 M
+(    field[0][2].drawObjectFieldElementSquare\(position=[47, 33], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 316 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 316 M
+(, size=5\)) s
+13.5 310 M (62:) s
+24.165 310 M
+(    field[0][3].drawObjectFieldElementSquare\(position=[47, 14], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 310 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 310 M
+(, size=5\)) s
+13.5 304 M (63:) s
+24.165 304 M
+(    field[2][2].drawObjectFieldElementSquare\(position=[47, 33], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 304 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 304 M
+(, size=5\)) s
+13.5 298 M (64:) s
+24.165 298 M
+(    field[2][3].drawObjectFieldElementSquare\(position=[47, 14], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 298 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 298 M
+(, size=5\)) s
+13.5 292 M (65:) s
+24.165 292 M
+(    field[4][2].drawObjectFieldElementSquare\(position=[47, 33], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 292 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 292 M
+(, size=5\)) s
+13.5 286 M (66:) s
+24.165 286 M
+(    field[4][3].drawObjectFieldElementSquare\(position=[47, 14], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 286 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 286 M
+(, size=5\)) s
+13.5 280 M (67:) s
+13.5 274 M (68:) s
+24.165 274 M
+(    field[2][2].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 274 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 274 M
+(, size=5\)) s
+13.5 268 M (69:) s
+24.165 268 M
+(    field[2][3].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 268 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 268 M
+(, size=5\)) s
+13.5 262 M (70:) s
+24.165 262 M
+(    field[3][2].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 262 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 262 M
+(, size=5\)) s
+13.5 256 M (71:) s
+24.165 256 M
+(    field[3][3].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 256 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 256 M
+(, size=5\)) s
+13.5 250 M (72:) s
+13.5 244 M (73:) s
+24.165 244 M
+(    field[2][2].drawObjectFieldElementSquare\(position=[33, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 244 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+196.155 244 M
+(, size=5\)) s
+13.5 238 M (74:) s
+24.165 238 M
+(    field[3][2].drawObjectFieldElementSquare\(position=[14, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 238 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 238 M
+(, size=5\)) s
+13.5 232 M (75:) s
+13.5 226 M (76:) s
+13.5 220 M (77:) s
+24.165 220 M
+(    field[0][2].drawObjectFieldElementSquare\(position=[33, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 220 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+196.155 220 M
+(, size=5\)) s
+13.5 214 M (78:) s
+24.165 214 M
+(    field[5][2].drawObjectFieldElementSquare\(position=[14, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 214 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 214 M
+(, size=5\)) s
+13.5 208 M (79:) s
+13.5 202 M (80:) s
+24.165 202 M
+(    field[1][2].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 202 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 202 M
+(, size=5\)) s
+13.5 196 M (81:) s
+24.165 196 M
+(    field[4][2].drawObjectFieldElementSquare\(position=[6, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 196 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+193.37 196 M
+(, size=5\)) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+24.165 184 M
+(    field[1][3].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 184 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 184 M
+(, size=5\)) s
+13.5 178 M (84:) s
+24.165 178 M
+(    field[4][3].drawObjectFieldElementSquare\(position=[6, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 178 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 178 M
+(, size=5\)) s
+13.5 172 M (85:) s
+13.5 166 M (86:) s
+24.165 166 M
+(    field[1][3].drawObjectFieldElementSquare\(position=[29, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 166 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 166 M
+(, size=5\)) s
+13.5 160 M (87:) s
+24.165 160 M
+(    field[4][3].drawObjectFieldElementSquare\(position=[18, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 160 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 160 M
+(, size=5\)) s
+13.5 154 M (88:) s
+13.5 148 M (89:) s
+13.5 142 M (90:) s
+13.5 136 M (91:) s
+24.165 136 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 136 M
+(#row 4) s
+/F-gs-font 5 5 SF
+13.5 130 M (92:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 130 M
+(    field[3][4].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 130 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 130 M
+(, size=5\)) s
+13.5 124 M (93:) s
+24.165 124 M
+(    field[2][4].drawObjectFieldElementSquare\(position=[5, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 124 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 124 M
+(, size=5\)) s
+13.5 118 M (94:) s
+24.165 118 M
+(    field[1][4].drawObjectFieldElementSquare\(position=[41, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 118 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 118 M
+(, size=5\)) s
+13.5 112 M (95:) s
+24.165 112 M
+(    field[4][4].drawObjectFieldElementSquare\(position=[6, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 112 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 112 M
+(, size=5\)) s
+13.5 106 M (96:) s
+24.165 106 M
+(    field[1][4].drawObjectFieldElementSquare\(position=[29, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 106 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 106 M
+(, size=5\)) s
+13.5 100 M (97:) s
+24.165 100 M
+(    field[4][4].drawObjectFieldElementSquare\(position=[18, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 100 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+196.155 100 M
+(, size=5\)) s
+13.5 94 M (98:) s
+24.165 94 M
+(    field[1][4].drawObjectFieldElementSquare\(position=[18, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 94 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 94 M
+(, size=5\)) s
+13.5 88 M (99:) s
+24.165 88 M
+(    field[4][4].drawObjectFieldElementSquare\(position=[29, 42], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 88 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 88 M
+(, size=5\)) s
+11 82 M (100:) s
+11 76 M (101:) s
+24.165 76 M
+(    field[2][4].drawObjectFieldElementSquare\(position=[33, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 76 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+196.155 76 M
+(, size=5\)) s
+11 70 M (102:) s
+24.165 70 M
+(    field[2][4].drawObjectFieldElementSquare\(position=[47, 11], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 70 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 70 M
+(, size=5\)) s
+11 64 M (103:) s
+24.165 64 M
+(    field[2][4].drawObjectFieldElementSquare\(position=[47, 37], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 64 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 64 M
+(, size=5\)) s
+11 58 M (104:) s
+24.165 58 M
+(    field[3][4].drawObjectFieldElementSquare\(position=[14, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 58 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 58 M
+(, size=5\)) s
+11 52 M (105:) s
+11 46 M (106:) s
+11 40 M (107:) s
+24.165 40 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 40 M
+(#row 5) s
+/F-gs-font 5 5 SF
+11 34 M (108:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 34 M
+(    field[2][5].drawObjectFieldElementSquare\(position=[42, 30], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 34 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 34 M
+(, size=5\)) s
+11 28 M (109:) s
+24.165 28 M
+(    field[2][5].drawObjectFieldElementSquare\(position=[42, 40], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 28 M
+('green') s
+/F-gs-font 5 5 SF
+0 setgray
+193.375 28 M
+(, size=5\)) s
+11 22 M (110:) s
+11 16 M (111:) s
+24.165 16 M
+(    field[3][5].drawObjectFieldElementSquare\(position=[5, 30], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 16 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 16 M
+(, size=5\)) s
+11 10 M (112:) s
+24.165 10 M
+(    field[3][5].drawObjectFieldElementSquare\(position=[5, 40], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.315 10 M
+('orange') s
+/F-gs-font 5 5 SF
+0 setgray
+193.655 10 M
+(, size=5\)) s
+11 4 M (113:) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../AutonSimulator/fieldObjects.py) def
+/fdir (../AutonSimulator) def
+/ftail (fieldObjects.py) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:41) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+24.165 676 M
+(    field[2][5].drawObjectFieldElementSquare\(position=[47, 35], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.815 676 M
+('purple') s
+/F-gs-font 5 5 SF
+0 setgray
+195.87 676 M
+(, size=5\)) s
+11 670 M (115:) s
+11 664 M (116:) s
+11 658 M (117:) s
+24.165 658 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 658 M
+(#towers) s
+/F-gs-font 5 5 SF
+11 652 M (118:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 652 M
+(    field[2][1].drawObjectFieldElementCircle\(position=[47, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 652 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 652 M
+(\)) s
+11 646 M (119:) s
+24.165 646 M
+(    field[2][2].drawObjectFieldElementCircle\(position=[47, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 646 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 646 M
+(\)) s
+11 640 M (120:) s
+24.165 640 M
+(    field[2][4].drawObjectFieldElementCircle\(position=[47, 24], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 640 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 640 M
+(\)) s
+11 634 M (121:) s
+11 628 M (122:) s
+24.165 628 M
+(    field[0][2].drawObjectFieldElementCircle\(position=[47, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 628 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 628 M
+(\)) s
+11 622 M (123:) s
+24.165 622 M
+(    field[4][2].drawObjectFieldElementCircle\(position=[47, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 622 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 622 M
+(\)) s
+11 616 M (124:) s
+11 610 M (125:) s
+24.165 610 M
+(    field[1][5].drawObjectFieldElementCircle\(position=[0, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+173.05 610 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+193.33 610 M
+(\)) s
+11 604 M (126:) s
+24.165 604 M
+(    field[4][5].drawObjectFieldElementCircle\(position=[47, 47], color=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+175.55 604 M
+('#919191') s
+/F-gs-font 5 5 SF
+0 setgray
+195.83 604 M
+(\)) s
+11 598 M (127:) s
+11 592 M (128:) s
+11 586 M (129:) s
+11 580 M (130:) s
+24.165 580 M
+(    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+29.165 580 M
+(#goals) s
+/F-gs-font 5 5 SF
+11 574 M (131:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 574 M
+(    field[0][0].drawRectangle\(vertexes=[[0, 24], [32, 24], [32, 24], [0, 24]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+198.705 574 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+208.985 574 M
+(, width=6\)) s
+11 568 M (132:) s
+24.165 568 M
+(    field[0][0].drawRectangle\(vertexes=[[32, 0], [32, 24], [32, 24], [32, 0]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+198.705 568 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+208.985 568 M
+(, width=6\)) s
+11 562 M (133:) s
+11 556 M (134:) s
+24.165 556 M
+(    field[5][0].drawRectangle\(vertexes=[[47, 24], [16, 24], [16, 24], [47, 24]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+203.705 556 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+216.76 556 M
+(, width=6\)) s
+11 550 M (135:) s
+24.165 550 M
+(    field[5][0].drawRectangle\(vertexes=[[16, 0], [16, 24], [16, 24], [16, 0]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+198.705 550 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+211.76 550 M
+(, width=6\)) s
+11 544 M (136:) s
+11 538 M (137:) s
+11 532 M (138:) s
+24.165 532 M
+(    field[0][5].drawRectangle\(vertexes=[[0, 24], [24, 24], [24, 24], [0, 24]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+198.705 532 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+208.985 532 M
+(, width=6\)) s
+11 526 M (139:) s
+24.165 526 M
+(    field[0][5].drawRectangle\(vertexes=[[24, 47], [24, 24], [24, 24], [24, 47]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+203.705 526 M
+('red') s
+/F-gs-font 5 5 SF
+0 setgray
+213.985 526 M
+(, width=6\)) s
+11 520 M (140:) s
+11 514 M (141:) s
+24.165 514 M
+(    field[5][5].drawRectangle\(vertexes=[[47, 24], [24, 24], [24, 24], [47, 24]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+203.705 514 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+216.76 514 M
+(, width=6\)) s
+11 508 M (142:) s
+24.165 508 M
+(    field[5][5].drawRectangle\(vertexes=[[24, 47], [24, 24], [24, 24], [24, 47]], outline=) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+203.705 508 M
+('blue') s
+/F-gs-font 5 5 SF
+0 setgray
+216.76 508 M
+(, width=6\)) s
+11 502 M (143:) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

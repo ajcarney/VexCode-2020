@@ -1,0 +1,3540 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 18 36 594 756
+%%Title: Enscript Output
+%%Creator: GNU Enscript 1.6.5.90
+%%CreationDate: Sat May  2 20:30:04 2020
+%%Orientation: Portrait
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6.5 90
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6.5 90
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Palatino-Roman
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Palatino-Roman /F-gs-font MF
+/F-gs-font 5 5 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6.5 90
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 576 def
+/d_page_h 720 def
+/d_header_x 0 def
+/d_header_y 684 def
+/d_header_w 576 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 576 def
+/d_footer_h 0 def
+/d_output_w 576 def
+/d_output_h 684 def
+/cols 1 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 1 def
+/fname (../Print/PostScript.py) def
+/fdir (../Print) def
+/ftail (PostScript.py) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+16 676 M (1:) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 676 M
+(#!/usr/bin/env python3) s
+/F-gs-font 5 5 SF
+16 670 M (2:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+24.165 670 M
+(# -*- coding: utf-8 -*-) s
+/F-gs-font 5 5 SF
+16 664 M (3:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+24.165 664 M
+(""") s
+/F-gs-font 5 5 SF
+16 658 M (4:) s
+/Palatino-Bold 5 5 SUF
+24.165 658 M
+(Created on Wed Jun  5 19:13:03 2019) s
+/F-gs-font 5 5 SF
+16 652 M (5:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+16 646 M (6:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(@author: aiden) s
+/F-gs-font 5 5 SF
+16 640 M (7:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(""") s
+/F-gs-font 5 5 SF
+0 setgray
+16 634 M (8:) s
+16 628 M (9:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 628 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 628 M
+( math ) s
+13.5 622 M (10:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 622 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 622 M
+( os) s
+13.5 616 M (11:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 616 M
+(import) s
+/F-gs-font 5 5 SF
+0 setgray
+39.72 616 M
+( shutil) s
+13.5 610 M (12:) s
+13.5 604 M (13:) s
+13.5 598 M (14:) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+24.165 598 M
+(class) s
+/F-gs-font 5 5 SF
+0 setgray
+34.99 598 M
+( PostScript:) s
+13.5 592 M (15:) s
+24.165 592 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+29.165 592 M
+(""") s
+/F-gs-font 5 5 SF
+13.5 586 M (16:) s
+/Palatino-Bold 5 5 SUF
+24.165 586 M
+(    class for converting code to pictures) s
+/F-gs-font 5 5 SF
+13.5 580 M (17:) s
+/Palatino-Bold 5 5 SUF
+24.165 580 M
+(    """) s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 574 M (18:) s
+24.165 574 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 574 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 574 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 574 M
+(__init__) s
+/F-gs-font 5 5 SF
+0 setgray
+55.965 574 M
+(\(self\):) s
+13.5 568 M (19:) s
+24.165 568 M
+(        self.alldirs = [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+64.26 568 M
+("..") s
+/F-gs-font 5 5 SF
+0 setgray
+70.78 568 M
+(] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+73.695 568 M
+(#list declaration that will contain all) s
+/F-gs-font 5 5 SF
+13.5 562 M (20:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 562 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 562 M
+(#directories. Parent directory is included in it) s
+/F-gs-font 5 5 SF
+13.5 556 M (21:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 556 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 556 M
+(#because there is code to be printed in it) s
+/F-gs-font 5 5 SF
+13.5 550 M (22:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 550 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 550 M
+(#) s
+/F-gs-font 5 5 SF
+13.5 544 M (23:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 544 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 544 M
+(#list will contain all directories that contain) s
+/F-gs-font 5 5 SF
+13.5 538 M (24:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 538 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 538 M
+(#files to be printed) s
+/F-gs-font 5 5 SF
+13.5 532 M (25:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 526 M (26:) s
+24.165 526 M
+(        self.allfiles = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+67.66 526 M
+(#list declaration that will contain all files that) s
+/F-gs-font 5 5 SF
+13.5 520 M (27:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 520 M
+(                           ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+57.915 520 M
+(#must be converted to postscript) s
+/F-gs-font 5 5 SF
+13.5 514 M (28:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 508 M (29:) s
+24.165 508 M
+(        self.pictures_dir = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+75.38 508 M
+("../Pictures/") s
+/F-gs-font 5 5 SF
+0 setgray
+103.185 508 M
+( ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+104.435 508 M
+(#parent directory of where pictures) s
+/F-gs-font 5 5 SF
+13.5 502 M (30:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 502 M
+(                                           ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+77.915 502 M
+(#will be placed) s
+/F-gs-font 5 5 SF
+13.5 496 M (31:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 490 M (32:) s
+24.165 490 M
+(        self.pictures = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+70.975 490 M
+(#contains locations of pictures) s
+/F-gs-font 5 5 SF
+13.5 484 M (33:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 478 M (34:) s
+24.165 478 M
+(        self.directory_exceptions = [ ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+97.65 478 M
+(#directories that contain no files to) s
+/F-gs-font 5 5 SF
+13.5 472 M (35:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 472 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 472 M
+(#be printed) s
+/F-gs-font 5 5 SF
+13.5 466 M (36:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 466 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 466 M
+("../AutonSimulator/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+114.195 466 M
+(,) s
+13.5 460 M (37:) s
+24.165 460 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 460 M
+("../Coach/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+91.14 460 M
+(,) s
+13.5 454 M (38:) s
+24.165 454 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 454 M
+("../CodeGenerator/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+111.975 454 M
+(,) s
+13.5 448 M (39:) s
+24.165 448 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 448 M
+("../HaarCascadeTraining") s
+/F-gs-font 5 5 SF
+0 setgray
+96.88 448 M
+(,) s
+13.5 442 M (40:) s
+24.165 442 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 442 M
+("../Pictures") s
+/F-gs-font 5 5 SF
+0 setgray
+65.49 442 M
+(,) s
+13.5 436 M (41:) s
+24.165 436 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 436 M
+("../PIDDebugging/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+111.975 436 M
+(,) s
+13.5 430 M (42:) s
+24.165 430 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 430 M
+("../Print/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+88.36 430 M
+(,) s
+13.5 424 M (43:) s
+24.165 424 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 424 M
+("../Prototypes/queue/unit_test/log") s
+/F-gs-font 5 5 SF
+0 setgray
+117.43 424 M
+(,) s
+13.5 418 M (44:) s
+24.165 418 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 418 M
+("../Prototypes") s
+/F-gs-font 5 5 SF
+0 setgray
+71.61 418 M
+(,) s
+13.5 412 M (45:) s
+24.165 412 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 412 M
+("../Prototypes/queue/unit_test/date") s
+/F-gs-font 5 5 SF
+0 setgray
+119.925 412 M
+(,) s
+13.5 406 M (46:) s
+24.165 406 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 406 M
+("../Prototypes/queue/unit_test/analysis") s
+/F-gs-font 5 5 SF
+0 setgray
+128.81 406 M
+(,) s
+13.5 400 M (47:) s
+24.165 400 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 400 M
+("../Prototypes/EmbeddedQueue/unit_test/log") s
+/F-gs-font 5 5 SF
+0 setgray
+143.26 400 M
+(,) s
+13.5 394 M (48:) s
+24.165 394 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 394 M
+("../Prototypes/EmbeddedQueue/unit_test/analysis") s
+/F-gs-font 5 5 SF
+0 setgray
+154.64 394 M
+(,) s
+13.5 388 M (49:) s
+24.165 388 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 388 M
+("../Prototypes/EmbeddedQueue/unit_test/date") s
+/F-gs-font 5 5 SF
+0 setgray
+145.755 388 M
+(,) s
+13.5 382 M (50:) s
+24.165 382 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 382 M
+("../Prototypes/SegfaultTest/date") s
+/F-gs-font 5 5 SF
+0 setgray
+113.175 382 M
+(,) s
+13.5 376 M (51:) s
+24.165 376 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 376 M
+("../Prototypes/SegfaultTest2/date") s
+/F-gs-font 5 5 SF
+0 setgray
+115.675 376 M
+(,) s
+13.5 370 M (52:) s
+24.165 370 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 370 M
+("../RobotCode/bin") s
+/F-gs-font 5 5 SF
+0 setgray
+82.255 370 M
+(,) s
+13.5 364 M (53:) s
+24.165 364 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 364 M
+("../RobotCode/firmware") s
+/F-gs-font 5 5 SF
+0 setgray
+95.59 364 M
+(,) s
+13.5 358 M (54:) s
+24.165 358 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 358 M
+("../RobotCode/include/display") s
+/F-gs-font 5 5 SF
+0 setgray
+110.115 358 M
+(,) s
+13.5 352 M (55:) s
+24.165 352 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 352 M
+("../RobotCode/include/okapi") s
+/F-gs-font 5 5 SF
+0 setgray
+106.23 352 M
+(,) s
+13.5 346 M (56:) s
+24.165 346 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 346 M
+("../RobotCode/include/pros") s
+/F-gs-font 5 5 SF
+0 setgray
+103.175 346 M
+(,) s
+13.5 340 M (57:) s
+24.165 340 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 340 M
+("../RobotCode/lib") s
+/F-gs-font 5 5 SF
+0 setgray
+80.865 340 M
+(,) s
+13.5 334 M (58:) s
+24.165 334 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 334 M
+("../RobotCode/.d") s
+/F-gs-font 5 5 SF
+0 setgray
+78.785 334 M
+(,) s
+13.5 328 M (59:) s
+24.165 328 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 328 M
+("../RobotCode/src/JSONLibrary") s
+/F-gs-font 5 5 SF
+0 setgray
+112.62 328 M
+(,) s
+13.5 322 M (60:) s
+24.165 322 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 322 M
+("../RobotCode/src/objects/lcdCode/fonts") s
+/F-gs-font 5 5 SF
+0 setgray
+131.96 322 M
+(,) s
+13.5 316 M (61:) s
+24.165 316 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 316 M
+("../Scouting/__pycache__") s
+/F-gs-font 5 5 SF
+0 setgray
+97.25 316 M
+(,) s
+13.5 310 M (62:) s
+24.165 310 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 310 M
+("../Cascades") s
+/F-gs-font 5 5 SF
+0 setgray
+67.99 310 M
+(,) s
+13.5 304 M (63:) s
+24.165 304 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 304 M
+("../.git") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 298 M (64:) s
+24.165 298 M
+(            ]) s
+13.5 292 M (65:) s
+13.5 286 M (66:) s
+24.165 286 M
+(        self.file_exceptions = [  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.655 286 M
+(#files in included directories of acceptable) s
+/F-gs-font 5 5 SF
+13.5 280 M (67:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 280 M
+(                                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+66.665 280 M
+(#extensions that should not be converted to) s
+/F-gs-font 5 5 SF
+13.5 274 M (68:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 274 M
+(                                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+66.665 274 M
+(#postscript to be printed) s
+/F-gs-font 5 5 SF
+13.5 268 M (69:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 268 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 268 M
+("../license.html") s
+/F-gs-font 5 5 SF
+0 setgray
+75.07 268 M
+(,) s
+13.5 262 M (70:) s
+24.165 262 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 262 M
+("../PIDDebugging/ut.txt") s
+/F-gs-font 5 5 SF
+0 setgray
+95.445 262 M
+(,) s
+13.5 256 M (71:) s
+24.165 256 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 256 M
+("../PIDDebugging/test.txt") s
+/F-gs-font 5 5 SF
+0 setgray
+98.775 256 M
+(,) s
+13.5 250 M (72:) s
+24.165 250 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 250 M
+("../Print/tree.txt") s
+/F-gs-font 5 5 SF
+0 setgray
+75.72 250 M
+(,) s
+13.5 244 M (73:) s
+24.165 244 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 244 M
+("../Print/tree.rtf") s
+/F-gs-font 5 5 SF
+0 setgray
+75.445 244 M
+(,) s
+13.5 238 M (74:) s
+24.165 238 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 238 M
+("../Prototypes/queue/concurrentqueue.h") s
+/F-gs-font 5 5 SF
+0 setgray
+131.645 238 M
+(,) s
+13.5 232 M (75:) s
+24.165 232 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 232 M
+("../Prototypes/queue/LICENSE.md") s
+/F-gs-font 5 5 SF
+0 setgray
+119.425 232 M
+(,) s
+13.5 226 M (76:) s
+24.165 226 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 226 M
+("../Prototypes/queue/blockingconcurrentqueue.h") s
+/F-gs-font 5 5 SF
+0 setgray
+151.92 226 M
+(,) s
+13.5 220 M (77:) s
+24.165 220 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 220 M
+("../Prototypes/JSONReader/json.hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+124.145 220 M
+(,) s
+13.5 214 M (78:) s
+24.165 214 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 214 M
+("../RobotCode/include/main.h") s
+/F-gs-font 5 5 SF
+0 setgray
+109.145 214 M
+(,) s
+13.5 208 M (79:) s
+24.165 208 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 208 M
+("../RobotCode/include/api.h") s
+/F-gs-font 5 5 SF
+0 setgray
+104.7 208 M
+(,) s
+13.5 202 M (80:) s
+24.165 202 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 202 M
+("../RobotCode/compile_commands.json") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 196 M (81:) s
+24.165 196 M
+(            ]) s
+13.5 190 M (82:) s
+13.5 184 M (83:) s
+24.165 184 M
+(        self.valid_extensions = [ ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+88.53 184 M
+(#files with this extension will be allowed to) s
+/F-gs-font 5 5 SF
+13.5 178 M (84:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 178 M
+(                                  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+66.665 178 M
+(#be printed) s
+/F-gs-font 5 5 SF
+13.5 172 M (85:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 172 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 172 M
+(".py") s
+/F-gs-font 5 5 SF
+0 setgray
+50.27 172 M
+(,) s
+13.5 166 M (86:) s
+24.165 166 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 166 M
+(".c") s
+/F-gs-font 5 5 SF
+0 setgray
+46.655 166 M
+(,) s
+13.5 160 M (87:) s
+24.165 160 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 160 M
+(".cpp") s
+/F-gs-font 5 5 SF
+0 setgray
+52.765 160 M
+(,) s
+13.5 154 M (88:) s
+24.165 154 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 154 M
+(".hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+53.6 154 M
+(,) s
+13.5 148 M (89:) s
+24.165 148 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 148 M
+(".h") s
+/F-gs-font 5 5 SF
+0 setgray
+47.49 148 M
+(,) s
+13.5 142 M (90:) s
+24.165 142 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 142 M
+(".sh") s
+/F-gs-font 5 5 SF
+0 setgray
+49.71 142 M
+(,) s
+13.5 136 M (91:) s
+24.165 136 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 136 M
+(".txt") s
+/F-gs-font 5 5 SF
+0 setgray
+50.265 136 M
+(,) s
+13.5 130 M (92:) s
+24.165 130 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 130 M
+(".json") s
+/F-gs-font 5 5 SF
+0 setgray
+54.155 130 M
+(,) s
+13.5 124 M (93:) s
+24.165 124 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+39.165 124 M
+(".md") s
+/F-gs-font 5 5 SF
+0 setgray
+13.5 118 M (94:) s
+24.165 118 M
+(            ]) s
+13.5 112 M (95:) s
+13.5 106 M (96:) s
+24.165 106 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 106 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 106 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.025 106 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+46.525 106 M
+( os.path.isdir\(self.pictures_dir\):) s
+13.5 100 M (97:) s
+24.165 100 M
+(            os.mkdir\(self.pictures_dir\)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+100.46 100 M
+(#makes directory for pictures) s
+/F-gs-font 5 5 SF
+13.5 94 M (98:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+13.5 88 M (99:) s
+11 82 M (100:) s
+24.165 82 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 82 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 82 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 82 M
+(__get_directories_recursively) s
+/F-gs-font 5 5 SF
+0 setgray
+104.295 82 M
+(\(self, parent_directory, storage_list\):) s
+11 76 M (101:) s
+24.165 76 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 76 M
+(""") s
+/F-gs-font 5 5 SF
+11 70 M (102:) s
+/Palatino-Bold 5 5 SUF
+24.165 70 M
+(        recursively prints all files in parent directory) s
+/F-gs-font 5 5 SF
+11 64 M (103:) s
+/Palatino-Bold 5 5 SUF
+24.165 64 M
+(        put in list "alldirs") s
+/F-gs-font 5 5 SF
+11 58 M (104:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 52 M (105:) s
+/Palatino-Bold 5 5 SUF
+24.165 52 M
+(        @params = directory to start at, directory to write output to) s
+/F-gs-font 5 5 SF
+11 46 M (106:) s
+/Palatino-Bold 5 5 SUF
+24.165 46 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+11 40 M (107:) s
+/Palatino-Bold 5 5 SUF
+24.165 40 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 34 M (108:) s
+11 28 M (109:) s
+24.165 28 M
+(        dirs = [f.path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+64.175 28 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+70.845 28 M
+( f ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+75.01 28 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+79.73 28 M
+( os.scandir\(parent_directory\) ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+145.025 28 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+148.635 28 M
+( f.is_dir\(\)]) s
+11 22 M (110:) s
+11 16 M (111:) s
+24.165 16 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 16 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 16 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.55 16 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+68.27 16 M
+( dirs:) s
+11 10 M (112:) s
+24.165 10 M
+(            storage_list.append\(directory\)) s
+11 4 M (113:) s
+24.165 4 M
+(            self.__get_directories_recursively\(directory, storage_list\)) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 2 def
+/fname (../Print/PostScript.py) def
+/fdir (../Print) def
+/ftail (PostScript.py) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+11 676 M (114:) s
+11 670 M (115:) s
+11 664 M (116:) s
+11 658 M (117:) s
+24.165 658 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 658 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 658 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 658 M
+(__find_files) s
+/F-gs-font 5 5 SF
+0 setgray
+65.13 658 M
+(\(self, directory\):) s
+11 652 M (118:) s
+24.165 652 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 652 M
+(""") s
+/F-gs-font 5 5 SF
+11 646 M (119:) s
+/Palatino-Bold 5 5 SUF
+24.165 646 M
+(        finds all files that are not subdirectories in a given directory that) s
+/F-gs-font 5 5 SF
+11 640 M (120:) s
+/Palatino-Bold 5 5 SUF
+24.165 640 M
+(        are of a specific type) s
+/F-gs-font 5 5 SF
+11 634 M (121:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 628 M (122:) s
+/Palatino-Bold 5 5 SUF
+24.165 628 M
+(        @params = directory to look through) s
+/F-gs-font 5 5 SF
+11 622 M (123:) s
+/Palatino-Bold 5 5 SUF
+24.165 622 M
+(        @return = type list of files that are in the directory that are) s
+/F-gs-font 5 5 SF
+11 616 M (124:) s
+/Palatino-Bold 5 5 SUF
+24.165 616 M
+(                  not sub directories) s
+/F-gs-font 5 5 SF
+11 610 M (125:) s
+/Palatino-Bold 5 5 SUF
+24.165 610 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 604 M (126:) s
+11 598 M (127:) s
+24.165 598 M
+(        files = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+53.365 598 M
+(#contains all files that will be returned) s
+/F-gs-font 5 5 SF
+11 592 M (128:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 586 M (129:) s
+24.165 586 M
+(        contents = [f.path ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+74.115 586 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+80.785 586 M
+( f ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+84.95 586 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+89.67 586 M
+( os.scandir\(directory\) ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+138.05 586 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+141.66 586 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+142.91 586 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+150.41 586 M
+( f.is_dir\(\)]) s
+11 580 M (130:) s
+24.165 580 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 580 M
+(#returns everything in directory including) s
+/F-gs-font 5 5 SF
+11 574 M (131:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 574 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 574 M
+(#sub directories) s
+/F-gs-font 5 5 SF
+11 568 M (132:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 562 M (133:) s
+24.165 562 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 562 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 562 M
+( file ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+50.305 562 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+55.025 562 M
+( contents: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+77.32 562 M
+(#checks to make sure that only files that are not) s
+/F-gs-font 5 5 SF
+11 556 M (134:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 556 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 556 M
+(#directories and have a valid extension are added) s
+/F-gs-font 5 5 SF
+11 550 M (135:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 550 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 550 M
+(#to the list of files) s
+/F-gs-font 5 5 SF
+11 544 M (136:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 544 M
+(            _, extension = os.path.splitext\(file\)) s
+11 538 M (137:) s
+24.165 538 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 538 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 538 M
+( extension ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+66.4 538 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+71.12 538 M
+( self.valid_extensions:) s
+11 532 M (138:) s
+24.165 532 M
+(                files.append\(file\)) s
+11 526 M (139:) s
+11 520 M (140:) s
+24.165 520 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 520 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 520 M
+( files) s
+11 514 M (141:) s
+11 508 M (142:) s
+11 502 M (143:) s
+11 496 M (144:) s
+11 490 M (145:) s
+11 484 M (146:) s
+24.165 484 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 484 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 484 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 484 M
+(__convert_to_postscript) s
+/F-gs-font 5 5 SF
+0 setgray
+91.795 484 M
+(\(self, file\):) s
+11 478 M (147:) s
+24.165 478 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 478 M
+(""") s
+/F-gs-font 5 5 SF
+11 472 M (148:) s
+/Palatino-Bold 5 5 SUF
+24.165 472 M
+(        converts the specified file to postscript format which is a printable) s
+/F-gs-font 5 5 SF
+11 466 M (149:) s
+/Palatino-Bold 5 5 SUF
+24.165 466 M
+(        code type. The files are placed inside of "../pictures/" in the same) s
+/F-gs-font 5 5 SF
+11 460 M (150:) s
+/Palatino-Bold 5 5 SUF
+24.165 460 M
+(        directories that they were originally in) s
+/F-gs-font 5 5 SF
+11 454 M (151:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 448 M (152:) s
+/Palatino-Bold 5 5 SUF
+24.165 448 M
+(        @params = relative path of file to convert) s
+/F-gs-font 5 5 SF
+11 442 M (153:) s
+/Palatino-Bold 5 5 SUF
+24.165 442 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+11 436 M (154:) s
+/Palatino-Bold 5 5 SUF
+24.165 436 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 430 M (155:) s
+11 424 M (156:) s
+24.165 424 M
+(        _, extension = os.path.splitext\(file\)) s
+11 418 M (157:) s
+24.165 418 M
+(        output_name = \(\(self.pictures_dir + file.split\(extension\)[0]) s
+11 412 M (158:) s
+24.165 412 M
+(                        + extension.upper\(\).split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+110.125 412 M
+(".") s
+/F-gs-font 5 5 SF
+0 setgray
+115.395 412 M
+(\)[1]\).replace\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+143.415 412 M
+("/../") s
+/F-gs-font 5 5 SF
+0 setgray
+152.895 412 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+155.395 412 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+160.895 412 M
+(\)) s
+11 406 M (159:) s
+24.165 406 M
+(                       + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.195 406 M
+(".ps") s
+/F-gs-font 5 5 SF
+0 setgray
+67.74 406 M
+(\)) s
+11 400 M (160:) s
+11 394 M (161:) s
+24.165 394 M
+(        self.pictures.append\(output_name\)) s
+11 388 M (162:) s
+11 382 M (163:) s
+24.165 382 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 382 M
+(#get the highlight color that will be used by shell command) s
+/F-gs-font 5 5 SF
+11 376 M (164:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 376 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 376 M
+(#based on the type of file it is) s
+/F-gs-font 5 5 SF
+11 370 M (165:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 370 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 370 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 370 M
+( extension == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+68.71 370 M
+(".py") s
+/F-gs-font 5 5 SF
+0 setgray
+79.815 370 M
+(:) s
+11 364 M (166:) s
+24.165 364 M
+(            highlight_color = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.59 364 M
+("--highlight=python") s
+/F-gs-font 5 5 SF
+0 setgray
+11 358 M (167:) s
+11 352 M (168:) s
+24.165 352 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 352 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 352 M
+( extension ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+65.565 352 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+70.285 352 M
+( [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+73.2 352 M
+(".cpp") s
+/F-gs-font 5 5 SF
+0 setgray
+86.8 352 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+89.3 352 M
+(".hpp") s
+/F-gs-font 5 5 SF
+0 setgray
+103.735 352 M
+(]:) s
+11 346 M (169:) s
+24.165 346 M
+(            highlight_color = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.59 346 M
+("--highlight=cpp") s
+/F-gs-font 5 5 SF
+0 setgray
+11 340 M (170:) s
+11 334 M (171:) s
+24.165 334 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 334 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 334 M
+( extension ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+65.565 334 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+70.285 334 M
+( [) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+73.2 334 M
+(".c") s
+/F-gs-font 5 5 SF
+0 setgray
+80.69 334 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+83.19 334 M
+(".h") s
+/F-gs-font 5 5 SF
+0 setgray
+91.515 334 M
+(]:) s
+11 328 M (172:) s
+24.165 328 M
+(            highlight_color = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.59 328 M
+("--highlight=c") s
+/F-gs-font 5 5 SF
+0 setgray
+11 322 M (173:) s
+11 316 M (174:) s
+24.165 316 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 316 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 316 M
+( extension == ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+72.875 316 M
+(".sh") s
+/F-gs-font 5 5 SF
+0 setgray
+83.42 316 M
+(:) s
+11 310 M (175:) s
+24.165 310 M
+(            highlight_color = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.59 310 M
+("--highlight=bash") s
+/F-gs-font 5 5 SF
+0 setgray
+11 304 M (176:) s
+11 298 M (177:) s
+24.165 298 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 298 M
+(else) s
+/F-gs-font 5 5 SF
+0 setgray
+43.05 298 M
+(:) s
+11 292 M (178:) s
+24.165 292 M
+(            highlight_color = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+78.59 292 M
+("--highlight=mail") s
+/F-gs-font 5 5 SF
+0 setgray
+11 286 M (179:) s
+11 280 M (180:) s
+24.165 280 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 280 M
+(#runs command that will convert a file to postscript) s
+/F-gs-font 5 5 SF
+11 274 M (181:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 274 M
+(        ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+34.165 274 M
+(#the output file location is in self.pictures) s
+/F-gs-font 5 5 SF
+11 268 M (182:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 268 M
+(        os.system\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+57.39 268 M
+("enscript -G --line-numbers -o ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 262 M (183:) s
+24.165 262 M
+(                  + output_name + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+86.22 262 M
+(" ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 256 M (184:) s
+24.165 256 M
+(                  + highlight_color) s
+11 250 M (185:) s
+24.165 250 M
+(                  + ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+50.945 250 M
+(" --color=1 -f Palatino-Roman5 --columns 1 ") s
+/F-gs-font 5 5 SF
+0 setgray
+11 244 M (186:) s
+24.165 244 M
+(                  + file\)) s
+11 238 M (187:) s
+11 232 M (188:) s
+11 226 M (189:) s
+24.165 226 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 226 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 226 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 226 M
+(prepare_code) s
+/F-gs-font 5 5 SF
+0 setgray
+68.47 226 M
+(\(self\):) s
+11 220 M (190:) s
+24.165 220 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 220 M
+(""") s
+/F-gs-font 5 5 SF
+11 214 M (191:) s
+/Palatino-Bold 5 5 SUF
+24.165 214 M
+(        prepares code to be printed by converting all code to) s
+/F-gs-font 5 5 SF
+11 208 M (192:) s
+/Palatino-Bold 5 5 SUF
+24.165 208 M
+(        postscript) s
+/F-gs-font 5 5 SF
+11 202 M (193:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 196 M (194:) s
+/Palatino-Bold 5 5 SUF
+24.165 196 M
+(        @params = None) s
+/F-gs-font 5 5 SF
+11 190 M (195:) s
+/Palatino-Bold 5 5 SUF
+24.165 190 M
+(        @return = None) s
+/F-gs-font 5 5 SF
+11 184 M (196:) s
+/Palatino-Bold 5 5 SUF
+24.165 184 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 178 M (197:) s
+24.165 178 M
+(        self.allfiles = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+67.66 178 M
+(#list declaration that will contain all files that) s
+/F-gs-font 5 5 SF
+11 172 M (198:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 172 M
+(                           ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+57.915 172 M
+(#must be converted to postscript) s
+/F-gs-font 5 5 SF
+11 166 M (199:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 160 M (200:) s
+24.165 160 M
+(        self.pictures_dir = ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+75.38 160 M
+("../Pictures/") s
+/F-gs-font 5 5 SF
+0 setgray
+103.185 160 M
+( ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+104.435 160 M
+(#parent directory of where pictures) s
+/F-gs-font 5 5 SF
+11 154 M (201:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 154 M
+(                                           ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+77.915 154 M
+(#will be placed) s
+/F-gs-font 5 5 SF
+11 148 M (202:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 142 M (203:) s
+24.165 142 M
+(        self.pictures = [] ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+70.975 142 M
+(#contains locations of pictures) s
+/F-gs-font 5 5 SF
+11 136 M (204:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 136 M
+(        shutil.rmtree\(self.pictures_dir\)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+104.3 136 M
+(#clean out pictures folder so that) s
+/F-gs-font 5 5 SF
+11 130 M (205:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 130 M
+(                                          ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+76.665 130 M
+(#nothing is there that shouldn't be) s
+/F-gs-font 5 5 SF
+11 124 M (206:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 124 M
+(        os.mkdir\(self.pictures_dir\)) s
+11 118 M (207:) s
+24.165 118 M
+(        ) s
+11 112 M (208:) s
+24.165 112 M
+(        self.__get_directories_recursively\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+109.535 112 M
+("..") s
+/F-gs-font 5 5 SF
+0 setgray
+116.055 112 M
+(, self.alldirs\)) s
+11 106 M (209:) s
+24.165 106 M
+(                             ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+60.415 106 M
+(#gets unrefined list of directories) s
+/F-gs-font 5 5 SF
+11 100 M (210:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 100 M
+(                             ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+60.415 100 M
+(#saved in list "alldirs") s
+/F-gs-font 5 5 SF
+11 94 M (211:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 94 M
+(        to_remove = []) s
+11 88 M (212:) s
+24.165 88 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 88 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 88 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.55 88 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+68.27 88 M
+( self.alldirs: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.92 88 M
+(#iterates through each directory) s
+/F-gs-font 5 5 SF
+11 82 M (213:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 82 M
+(                                       ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+72.915 82 M
+(#found) s
+/F-gs-font 5 5 SF
+11 76 M (214:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 76 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 76 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 76 M
+( exception ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+69.655 76 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+74.375 76 M
+( self.directory_exceptions: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+133.165 76 M
+(#checks to see if) s
+/F-gs-font 5 5 SF
+11 70 M (215:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 70 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 70 M
+(#directory should) s
+/F-gs-font 5 5 SF
+11 64 M (216:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 64 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 64 M
+(#be excluded) s
+/F-gs-font 5 5 SF
+11 58 M (217:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 58 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 58 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+47.775 58 M
+( exception ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+71.595 58 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+76.315 58 M
+( directory:) s
+11 52 M (218:) s
+24.165 52 M
+(                    to_remove.append\(directory\)  ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+116.925 52 M
+(#do not remove items from list) s
+/F-gs-font 5 5 SF
+11 46 M (219:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 46 M
+(                                                 ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.415 46 M
+(#because changing the size) s
+/F-gs-font 5 5 SF
+11 40 M (220:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 40 M
+(                                                 ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.415 40 M
+(#while iterating through the) s
+/F-gs-font 5 5 SF
+11 34 M (221:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 34 M
+(                                                 ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.415 34 M
+(#list will cause) s
+/F-gs-font 5 5 SF
+11 28 M (222:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 28 M
+(                                                 ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+85.415 28 M
+(#unexpected results) s
+/F-gs-font 5 5 SF
+11 22 M (223:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 16 M (224:) s
+24.165 16 M
+(                    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.165 16 M
+(break) s
+/F-gs-font 5 5 SF
+0 setgray
+62.22 16 M
+( ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+63.47 16 M
+(#end looking for exception because if one has) s
+/F-gs-font 5 5 SF
+11 10 M (225:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 10 M
+(                          ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+56.665 10 M
+(#been found it is already in the to remove list) s
+/F-gs-font 5 5 SF
+11 4 M (226:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 4 M
+(                          ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+56.665 4 M
+(#and no other cases will match it) s
+_R
+S
+%%Page: (3) 3
+%%BeginPageSetup
+_S
+18 36 translate
+/pagenum 3 def
+/fname (../Print/PostScript.py) def
+/fdir (../Print) def
+/ftail (PostScript.py) def
+/Palatino-Italic 5 5 SUF
+% User defined strings:
+/pagenumstr (3) def
+/moddatestr (04/12/20) def
+/modtimestr (14:36:46) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+do_header
+0.698039 0.133333 0.133333 setrgbcolor
+/F-gs-font 5 5 SF
+11 676 M (227:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 670 M (228:) s
+24.165 670 M
+(        alldirs = set\(self.alldirs\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.335 670 M
+(#convert each list to type set) s
+/F-gs-font 5 5 SF
+11 664 M (229:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 664 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 664 M
+(#and find the difference between them) s
+/F-gs-font 5 5 SF
+11 658 M (230:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 658 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 658 M
+(#the difference will always be the) s
+/F-gs-font 5 5 SF
+11 652 M (231:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 652 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 652 M
+(#directories wanted because all the items) s
+/F-gs-font 5 5 SF
+11 646 M (232:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 646 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 646 M
+(#in "to_remove" will be in "alldirs" and all) s
+/F-gs-font 5 5 SF
+11 640 M (233:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 640 M
+(                               ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+62.915 640 M
+(#that is left is the directories to keep) s
+/F-gs-font 5 5 SF
+11 634 M (234:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 628 M (235:) s
+24.165 628 M
+(        to_remove = set\(to_remove\)) s
+11 622 M (236:) s
+11 616 M (237:) s
+24.165 616 M
+(        alldirs = list\(alldirs - to_remove\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+106.725 616 M
+(#find difference of the two) s
+/F-gs-font 5 5 SF
+11 610 M (238:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 610 M
+(                                            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.165 610 M
+(#sets and convert back to type) s
+/F-gs-font 5 5 SF
+11 604 M (239:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 604 M
+(                                            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.165 604 M
+(#list remaining list will be) s
+/F-gs-font 5 5 SF
+11 598 M (240:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 598 M
+(                                            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.165 598 M
+(#the directories that contain) s
+/F-gs-font 5 5 SF
+11 592 M (241:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 592 M
+(                                            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.165 592 M
+(#code to be printed) s
+/F-gs-font 5 5 SF
+11 586 M (242:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 580 M (243:) s
+11 574 M (244:) s
+11 568 M (245:) s
+11 562 M (246:) s
+11 556 M (247:) s
+24.165 556 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 556 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 556 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+63.55 556 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+68.27 556 M
+( alldirs:) s
+11 550 M (248:) s
+24.165 550 M
+(            self.allfiles.append\(self.__find_files\(directory\)\)) s
+11 544 M (249:) s
+24.165 544 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 544 M
+(#by adding) s
+/F-gs-font 5 5 SF
+11 538 M (250:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 538 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 538 M
+(#the list) s
+/F-gs-font 5 5 SF
+11 532 M (251:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 532 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 532 M
+(#directly to the all) s
+/F-gs-font 5 5 SF
+11 526 M (252:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 526 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 526 M
+(#files list, list will) s
+/F-gs-font 5 5 SF
+11 520 M (253:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 520 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 520 M
+(#be segmented and can) s
+/F-gs-font 5 5 SF
+11 514 M (254:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 514 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 514 M
+(#be printed in order) s
+/F-gs-font 5 5 SF
+11 508 M (255:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 508 M
+(                                                   ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+87.915 508 M
+(#easier) s
+/F-gs-font 5 5 SF
+11 502 M (256:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 496 M (257:) s
+24.165 496 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 496 M
+(#make directory under pictures directory for a picture of the code) s
+/F-gs-font 5 5 SF
+11 490 M (258:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 490 M
+(            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+39.165 490 M
+(#to go) s
+/F-gs-font 5 5 SF
+11 484 M (259:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 484 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 484 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+42.775 484 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.025 484 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+51.525 484 M
+( os.path.isdir\(\(self.pictures_dir + directory\).replace\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+165.515 484 M
+("/../") s
+/F-gs-font 5 5 SF
+0 setgray
+174.995 484 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+177.495 484 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+182.995 484 M
+(\)\):) s
+11 478 M (260:) s
+24.165 478 M
+(                os.makedirs\(\(self.pictures_dir + directory\).replace\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+156.245 478 M
+("/../") s
+/F-gs-font 5 5 SF
+0 setgray
+165.725 478 M
+(, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+168.225 478 M
+("/") s
+/F-gs-font 5 5 SF
+0 setgray
+173.725 478 M
+(\)\)) s
+11 472 M (261:) s
+24.165 472 M
+(        ) s
+11 466 M (262:) s
+24.165 466 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 466 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 466 M
+( fileset ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+56.45 466 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+61.17 466 M
+( self.allfiles:) s
+11 460 M (263:) s
+24.165 460 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 460 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 460 M
+( file ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+55.305 460 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+60.025 460 M
+( fileset:) s
+11 454 M (264:) s
+24.165 454 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 454 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+47.775 454 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+49.025 454 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+56.525 454 M
+( file ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+65.995 454 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+70.715 454 M
+( self.file_exceptions:) s
+11 448 M (265:) s
+24.165 448 M
+(                    self.__convert_to_postscript\(file\)) s
+11 442 M (266:) s
+11 436 M (267:) s
+11 430 M (268:) s
+11 424 M (269:) s
+24.165 424 M
+(    ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+29.165 424 M
+(def) s
+/F-gs-font 5 5 SF
+0 setgray
+36.665 424 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0 0 1 setrgbcolor
+37.915 424 M
+(get_page_count) s
+/F-gs-font 5 5 SF
+0 setgray
+73.47 424 M
+(\(self, files=None\):) s
+11 418 M (270:) s
+24.165 418 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+34.165 418 M
+(""") s
+/F-gs-font 5 5 SF
+11 412 M (271:) s
+/Palatino-Bold 5 5 SUF
+24.165 412 M
+(        gets total size of all post script files in) s
+/F-gs-font 5 5 SF
+11 406 M (272:) s
+/Palatino-Bold 5 5 SUF
+24.165 406 M
+(        "Pictures" directory that was made on config file) s
+/F-gs-font 5 5 SF
+11 400 M (273:) s
+/Palatino-Bold 5 5 SUF
+24.165 400 M
+(        in "Pictures" directory) s
+/F-gs-font 5 5 SF
+11 394 M (274:) s
+/Palatino-Bold 5 5 SUF
+/F-gs-font 5 5 SF
+11 388 M (275:) s
+/Palatino-Bold 5 5 SUF
+24.165 388 M
+(        @params = \(optional\) type list of paths of files to print) s
+/F-gs-font 5 5 SF
+11 382 M (276:) s
+/Palatino-Bold 5 5 SUF
+24.165 382 M
+(        @return = int amount of pages) s
+/F-gs-font 5 5 SF
+11 376 M (277:) s
+/Palatino-Bold 5 5 SUF
+24.165 376 M
+(        """) s
+/F-gs-font 5 5 SF
+0 setgray
+11 370 M (278:) s
+24.165 370 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 370 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+37.775 370 M
+( files:) s
+11 364 M (279:) s
+24.165 364 M
+(            self.pictures = files) s
+11 358 M (280:) s
+11 352 M (281:) s
+24.165 352 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 352 M
+(elif) s
+/F-gs-font 5 5 SF
+0 setgray
+41.94 352 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+43.19 352 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+50.69 352 M
+( self.pictures ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+79.89 352 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+88.5 352 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+89.75 352 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+97.25 352 M
+( files:) s
+11 346 M (282:) s
+24.165 346 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 346 M
+(#if pictures list contains any file locations) s
+/F-gs-font 5 5 SF
+11 340 M (283:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 340 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 340 M
+(#and if no files have been specified) s
+/F-gs-font 5 5 SF
+11 334 M (284:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 334 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 334 M
+(#if it does not, then program will find all the) s
+/F-gs-font 5 5 SF
+11 328 M (285:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 328 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 328 M
+(#files that are currently in the directory) s
+/F-gs-font 5 5 SF
+11 322 M (286:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 322 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 322 M
+(#useful if user does not want to overwrite) s
+/F-gs-font 5 5 SF
+11 316 M (287:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 316 M
+(                              ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+61.665 316 M
+(#what is currently there) s
+/F-gs-font 5 5 SF
+11 310 M (288:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 304 M (289:) s
+24.165 304 M
+(            self.pictures.append\(self.pictures_dir\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+124.25 304 M
+(#add parent directory) s
+/F-gs-font 5 5 SF
+11 298 M (290:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 298 M
+(                                                    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+89.165 298 M
+(#because it will not be) s
+/F-gs-font 5 5 SF
+11 292 M (291:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 292 M
+(                                                    ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+89.165 292 M
+(#there to start) s
+/F-gs-font 5 5 SF
+11 286 M (292:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 286 M
+(            self.__get_directories_recursively\(self.pictures_dir, self.pictures\)) s
+11 280 M (293:) s
+11 274 M (294:) s
+24.165 274 M
+(            self.valid_extensions.append\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.87 274 M
+(".ps") s
+/F-gs-font 5 5 SF
+0 setgray
+115.415 274 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+118.33 274 M
+(#temporarily add postscript to) s
+/F-gs-font 5 5 SF
+11 268 M (295:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 268 M
+(                                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+84.165 268 M
+(#acceptable extensions so that the) s
+/F-gs-font 5 5 SF
+11 262 M (296:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 262 M
+(                                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+84.165 262 M
+(#function used will not exclude it) s
+/F-gs-font 5 5 SF
+11 256 M (297:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 256 M
+(                                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+84.165 256 M
+(#entry is removed later) s
+/F-gs-font 5 5 SF
+11 250 M (298:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 250 M
+(            picture_files = []) s
+11 244 M (299:) s
+24.165 244 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 244 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 244 M
+( directory ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+68.55 244 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+73.27 244 M
+( self.pictures: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+103.72 244 M
+(#find all files that are not) s
+/F-gs-font 5 5 SF
+11 238 M (300:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 238 M
+(                                            ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+79.165 238 M
+(#subdirectories) s
+/F-gs-font 5 5 SF
+11 232 M (301:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 232 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 232 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+50.835 232 M
+( file ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+60.305 232 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+65.025 232 M
+( self.__find_files\(directory\):) s
+11 226 M (302:) s
+24.165 226 M
+(                    picture_files.append\(file\)) s
+11 220 M (303:) s
+11 214 M (304:) s
+24.165 214 M
+(            self.valid_extensions.remove\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.735 214 M
+(".ps") s
+/F-gs-font 5 5 SF
+0 setgray
+115.28 214 M
+(\) ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+118.195 214 M
+(#remove postscript from) s
+/F-gs-font 5 5 SF
+11 208 M (305:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 208 M
+(                                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+84.165 208 M
+(#acceptable extensions because) s
+/F-gs-font 5 5 SF
+11 202 M (306:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 202 M
+(                                                ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+84.165 202 M
+(#it is no longer needed) s
+/F-gs-font 5 5 SF
+11 196 M (307:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 190 M (308:) s
+24.165 190 M
+(            self.pictures = picture_files ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+99.93 190 M
+(#"self.pictures" now contains) s
+/F-gs-font 5 5 SF
+11 184 M (309:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 184 M
+(                                          ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+76.665 184 M
+(#locations of files) s
+/F-gs-font 5 5 SF
+11 178 M (310:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+11 172 M (311:) s
+24.165 172 M
+(        total_pages = 0) s
+11 166 M (312:) s
+24.165 166 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 166 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+40.835 166 M
+( picture ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+59.03 166 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+63.75 166 M
+( self.pictures: ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+94.2 166 M
+(#iterate through and parse each file) s
+/F-gs-font 5 5 SF
+11 160 M (313:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 160 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 160 M
+(#looking for a keyword) s
+/F-gs-font 5 5 SF
+11 154 M (314:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 154 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 154 M
+(#keyword appears twice once with) s
+/F-gs-font 5 5 SF
+11 148 M (315:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 148 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 148 M
+(#parenthases and once without, so) s
+/F-gs-font 5 5 SF
+11 142 M (316:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 142 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 142 M
+(#algorithm makes sure it contains no) s
+/F-gs-font 5 5 SF
+11 136 M (317:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 136 M
+(                                      ) s
+/Palatino-Italic 5 5 SUF
+0.698039 0.133333 0.133333 setrgbcolor
+71.665 136 M
+(#parenthases) s
+/F-gs-font 5 5 SF
+11 130 M (318:) s
+/Palatino-Italic 5 5 SUF
+/F-gs-font 5 5 SF
+0 setgray
+24.165 130 M
+(            file = open\(picture, ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+82.565 130 M
+("r") s
+/F-gs-font 5 5 SF
+0 setgray
+88.53 130 M
+(\)) s
+11 124 M (319:) s
+24.165 124 M
+(            ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+39.165 124 M
+(for) s
+/F-gs-font 5 5 SF
+0 setgray
+45.835 124 M
+( line ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+56.55 124 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+61.27 124 M
+( file.readlines\(\):) s
+11 118 M (320:) s
+24.165 118 M
+(                ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+44.165 118 M
+(if) s
+/F-gs-font 5 5 SF
+0 setgray
+47.775 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+49.025 118 M
+("%%Pages: ") s
+/F-gs-font 5 5 SF
+0 setgray
+77.49 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+78.74 118 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+83.46 118 M
+( line ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+94.175 118 M
+(and) s
+/F-gs-font 5 5 SF
+0 setgray
+102.785 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+104.035 118 M
+("\(") s
+/F-gs-font 5 5 SF
+0 setgray
+109.72 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+110.97 118 M
+(not) s
+/F-gs-font 5 5 SF
+0 setgray
+118.47 118 M
+( ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+119.72 118 M
+(in) s
+/F-gs-font 5 5 SF
+0 setgray
+124.44 118 M
+( line:) s
+11 112 M (321:) s
+24.165 112 M
+(                    total_pages = \(total_pages + math.ceil\(int\(line.split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+162.73 112 M
+("%%Pages: ") s
+/F-gs-font 5 5 SF
+0 setgray
+191.195 112 M
+(\)[1].split\() s
+/Palatino-Bold 5 5 SUF
+0.737255 0.560784 0.560784 setrgbcolor
+211.27 112 M
+("\\n") s
+/F-gs-font 5 5 SF
+0 setgray
+221.375 112 M
+(\)[0]\) / 2\)\)) s
+11 106 M (322:) s
+11 100 M (323:) s
+24.165 100 M
+(        ) s
+/Palatino-Bold 5 5 SUF
+0.627451 0.12549 0.941176 setrgbcolor
+34.165 100 M
+(return) s
+/F-gs-font 5 5 SF
+0 setgray
+48.33 100 M
+( total_pages) s
+_R
+S
+%%Trailer
+%%Pages: 3
+%%DocumentNeededResources: font Times-Roman Palatino-Italic Courier-Bold 
+%%+ font Palatino-Roman Palatino-Bold Times-Bold 
+%%EOF

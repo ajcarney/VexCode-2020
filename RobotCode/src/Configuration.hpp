@@ -19,6 +19,17 @@
 #include "../lib/json.hpp"
 
 
+#define RIGHT_ENC_TOP_PORT       'A'
+#define RIGHT_ENC_BOTTOM_PORT    'B'
+#define LEFT_ENC_TOP_PORT        'C'
+#define LEFT_ENC_BOTTOM_PORT     'D'
+#define STRAFE_ENC_TOP_PORT      'E'
+#define STRAFE_ENC_BOTTOM_PORT   'F'
+#define POTENTIOMETER_PORT       'G'
+#define LIMITSWITCH_PORT         'H'
+#define VISIONSENSOR_PORT        21
+
+
 typedef struct
 {
     double kP = 0;
@@ -62,6 +73,8 @@ class Configuration
         
         pid internal_motor_pid;
         pid tilter_pid_consts;
+        pid lift_pid;
+        pid chassis_pid;
         
         int front_right_port;
         int back_left_port;

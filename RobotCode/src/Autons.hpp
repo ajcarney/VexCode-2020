@@ -3,7 +3,6 @@
  * @author: Aiden Carney
  * @reviewed_on: 12/5/19
  * @reviewed_by: Aiden Carney
- * TODO: add and test autons as well as add functionality for autons written on the sd card
  *
  * contains class that holds data about the autonomous period as well as
  * structs for configuration data
@@ -39,58 +38,87 @@ typedef struct
 class Autons
 {
     private:
-
+        
 
     public:
         Autons();
         ~Autons();
 
 
-        int debug_auton_num;        //change if more autons are added
+        int debug_auton_num;       //change if more autons are added
                                    //debugger should be last option
         int driver_control_num;
 
         const std::unordered_map <int, const char*> AUTONOMOUS_NAMES = {
             {1, "Driver Control"},             //used to find name of auton
-            {2, "auton1"},                     //selected to keep title the same
-            {3, "auton2"},
-            {4, "auton3"},
-            {5, "auton4"},
-            {6, "auton5"},
-            {7, "auton6"},
-            {8, "Debugger"}
+            {2, "five_cube_red_small_zone"},   //to keep title the same
+            {3, "five_cube_blue_small_zone"},
+            {4, "seven_cube_red_small_zone"},
+            {5, "seven_cube_blue_small_zone"},
+            {6, "red_big_zone"},
+            {7, "blue_big_zone"},
+            {8, "one_pt"},
+            {9, "skills"},
+            {10, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
-            {1, "goes directly to driver control"},                               //selected to keep background the same
-            {2, "scores four cubes in smallest\nzone"},
-            {3, "scores four cubes in smallest\nzone"},
-            {4, "scores in the big zone"},
-            {5, "scores in the big zone"},
-            {6, "drives forward and backwards"},
-            {7, "runs a unit test so programmer\ncan understand what values should be"},
-            {8, "opens debugger"}
+            {1, "goes directly to\ndriver control"},                               //selected to keep background the same
+            {2, "scores five cubes in smallest\nzone for red"},
+            {3, "scores five cubes in smallest\nzone for blue"},
+            {4, "scores seven cubes in the\nsmallest zone for red"},
+            {5, "scores seven cubes in the\nsmallest zone for blue"},
+            {6, "scores in the big zone\nfor red"},
+            {7, "scores in the big zone\nfor blue"},
+            {8, "drives forward and\nbackwards"},
+            {9, "skills auton"},
+            {10, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "None"},                     //used to find color of auton
             {2, "red"},                     //selected to keep background the same
             {3, "blue"},
-            {4, "red"},
+            {4, "red"},                     
             {5, "blue"},
-            {6, "None"},
-            {7, "None"},
-            {8, "None"}
+            {6, "red"},
+            {7, "blue"},
+            {8, "None"},
+            {9, "None"},
+            {10, "None"}
         };
 
 
         /**
+         * @return: None
+         *
+         * @see: Motors.hpp
+         * @see: Chassis.hpp
+         *
+         * function for deploying the tray
+         */
+        void deploy();
+        
+        
+        /**
+         * @return: None
+         *
+         * @see: Motors.hpp
+         * @see: Chassis.hpp
+         *
+         * function for dumping a stack
+         */
+        void dump_stack();
+
+        
+        
+        /**
          * @param: autonConfig cnfg -> the configuration to use for the auton
          * @return: None
          *
          * @see: Motors.hpp
          *
-         * scores four cubes in the smallest zone for the red team
+         * scores five cubes in the smallest zone for the red team
          */
-        void auton1( autonConfig cnfg );
+        void five_cube_red_small_zone( autonConfig cnfg );
 
         /**
          * @param: autonConfig cnfg -> the configuration to use for the auton
@@ -98,12 +126,34 @@ class Autons
          *
          * @see: Motors.hpp
          *
-         * scores four cubes in the smallest zone for the blue team
+         * scores five cubes in the smallest zone for the blue team
          */
-        void auton2( autonConfig cnfg );
+        void five_cube_blue_small_zone( autonConfig cnfg );
 
 
 
+        /**
+         * @param: autonConfig cnfg -> the configuration to use for the auton
+         * @return: None
+         *
+         * @see: Motors.hpp
+         *
+         * scores seven cubes in the smallest zone for the red team
+         */
+        void seven_cube_red_small_zone( autonConfig cnfg );
+
+        /**
+         * @param: autonConfig cnfg -> the configuration to use for the auton
+         * @return: None
+         *
+         * @see: Motors.hpp
+         *
+         * scores seven cubes in the smallest zone for the blue team
+         */
+        void seven_cube_blue_small_zone( autonConfig cnfg );
+        
+        
+        
         /**
          * @param: autonConfig cnfg -> the configuration to use for the auton
          * @return: None
@@ -112,7 +162,7 @@ class Autons
          *
          * scores cubes in the big zone for red
          */
-        void auton3( autonConfig cnfg );
+        void red_big_zone( autonConfig cnfg );
 
 
 
@@ -125,7 +175,7 @@ class Autons
          *
          * scores cubes in the big zone for blue
          */
-        void auton4( autonConfig cnfg );
+        void blue_big_zone( autonConfig cnfg );
 
 
 
@@ -138,7 +188,7 @@ class Autons
          *
          * drives forward
          */
-        void auton5( autonConfig cnfg );
+        void one_pt( autonConfig cnfg );
 
 
 
@@ -149,10 +199,9 @@ class Autons
          *
          * @see: Motors.hpp
          *
-         * runs a unit test
+         * runs skills
          */
-        void auton6( autonConfig cnfg );
-
+        void skills( autonConfig cnfg );
 
 };
 

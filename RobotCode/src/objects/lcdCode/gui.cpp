@@ -33,7 +33,6 @@ int chooseAuton()
     SelectionScreen scr1;
     OptionsScreen scr2;
     PrepScreen scr3;
-    DriverControlLCD scr4;
 
     int finalAutonChoice = 0;
     int auton = 1;
@@ -54,6 +53,17 @@ int chooseAuton()
         else if ( auton == auton_data.debug_auton_num ) //if debugger is selected
         {
             //starts driver control for debugging purposes
+            MotorThread* motor_thread = MotorThread::get_instance();
+            motor_thread->register_motor(Motors::front_right);
+            motor_thread->register_motor(Motors::front_left);
+            motor_thread->register_motor(Motors::back_right);
+            motor_thread->register_motor(Motors::back_left);
+            motor_thread->register_motor(Motors::right_intake);
+            motor_thread->register_motor(Motors::left_intake);
+            motor_thread->register_motor(Motors::tilter);
+            motor_thread->register_motor(Motors::lift);
+            motor_thread->start_thread();
+            
             pros::Task driver_control_task (driver_control,
                                            (void*)NULL,
                                            TASK_PRIORITY_DEFAULT,
@@ -65,6 +75,16 @@ int chooseAuton()
             //ends driver control because it should not be enabled when
             //auton is being selected
             driver_control_task.remove();
+            
+            motor_thread->unregister_motor(Motors::front_right);
+            motor_thread->unregister_motor(Motors::front_left);
+            motor_thread->unregister_motor(Motors::back_right);
+            motor_thread->unregister_motor(Motors::back_left);
+            motor_thread->unregister_motor(Motors::right_intake);
+            motor_thread->unregister_motor(Motors::left_intake);
+            motor_thread->unregister_motor(Motors::tilter);
+            motor_thread->unregister_motor(Motors::lift);
+            motor_thread->stop_thread();
         }
         
         else
@@ -81,7 +101,6 @@ int chooseAuton()
                     if ( scr3.confirm )
                     {
                         finalAutonChoice = auton;
-                        //scr4.updateLabels(interval, finalAutonChoice);
                     }
 
 

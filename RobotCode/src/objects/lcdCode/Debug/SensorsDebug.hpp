@@ -41,8 +41,7 @@
  * shows tab of IMEs and allows user to tare encoders and see values
  */
 class IMEsDebugger :
-    virtual Styles,
-    virtual Sensors
+    virtual Styles
 {
     private:
         lv_obj_t *container;
@@ -89,122 +88,10 @@ class IMEsDebugger :
 /**
  * @see: ../Styles.
  *
- * show values for accelerometer
- */
-class AccelerometerDebugger :
-    virtual Styles,
-    virtual Sensors
-{
-    private:
-        lv_obj_t *container;
-
-        lv_obj_t *title1;
-        lv_obj_t *title2;
-        lv_obj_t *title3;
-
-        lv_obj_t *info1;
-        lv_obj_t *info2;
-        lv_obj_t *info3;
-
-        lv_obj_t *btn_calibrate;
-        lv_obj_t *btn_calibrate_label;
-
-
-        /**
-         * @param: lv_obj_t* btn -> button that called the funtion
-         * @return: lv_res_t -> LV_RES_OK on successfull completion because object still exists
-         *
-         * button callback function used to calibrate sensor
-         */
-        static lv_res_t btn_calibrate_action(lv_obj_t *btn);
-
-    protected:
-        /**
-         * @return: None
-         *
-         * updates value of x, y, and z values of accelerometer
-         */
-        void update_accelerometer_info();
-
-    public:
-        AccelerometerDebugger();
-        virtual ~AccelerometerDebugger();
-
-        /**
-         * @param: lv_obj_t* parent -> parent of the tab
-         * @return: None
-         *
-         * objects are initially loaded onto a NULL parent to be updated later
-         * this sets it so that the parent of the objects is now the tab
-         */
-        void AccelerometerDebuggerInit(lv_obj_t *parent);
-};
-
-
-
-/**
- * @see: ../Styles.
- *
- * show values for gyro(s)
- */
-class GyrosDebugger :
-    virtual Styles,
-    virtual Sensors
-{
-    private:
-        lv_obj_t *container;
-
-        lv_obj_t *title1;
-        lv_obj_t *title2;
-        lv_obj_t *title3;
-
-        lv_obj_t *info1;
-        lv_obj_t *info2;
-        lv_obj_t *info3;
-
-        lv_obj_t *btn_calibrate;
-        lv_obj_t *btn_calibrate_label;
-
-        /**
-         * @param: lv_obj_t* btn -> button that called the funtion
-         * @return: lv_res_t -> LV_RES_OK on successfull completion because object still exists
-         *
-         * button callback function used to calibrate sensor
-         */
-        static lv_res_t btn_calibrate_action(lv_obj_t *btn);
-
-    protected:
-        /**
-         * @return: None
-         *
-         * updates values of gyro(s)
-         */
-        void update_gyro_info();
-
-    public:
-        GyrosDebugger();
-        virtual ~GyrosDebugger();
-
-        /**
-         * @param: lv_obj_t* parent -> parent of the tab
-         * @return: None
-         *
-         * objects are initially loaded onto a NULL parent to be updated later
-         * this sets it so that the parent of the objects is now the tab
-         */
-        void GyrosDebuggerInit(lv_obj_t *parent);
-};
-
-
-
-/**
- * @see: ../Styles.
- *
  * show value for potentiometer
  */
 class PotentiometerDebugger :
-    virtual Styles,
-    virtual Sensors
+    virtual Styles
 {
     private:
         lv_obj_t *container;
@@ -258,8 +145,7 @@ class PotentiometerDebugger :
  * show value for limit switch
  */
 class LimitSwitchDebugger :
-    virtual Styles,
-    virtual Sensors
+    virtual Styles
 {
 private:
     lv_obj_t *container;
@@ -290,56 +176,6 @@ private:
          * this sets it so that the parent of the objects is now the tab
          */
         void LimitSwitchDebuggerInit(lv_obj_t *parent);
-};
-
-
-
-/**
- * @see: ../Styles.
- *
- * sets value for LED
- */
-class LEDDebugger :
-    virtual Styles,
-    virtual Sensors
-{
-private:
-        lv_obj_t *container;
-
-        lv_obj_t *btn_set;
-        lv_obj_t *btn_set_label;
-
-        /**
-         * @param: lv_obj_t* btn -> button that called the funtion
-         * @return: lv_res_t -> LV_RES_OK on successfull completion because object still exists
-         *
-         * button callback function used to turn led on
-         */
-        static lv_res_t btn_set_action(lv_obj_t *btn);
-
-        lv_obj_t *btn_clear;
-        lv_obj_t *btn_clear_label;
-
-        /**
-         * @param: lv_obj_t* btn -> button that called the funtion
-         * @return: lv_res_t -> LV_RES_OK on successfull completion because object still exists
-         *
-         * button callback function used to turn led off
-         */
-        static lv_res_t btn_clear_action(lv_obj_t *btn);
-
-    public:
-        LEDDebugger();
-        virtual ~LEDDebugger();
-
-        /**
-         * @param: lv_obj_t* parent -> parent of the tab
-         * @return: None
-         *
-         * objects are initially loaded onto a NULL parent to be updated later
-         * this sets it so that the parent of the objects is now the tab
-         */
-        void LEDDebuggerInit(lv_obj_t *parent);
 };
 
 
@@ -398,13 +234,9 @@ class VisionSensorDebugger : virtual Styles
  */
 class SensorsDebug :
     virtual private Styles,
-    virtual private Sensors,
     private IMEsDebugger,
-    private AccelerometerDebugger,
-    private GyrosDebugger,
     private PotentiometerDebugger,
     private LimitSwitchDebugger,
-    private LEDDebugger,
     private VisionSensorDebugger
 {
     private:

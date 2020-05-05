@@ -1,13 +1,4 @@
 #include <csignal>
-#include <cstdlib>
-#include <errno.h>
-#include <fstream>
-#include <string>
-#include <iostream>
-#include <cmath>
-#include <cerrno>
-#include <cstring>
-#include <clocale>
 
 #include "main.h"
 
@@ -15,16 +6,18 @@
 #include "DriverControl.hpp"
 #include "Configuration.hpp"
 #include "objects/controller/controller.hpp"
-#include "objects/lcdCode/DriverControl/LCDTask.hpp"
 #include "objects/lcdCode/gui.hpp"
+#include "objects/lcdCode/DriverControl/DriverControlLCD.hpp"
+#include "objects/lcdCode/DriverControl/AutonomousLCD.hpp"
 #include "objects/lcdCode/TemporaryScreen.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/motors/MotorThread.hpp"
-#include "objects/robotChassis/chassis.hpp"
-#include "objects/writer/Writer.hpp"
-
+#include "objects/subsystems/chassis.hpp"
+#include "objects/logger/Logger.hpp"
+#include "objects/subsystems/Lift.hpp"
 
 int final_auton_choice;
+AutonomousLCD auton_lcd;
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -34,15 +27,25 @@ int final_auton_choice;
  */
  void initialize()
  {
+    //Sensors::potentiometer.calibrate();
+    
+    MotorThread* motor_thread = MotorThread::get_instance();
+    motor_thread->register_motor(Motors::front_right);
+    motor_thread->register_motor(Motors::front_left);
+    motor_thread->register_motor(Motors::back_right);
+    motor_thread->register_motor(Motors::back_left);
+    motor_thread->register_motor(Motors::right_intake);
+    motor_thread->register_motor(Motors::left_intake);
+    motor_thread->register_motor(Motors::tilter);
+    motor_thread->register_motor(Motors::lift);
+    motor_thread->start_thread();
+    
     pros::delay(100); //wait for terminal to start and lvgl
     Configuration* config = Configuration::get_instance();
     config->init();
     config->print_config_options();
 
-    Motors *motors = Motors::get_instance();
 
-    MotorThread* motor_thread = MotorThread::get_instance();
-    motor_thread->start_thread();
 
     final_auton_choice = chooseAuton();
 
@@ -79,7 +82,9 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+    auton_lcd.update_labels(final_auton_choice);
+}
 
 
 
@@ -95,7 +100,6 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-    lv_scr_load(tempScreen::temp_screen);
     Autons auton;
     switch(final_auton_choice)
     {
@@ -103,46 +107,52 @@ void autonomous() {
            break;
 
         case 2:
-           auton.auton1(OptionsScreen::cnfg);
+           auton.five_cube_red_small_zone(OptionsScreen::cnfg);
            break;
 
         case 3:
-           auton.auton2(OptionsScreen::cnfg);
+           auton.five_cube_blue_small_zone(OptionsScreen::cnfg);
            break;
 
         case 4:
-           auton.auton3(OptionsScreen::cnfg);
+           auton.seven_cube_red_small_zone(OptionsScreen::cnfg);
            break;
 
         case 5:
-           auton.auton4(OptionsScreen::cnfg);
+           auton.seven_cube_blue_small_zone(OptionsScreen::cnfg);
            break;
 
         case 6:
-            auton.auton5(OptionsScreen::cnfg);
+            auton.red_big_zone(OptionsScreen::cnfg);
             break;
 
         case 7:
-            auton.auton6(OptionsScreen::cnfg);
+            auton.blue_big_zone(OptionsScreen::cnfg);
             break;
 
+        case 8:
+            auton.one_pt(OptionsScreen::cnfg);
+            break;
 
+        case 9:
+            auton.skills(OptionsScreen::cnfg);
+            break;
 
     }
 
 }
 
 
- void wr( void* )
+ void log_thread_fn( void* )
  {
-     Writer writer;
+     Logger logger;
+     pros::ADIDigitalIn limit_switch('A');
      while ( 1 )
      {
-         //std::cout << "dumping " << writer.get_count() << " items\n";
-         //pros::delay(50);
-         //std::cout << writer.get_count() << "\n";
-         writer.dump();
-         //std::cout << pros::millis() << "\n";
+        if ( limit_switch.get_value() )
+        {    
+            logger.dump();
+        }
      }
  }
 
@@ -173,6 +183,50 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
  void opcontrol() {
+     Logger logger;
+     // pros::Task write_task (log_thread_fn,
+     //                      (void*)NULL,
+     //                      TASK_PRIORITY_DEFAULT,
+     //                      TASK_STACK_DEPTH_DEFAULT,
+     //                      "logger_thread");
+     
+     
+     // int stop = pros::millis() + 8000;
+     // 
+     // Lift lift(Motors::lift, {0, 800});
+     // while ( pros::millis() < stop )
+     // {
+     //     lift.move_to(900, false, true);
+     //     pros::delay(10);
+     // }
+     // stop = pros::millis() + 2000;
+     // while ( pros::millis() < stop )
+     // {
+     //     lift.move_to(0, false, true);
+     //     pros::delay(10);
+     // }
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     // logger.dump();
+     
+     // 
+     // Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
+     // int stop = pros::millis() + 8000;
+     // 
+     // chassis.turn_left(13, 12000, INT32_MAX, true, false, true);
+     // 
+     // while ( pros::millis() < stop )
+     // {
+     //     chassis.turn_left(13, 12000, INT32_MAX, false, false, true );
+     //     pros::delay(10);
+     // }
+
+     
      std::cout << "opcontrol started\n";
 
      std::signal(SIGSEGV, Exit);
@@ -192,84 +246,63 @@ void autonomous() {
 
      lv_scr_load(tempScreen::temp_screen);
     
-     Motors *motors = Motors::get_instance(); //init singleton motors object
-     motors->lift->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-     motors->right_intake->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-     motors->left_intake->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
      pros::Task driver_control_task (driver_control,
                                     (void*)NULL,
                                     TASK_PRIORITY_DEFAULT,
                                     TASK_STACK_DEPTH_DEFAULT,
                                     "DriverControlTask");
 
-/*     pros::Task write_task (wr,
-                          (void*)NULL,
-                          TASK_PRIORITY_DEFAULT,
-                          TASK_STACK_DEPTH_DEFAULT,
-                          "write_task");
-     std::cout << "starting\n";
-     Motors motors;
-     motors.record_macro();
+     // std::cout << "starting\n";
+     // Motors motors;
+     // Motors::record_macro();
+     // 
+     // Writer writer;
+     // while( writer.get_count() > 0 )
+     // {
+     //     std::cout << pros::millis() << " " << writer.get_count() << "\n";
+     //     pros::delay(1);
+     // }
+     // 
+     // std::cout << "done\n";
 
-     Writer writer;
-     while( writer.get_count() > 0 )
-     {
-         std::cout << pros::millis() << " " << writer.get_count() << "\n";
-         pros::delay(1);
-     }
-
-     std::cout << "done\n";*/
-
-
-
+     //update controller with color of cube and if it is loaded or not
+     DriverControlLCD lcd(final_auton_choice);
+     
+     Controller controllers;
+     std::string controller_text = "no cube loaded";
+     std::string prev_controller_text = "";
      while(1)
      {
-         Controller controllers;
-         Motors *motors = Motors::get_instance();
-         //partner button A runs autonomous
-         if (controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_A))
+         int cube = Sensors::check_for_cube();
+         if ( cube == 1 )
          {
-             motors->allow_left_chassis = false;
-             motors->allow_right_chassis = false;
-             motors->allow_intake = false;
-             motors->allow_tilter = false;
-             motors->allow_lift = false;
-             
-             Autons auton;
-             switch(final_auton_choice)
-             {
-                 case 1:
-                    break;
-
-                 case 2:
-                    std::cout << "starting auton\n";
-                    auton.auton1(OptionsScreen::cnfg);
-                    std::cout << "auton finished\n";
-                    break;
-
-                 case 3:
-                    auton.auton2(OptionsScreen::cnfg);
-                    break;
-
-                 case 4:
-                    auton.auton3(OptionsScreen::cnfg);
-                    break;
-
-                 case 5:
-                    auton.auton4(OptionsScreen::cnfg);
-                    break;
-
-                 case 6:
-                     auton.auton5(OptionsScreen::cnfg);
-                     break;
-
-                 case 7:
-                     auton.auton6(OptionsScreen::cnfg);
-                     break;
-
-             }
+             controller_text = "green           ";   // pad with spaces to remove junk from previous prints
+             std::cout << "green cube loaded\n";
          }
-         pros::delay(20);
+         else if ( cube == 2 )
+         {
+             controller_text = "orange          ";
+             std::cout << "orange cube loaded\n";
+         }
+         else if ( cube == 3 )
+         {
+             controller_text = "purple          ";
+             std::cout << "purple cube loaded\n";
+         }
+         else 
+         {
+             controller_text = "no cube loaded  ";
+             std::cout << "no cube loaded\n";
+         }
+         std::cout << "here\n";
+         pros::delay(60);
+         
+         if ( controller_text != prev_controller_text )
+         {
+             controllers.master.print( 1, 0, controller_text.c_str() );
+         }
+         
+         lcd.update_labels();
+         
      }
  }

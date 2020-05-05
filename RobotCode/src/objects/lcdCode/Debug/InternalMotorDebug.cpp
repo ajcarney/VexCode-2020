@@ -1,8 +1,8 @@
 /**
  * @file: ./RobotCode/src/lcdCode/Debug/InternalMotorDebug.cpp
  * @author: Aiden Carney
- * @reviewed_on: 
- * @reviewed_by: 
+ * @reviewed_on: 2/16/2020
+ * @reviewed_by: Aiden Carney
  *
  * @see: InternalMotorDebug.hpp
  *
@@ -20,6 +20,7 @@
 #include "../../../Configuration.hpp"
 #include "../../motors/Motor.hpp"
 #include "../../motors/MotorThread.hpp"
+#include "../../logger/Logger.hpp"
 
 
 
@@ -54,56 +55,56 @@ InternalMotorDebug::InternalMotorDebug() :
 
     //init parameters side two
     //port
-        port_label = lv_label_create(main_screen, NULL);
-        lv_label_set_style(port_label, &heading_text);
-        lv_obj_set_width(port_label, 100);
-        lv_obj_set_height(port_label, 40);
-        lv_label_set_align(port_label, LV_LABEL_ALIGN_LEFT);
-        lv_label_set_text(port_label, "Port");
+    port_label = lv_label_create(main_screen, NULL);
+    lv_label_set_style(port_label, &heading_text);
+    lv_obj_set_width(port_label, 100);
+    lv_obj_set_height(port_label, 40);
+    lv_label_set_align(port_label, LV_LABEL_ALIGN_LEFT);
+    lv_label_set_text(port_label, "Port");
 
-        port_text_area = lv_ta_create(main_screen, NULL);
-        lv_obj_set_style(port_text_area, &subheading_text);
-        lv_ta_set_accepted_chars(port_text_area, "0123456789");
-        lv_obj_set_size(port_text_area, 80, 20);
-        lv_ta_set_text(port_text_area, "1");
-        lv_ta_set_one_line(port_text_area, true);
+    port_text_area = lv_ta_create(main_screen, NULL);
+    lv_obj_set_style(port_text_area, &subheading_text);
+    lv_ta_set_accepted_chars(port_text_area, "0123456789");
+    lv_obj_set_size(port_text_area, 80, 20);
+    lv_ta_set_text(port_text_area, "1");
+    lv_ta_set_one_line(port_text_area, true);
         
     //gearset
-        current_gearset = pros::E_MOTOR_GEARSET_18;
-        
-        gearset_label = lv_label_create(main_screen, NULL);
-        lv_label_set_style(gearset_label, &heading_text);
-        lv_obj_set_width(gearset_label, 100);
-        lv_obj_set_height(gearset_label, 40);
-        lv_label_set_align(gearset_label, LV_LABEL_ALIGN_LEFT);
-        lv_label_set_text(gearset_label, "Gearset");
-        
-        ddlist_gearset = lv_ddlist_create(main_screen, NULL);
-        lv_ddlist_set_options(ddlist_gearset, "100\n200\n600");
-        lv_obj_set_style(ddlist_gearset, &subheading_text);
-        lv_obj_set_width(ddlist_gearset, 125);
-        lv_obj_set_height(ddlist_gearset, 60);
-        lv_ddlist_set_action(ddlist_gearset, ddlist_gearset_action);
-        lv_ddlist_set_selected(ddlist_gearset, 1);
+    current_gearset = pros::E_MOTOR_GEARSET_18;
+    
+    gearset_label = lv_label_create(main_screen, NULL);
+    lv_label_set_style(gearset_label, &heading_text);
+    lv_obj_set_width(gearset_label, 100);
+    lv_obj_set_height(gearset_label, 40);
+    lv_label_set_align(gearset_label, LV_LABEL_ALIGN_LEFT);
+    lv_label_set_text(gearset_label, "Gearset");
+    
+    ddlist_gearset = lv_ddlist_create(main_screen, NULL);
+    lv_ddlist_set_options(ddlist_gearset, "100\n200\n600");
+    lv_obj_set_style(ddlist_gearset, &subheading_text);
+    lv_obj_set_width(ddlist_gearset, 125);
+    lv_obj_set_height(ddlist_gearset, 60);
+    lv_ddlist_set_action(ddlist_gearset, ddlist_gearset_action);
+    lv_ddlist_set_selected(ddlist_gearset, 1);
 
     //brakemode
-        current_brake_mode = pros::E_MOTOR_BRAKE_COAST;
+    current_brake_mode = pros::E_MOTOR_BRAKE_COAST;
 
-        brakemode_label = lv_label_create(main_screen, NULL);
-        lv_label_set_style(brakemode_label, &heading_text);
-        lv_obj_set_width(brakemode_label, 100);
-        lv_obj_set_height(brakemode_label, 40);
-        lv_label_set_align(brakemode_label, LV_LABEL_ALIGN_LEFT);
-        lv_label_set_text(brakemode_label, "Brakemode");
+    brakemode_label = lv_label_create(main_screen, NULL);
+    lv_label_set_style(brakemode_label, &heading_text);
+    lv_obj_set_width(brakemode_label, 100);
+    lv_obj_set_height(brakemode_label, 40);
+    lv_label_set_align(brakemode_label, LV_LABEL_ALIGN_LEFT);
+    lv_label_set_text(brakemode_label, "Brakemode");
 
-        ddlist_brake_mode = lv_ddlist_create(main_screen, NULL);
-        lv_ddlist_set_options(ddlist_brake_mode, "Coast\n"
-                                                 "Brake\n"
-                                                 "PID Hold");
-        lv_obj_set_style(ddlist_brake_mode, &subheading_text);
-        lv_obj_set_width(ddlist_brake_mode, 125);
-        lv_obj_set_height(ddlist_brake_mode, 20);
-        lv_ddlist_set_action(ddlist_brake_mode, ddlist_brake_mode_action);
+    ddlist_brake_mode = lv_ddlist_create(main_screen, NULL);
+    lv_ddlist_set_options(ddlist_brake_mode, "Coast\n"
+                                             "Brake\n"
+                                             "PID Hold");
+    lv_obj_set_style(ddlist_brake_mode, &subheading_text);
+    lv_obj_set_width(ddlist_brake_mode, 125);
+    lv_obj_set_height(ddlist_brake_mode, 20);
+    lv_ddlist_set_action(ddlist_brake_mode, ddlist_brake_mode_action);
         
         
 //init parameters side one
@@ -251,15 +252,14 @@ InternalMotorDebug::InternalMotorDebug() :
 
 
 //set up keyboard
-/*    keyboard = lv_kb_create(main_screen, NULL);
-    lv_kb_set_mode(keyboard, LV_KB_MODE_NUM);
-    lv_kb_set_ta(keyboard, kp_text_area);
-    lv_kb_set_ta(keyboard, ki_text_area);
-    lv_kb_set_ta(keyboard, kd_text_area);
-    lv_kb_set_ta(keyboard, I_max_text_area);
-    lv_kb_set_ta(keyboard, slew_text_area);
-    lv_kb_set_ta(keyboard, port_text_area);*/
+    keyboard = lv_kb_create(main_screen, NULL);
+    // lv_kb_set_ta(keyboard, kp_text_area);
+    // lv_kb_set_ta(keyboard, ki_text_area);
+    // lv_kb_set_ta(keyboard, kd_text_area);
+    // lv_kb_set_ta(keyboard, I_max_text_area);
+    // lv_kb_set_ta(keyboard, slew_text_area);
     
+    //lv_ta_set_action(port_text_area, LV_EVENT_PRESSED);
     
 //set positions
 //title
@@ -403,8 +403,15 @@ lv_res_t InternalMotorDebug::ddlist_brake_mode_action(lv_obj_t * ddlist)
 
 
 
+/**
+ * reads values from text areas and performs data validation, exits on invalid data
+ * starts unit test and logs data
+ * updates labels on lcd while waiting for duration to finish
+ */
 int InternalMotorDebug::run_unit_test()
 {
+    Logger logger;
+    
     pid pid_constants;
     
     int slew = 0;
@@ -420,16 +427,21 @@ int InternalMotorDebug::run_unit_test()
         double kI = std::stod(lv_ta_get_text(ki_text_area));
         double kD = std::stod(lv_ta_get_text(kd_text_area));
         double I_max = std::stod(lv_ta_get_text(I_max_text_area));
-        
+
         pid_constants.kP = kP;
-        pid_constants.kP = kI;
-        pid_constants.kP = kD;
-        pid_constants.kP = I_max;
+        pid_constants.kI = kI;
+        pid_constants.kD = kD;
+        pid_constants.I_max = I_max;
     }
     catch ( const std::invalid_argument& )
     {
         run = false;
-        std::cerr << "[ERROR] " << pros::millis() << " invalid pid constants given to internal motor unit test\n";
+        
+        log_entry entry;
+        entry.content = "[ERROR] " + std::to_string(pros::millis()) + " invalid pid constants given to internal motor unit test";
+        entry.stream = "cerr";
+        logger.add(entry);
+        
         return 0;
     }
     
@@ -440,7 +452,12 @@ int InternalMotorDebug::run_unit_test()
     catch ( const std::invalid_argument& )
     {
         run = false;
-        std::cerr << "[ERROR] " << pros::millis() << " invalid slew rate given to internal motor unit test\n";
+        
+        log_entry entry;
+        entry.content = "[ERROR] " + std::to_string(pros::millis()) + " invalid slew rate given to internal motor unit test";
+        entry.stream = "cerr";
+        logger.add(entry);
+        
         return 0;
     }
     
@@ -451,7 +468,12 @@ int InternalMotorDebug::run_unit_test()
     catch ( const std::invalid_argument& )
     {
         run = false;
-        std::cerr << "[ERROR] " << pros::millis() << " invalid setpoint given to internal motor unit test\n";
+        
+        log_entry entry;
+        entry.content = "[ERROR] " + std::to_string(pros::millis()) + " invalid setpoint given to internal motor unit test";
+        entry.stream = "cerr";
+        logger.add(entry);
+        
         return 0;
     }
     
@@ -462,7 +484,12 @@ int InternalMotorDebug::run_unit_test()
     catch ( const std::invalid_argument& )
     {
         run = false;
-        std::cerr << "[ERROR] " << pros::millis() << " invalid motor port given to internal motor unit test\n";
+        
+        log_entry entry;
+        entry.content = "[ERROR] " + std::to_string(pros::millis()) + " invalid motor port given to internal motor unit test";
+        entry.stream = "cerr";
+        logger.add(entry);
+        
         return 0;
     }
     
@@ -473,7 +500,12 @@ int InternalMotorDebug::run_unit_test()
     catch ( const std::invalid_argument& )
     {
         run = false;
-        std::cerr << "[ERROR] " << pros::millis() << " invalid duration given to internal motor unit test\n";
+        
+        log_entry entry;
+        entry.content = "[ERROR] " + std::to_string(pros::millis()) + " invalid duration given to internal motor unit test";
+        entry.stream = "cerr";
+        logger.add(entry);
+        
         return 0;
     }
     
@@ -481,23 +513,29 @@ int InternalMotorDebug::run_unit_test()
     motor.set_port(motor_port);
     motor.set_gearing(current_gearset);
     motor.set_brake_mode(current_brake_mode);
-    if ( std::abs(slew) > 0 )
-    {
-        motor.enable_slew();
-        motor.set_slew(slew);
-    }
-    else 
-    {
-        motor.disable_slew();
-    }
+    // if ( std::abs(slew) > 0 )
+    // {
+    // motor.enable_slew();
+    // motor.set_slew(30);
+    // }
+    // else 
+    // {
+         motor.disable_slew();
+    // }
 
     //motor.disable_velocity_pid();
     motor.disable_driver_control();
     motor.set_pid( pid_constants );
+    motor.enable_velocity_pid();
     motor.set_log_level(1);
+    std::cout << motor.get_pid().kP << "\n";
+    
+    MotorThread * motor_thread = MotorThread::get_instance();
+    motor_thread->start_thread();
     
     int ut_end_time = pros::millis() + duration; 
-    motor.move_velocity(setpoint);
+    //motor.move_velocity(setpoint);
+    motor.move_velocity(200);
     
     //wait for unit test to finish and update gui in the meantime
     while ( pros::millis() < ut_end_time )
@@ -509,11 +547,23 @@ int InternalMotorDebug::run_unit_test()
         info_str += "Error: " + std::to_string(setpoint - motor.get_actual_velocity());
         
         lv_label_set_text(information_label, info_str.c_str());
+        logger.dump();
         pros::delay(50);
     }
     
     motor.set_voltage(0);
-    
+    pros::delay(2000);
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    logger.dump();
+    motor.set_log_level(0);
+
     return 1;
 }
 
@@ -553,6 +603,4 @@ void InternalMotorDebug::debug()
         pros::delay(100);
     }
     
-    motor.move(0);
-    motor.set_log_level(0);
 }

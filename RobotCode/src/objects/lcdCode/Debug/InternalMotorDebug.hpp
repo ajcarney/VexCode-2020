@@ -1,8 +1,8 @@
 /**
  * @file: ./RobotCode/src/lcdCode/Debug/InternalMotorDebug.hpp
  * @author: Aiden Carney
- * @reviewed_on: 
- * @reviewed_by: 
+ * @reviewed_on: 2/16/2020
+ * @reviewed_by: Aiden Carney
  *
  * contains class that for debugging the internal Motor PID constants
  * from the lcd without having to recompile and upload code
@@ -92,7 +92,8 @@ class InternalMotorDebug : private Styles
         lv_obj_t *information_label;
 
     //keyboard 
-/*        lv_obj_t *keyboard;*/
+        
+        lv_obj_t *keyboard;
         
 
     //back button
@@ -122,6 +123,12 @@ class InternalMotorDebug : private Styles
         static lv_res_t btn_run_action(lv_obj_t *btn);
         
     //actual unit test function   
+        /**
+         * @return: int -> 1 if motor was successfully tested, 0 otherwise
+         *
+         * reads values from text areas and performs a unit test with the 
+         * given parameters
+         */
         int run_unit_test( ); 
         
 
@@ -132,7 +139,7 @@ class InternalMotorDebug : private Styles
         /**
          * @return: None
          *
-         * -
+         * start debugger
          */
         void debug();
 

@@ -81,15 +81,15 @@ Wiring::Wiring()
     lv_label_set_align(sensors_info, LV_LABEL_ALIGN_LEFT);
 
     std::string sensors_text = (
-        std::string("gyro 1          - ") + GYRO1_PORT + "\n" +
-        "gyro 2          - " + GYRO2_PORT + "\n" +
-        "accellerometerX - " + ACCELLEROMETERX_PORT + "\n" +
-        "accellerometerY - " + ACCELLEROMETERY_PORT + "\n" +
-        "accellerometerZ - " + ACCELLEROMETERZ_PORT + "\n" +
-        "potentiometer   - " + POTENTIOMETER_PORT + "\n" +
+        std::string("right enc top     - ") + RIGHT_ENC_TOP_PORT + "\n" +
+        "right enc bottom  - " + RIGHT_ENC_BOTTOM_PORT + "\n" +
+        "left enc top      - " + LEFT_ENC_TOP_PORT + "\n" +
+        "left enc bottom   - " + LEFT_ENC_BOTTOM_PORT + "\n" +
+        "strafe enc top    - " + STRAFE_ENC_TOP_PORT + "\n" +
+        "strafe enc bottom - " + STRAFE_ENC_BOTTOM_PORT + "\n" +
+        "potentiometer     - " + POTENTIOMETER_PORT + "\n" +
         "limit switch      - " + LIMITSWITCH_PORT + "\n" +
-        "LED             - " + LED_PORT + "\n" +
-        "vision sensor    - " + std::to_string(VISIONSENSOR_PORT) + "\n"
+        "vision sensor     - " + std::to_string(VISIONSENSOR_PORT) + "\n"
     );
 
     lv_label_set_text(sensors_info, sensors_text.c_str());

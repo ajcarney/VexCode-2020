@@ -8,11 +8,13 @@
  * contains implementation for functions that handle motor functions
  */
 
+#include <stdio.h>
 #include <vector>
 #include <atomic>
 
 #include "main.h"
 
+#include "../logger/Logger.hpp"
 #include "Motor.hpp"
 #include "MotorThread.hpp"
 
@@ -22,8 +24,7 @@ std::vector<Motor*> MotorThread::motors;
 std::atomic<bool> MotorThread::lock = ATOMIC_VAR_INIT(false);
 
 
-MotorThread::MotorThread() //:
-    //thread( run, (void*)NULL, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "motor_thread")
+MotorThread::MotorThread()
 {
     thread = new pros::Task( run, (void*)NULL, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "motor_thread");
     thread->suspend();
@@ -49,7 +50,7 @@ void MotorThread::run(void*)
         }
         start = pros::millis();
         lock.exchange(false);
-        pros::delay(10);
+        pros::delay(15);
     }
 }
 
@@ -84,14 +85,27 @@ int MotorThread::register_motor( Motor &motor )
 {
     while ( lock.exchange( true ) );
     
+    Logger logger;
+    log_entry entry;
+    char buffer[10];
+    
+    
     try
     {
         motors.push_back(&motor);
-        std::clog << "[INFO] " << pros::millis() << " motor added at " << &motor << "\n";
+        
+        sprintf(buffer, "%p", &motor);
+        entry.stream = "clog";
+        entry.content = "[INFO] " + std::to_string(pros::millis()) +  " motor added at " + buffer;
+        logger.add(entry);
     } 
     catch ( ... )
     {
-        std::cerr << "[WARNING] " << pros::millis() << " could not add motor at " << &motor << "\n";
+        sprintf(buffer, "%p", &motor);
+        entry.content = "[WARNING] " + std::to_string(pros::millis()) +  " could not add motor at " + buffer;
+        entry.stream = "cerr";
+        logger.add(entry);
+
         lock.exchange(false);
         return 0;
     }
@@ -105,15 +119,28 @@ int MotorThread::unregister_motor( Motor &motor )
 {
     while ( lock.exchange( true ) );
     
+    Logger logger;
+    log_entry entry;
+    char buffer[10];
+    
     auto element = std::find(begin(motors), end(motors), &motor);
     if ( element != motors.end())
     {
         motors.erase(element);
-        std::clog << "[INFO] " << pros::millis() << " motor removed at " << &motor << "\n";
+        
+        sprintf(buffer, "%p", &motor);
+        entry.stream = "clog";
+        entry.content = "[INFO] " + std::to_string(pros::millis()) + " motor removed at " + buffer;
+        logger.add(entry);
     }
     else 
     {
-        std::cerr << "[WARNING] " << pros::millis() << " could not remove motor at " << &motor << "\n";
+        sprintf(buffer, "%p", &motor);
+        entry.content = "[WARNING] " + std::to_string(pros::millis()) +  " could not remove motor at " + buffer;
+        entry.stream = "cerr";
+        logger.add(entry);
+        
+        lock.exchange(false);
         return 0;
     }
     

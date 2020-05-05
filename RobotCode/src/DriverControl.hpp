@@ -3,7 +3,6 @@
  * @author: Aiden Carney
  * @reviewed_on: 10/15/2019
  * @reviewed_by: Aiden Carney
- * TODO: add more robot functions
  *
  * Contains robot move functions. Meant to be run in pros task
  *
@@ -16,22 +15,11 @@
 
 #include "../include/main.h"
 
-#include "objects/robotChassis/chassis.hpp"
+#include "objects/subsystems/chassis.hpp"
 #include "objects/controller/controller.hpp"
 #include "objects/motors/Motors.hpp"
 
-
-
-/**
- * @param: void* -> not used
- * @return: None
- *
- * @see: Tilter.hpp
- *
- * gives the tilter holding strength for a set potentiometer reading
- * useful because the tilter is rubber banded and needs to be held backwards
- */
-void tilter_holding_strength(void*);
+#define AUTON_DEBUG
 
 
 /**

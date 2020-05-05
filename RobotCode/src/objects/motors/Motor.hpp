@@ -1,8 +1,8 @@
 /**
  * @file: ./RobotCode/src/objects/motors/Motor.hpp
  * @author: Aiden Carney
- * @reviewed_on:
- * @reviewed_by:
+ * @reviewed_on: 2/16/2020
+ * @reviewed_by: Aiden Carney
  * TODO:
  *
  * contains a wrapper class for a pros::Motor
@@ -245,40 +245,218 @@ class Motor
             
             
             
-
-    //setter functions        
+            
+    //setter functions      
+        /**
+         * @param: int port -> the new port for the motor
+         * @return: int -> if the change was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int set_port( int port );
+        
+        /**
+         * @return: int -> if function was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int tare_encoder( );
+        
+        /**
+         * @param: pros::motor_brake_mode_e_t -> the new brake mode for the motor
+         * @return: int -> if the change was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int set_brake_mode( pros::motor_brake_mode_e_t brake_mode );
+        
+        /**
+         * @param: pros::motor_gearset_e_t -> the new gearset for the motor
+         * @return: int -> if the change was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int set_gearing( pros::motor_gearset_e_t gearset );
+        
+        /**
+         * @return: int -> if motor was reversed or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int reverse_motor( );
+        
+        /**
+         * @param: pid pid_consts -> the new pid constants for the motor
+         * @return: int -> if the change was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 on success
+         */
         int set_pid( pid pid_consts );
+        
+        /**
+         * @param: int logging -> the new log level, 0-5, 5 is most verbose
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * updates how verbose the logging is, 0 is no logging, 5 is very
+         * verbose
+         */
         void set_log_level( int logging );
         
 
-    //movement functions        
+
+
+    //movement functions
+        /**
+         * @param: int voltage -> the voltage to set the motor to
+         * @return: int -> if setting motor voltage was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * takes range [-127,127] and scales it to [-12000,12000]
+         * makes it easier to map to controller input
+         */        
         int move( int voltage  );
+        
+        /**
+         * @param: int velocity -> the velocity to set the motor to
+         * @return: int -> if setting motor velocity was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * takes range [-gearset_min + ~20%, gearset_min + ~20%] and scales it
+         * to [-12000,12000]
+         * used to make motor performance more consistent when velocity pid is
+         * enabled
+         * doesn't use built in pid because max motor ouput is limited by
+         * approximately 20%
+         */        
         int move_velocity( int velocity );
+        
+        /**
+         * @param: int voltage -> the voltage to set the motor to
+         * @return: int -> if setting motor voltage was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * sets voltage of motor on interval [-12000,12000]
+         */       
         int set_voltage( int voltage );
     
-    //slew rate control functions    
+    
+    
+    
+    //slew rate control functions  
+        /**
+         * @param: int rate -> the new slew rate in mv/ms
+         * @return: int -> 1 on success
+         *
+         * @see: pros::Motor
+         *
+         * sets the new rate that the voltage can increase at
+         * used for either acceleration control for less wheel slippage
+         * or to protect motors from voltage spikes
+         */      
         int set_slew( int rate );
+        
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * sets slew rate code to be used to limit voltage change rate
+         */      
         void enable_slew( );
+        
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * sets slew rate code to not be used to limit voltage change rate
+         */      
         void disable_slew( );
         
         
+        
+        
     //velocity pid control functions
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * sets velocity PID to be used to calculate the actual voltage to 
+         * set the motor voltage to instead of just the target
+         */      
         void enable_velocity_pid( );
+        
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * sets velocity PID to not be used to calculate the actual voltage to 
+         * set the motor voltage to instead of just the target
+         */      
         void disable_velocity_pid( );
 
 
     //driver control lock setting and clearing functions
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * sets a lock that can be used to prevent controller from being able 
+         * to set motor voltage
+         */      
         void enable_driver_control( );
+        
+        /**
+         * @return: None
+         *
+         * @see: pros::Motor
+         *
+         * clears a lock that can be used to prevent controller from being able 
+         * to set motor voltage
+         */   
         void disable_driver_control( );
+        
+        /**
+         * @return: int -> if driver control lock is cleared
+         *
+         * @see: pros::Motor
+         *
+         * returns 1 if lock is cleared, 0 otherwise
+         */   
         int driver_control_allowed( );
         
         
     //function to run on thread     
+        /**
+         * @param: int delta_t -> the amount of time elapsed since the last time the function was called
+         * @return: int -> the voltage to set the motor to
+         *
+         * @see: pros::Motor
+         *
+         * used to be run on long living thread so that motor can have PID and 
+         * slew rate code built into it easier
+         * also contains logging implementation and adds to logger queue
+         */   
         int run( int delta_t );
 };
 

@@ -16,7 +16,7 @@
 
 #include "../Styles.hpp"
 #include "../../motors/Motors.hpp"
-
+#include "../../motors/Motor.hpp"
 
 //user defines
 
@@ -49,11 +49,11 @@ class MotorsDebugTab : virtual Styles
         lv_obj_t *motor1_info;
         lv_obj_t *motor2_info;
 
-        std::vector<pros::Motor*> motors;
+        std::vector<Motor*> motors;
         std::vector<std::string> titles;
 
     public:
-        MotorsDebugTab( std::vector<pros::Motor*> motors_vec, std::vector<std::string> titles_vec, lv_obj_t *parent);
+        MotorsDebugTab( std::vector<Motor*> motors_vec, std::vector<std::string> titles_vec, lv_obj_t *parent);
         ~MotorsDebugTab();
 
         /**

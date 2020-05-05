@@ -24,33 +24,84 @@ Configuration *Configuration::config_obj = NULL;
 Configuration::Configuration( )
 {
     //set default values for constants in case file can't be read
-    internal_motor_pid.kP = 1;
-    internal_motor_pid.kI = 0;
-    internal_motor_pid.kD = 0;
-    internal_motor_pid.I_max = 0;
+    internal_motor_pid.kP = 30;
+    internal_motor_pid.kI = 37;
+    internal_motor_pid.kD = 11;
+    internal_motor_pid.I_max = INT32_MAX;
 
     tilter_pid_consts.kP = 1;
     tilter_pid_consts.kI = 0;
     tilter_pid_consts.kD = 0;
-    tilter_pid_consts.I_max = 0;
+    tilter_pid_consts.I_max = INT32_MAX;
+    
+    lift_pid.kP = .1;
+    lift_pid.kI = 0.0001;
+    lift_pid.kD = 0;
+    lift_pid.I_max = INT32_MAX;
+    
+    chassis_pid.kP = 60;
+    chassis_pid.kI = 0.01;
+    chassis_pid.kD = 0;
+    chassis_pid.I_max = INT32_MAX;
 
+    //536C motor config
     front_right_port = 9;
-    back_left_port = 20;
+    back_left_port = 19;
     front_left_port = 10;
-    back_right_port = 19;
+    back_right_port = 20;
     left_intake_port = 1;
     right_intake_port = 2;
     tilter_port = 15;
     lift_port = 16;
-
+    
     front_right_reversed = 1;
-    back_left_reversed = 1;
-    front_left_reversed = 1;
+    back_left_reversed = 0;
+    front_left_reversed = 0;
     back_right_reversed = 1;
     left_intake_reversed = 0;
     right_intake_reversed = 1;
-    tilter_reversed = 1;
+    tilter_reversed = 0;
     lift_reversed = 0;
+    
+    
+    //536D motor config
+    // front_right_port = 13;
+    // back_left_port = 1;
+    // front_left_port = 20;
+    // back_right_port = 19;
+    // left_intake_port = 2;
+    // right_intake_port = 11;
+    // tilter_port = 17;
+    // lift_port = 12;
+    // 
+    // front_right_reversed = 1;
+    // back_left_reversed = 0;
+    // front_left_reversed = 0;
+    // back_right_reversed = 1;
+    // left_intake_reversed = 0;
+    // right_intake_reversed = 1;
+    // tilter_reversed = 1;
+    // lift_reversed = 0;
+    
+    
+    //536A motor config
+    // front_right_port = 20;
+    // back_left_port = 2;
+    // front_left_port = 5;
+    // back_right_port = 4;
+    // left_intake_port = 8;
+    // right_intake_port = 1;
+    // tilter_port = 13;
+    // lift_port = 11;
+    // 
+    // front_right_reversed = 1;
+    // back_left_reversed = 1;
+    // front_left_reversed = 1;
+    // back_right_reversed = 1;
+    // left_intake_reversed = 0;
+    // right_intake_reversed = 1;
+    // tilter_reversed = 0;
+    // lift_reversed = 0;
 
     std::vector<int> vec1 {100, 300, 400, 500};
     std::vector<int> vec2 {100, 300, 400, 500};

@@ -31,7 +31,7 @@ uint16_t MotorsDebug::tab_loaded = 0;
 
 
 
-MotorsDebugTab::MotorsDebugTab( std::vector<pros::Motor*> motors_vec, std::vector<std::string> titles_vec, lv_obj_t *parent)
+MotorsDebugTab::MotorsDebugTab( std::vector<Motor*> motors_vec, std::vector<std::string> titles_vec, lv_obj_t *parent)
 {
     for( int i = 0; i < motors_vec.size(); i++ )
     {
@@ -63,22 +63,25 @@ MotorsDebugTab::MotorsDebugTab( std::vector<pros::Motor*> motors_vec, std::vecto
     lv_label_set_text(motor1_info, "None\nNone\nNone\nNone\nNone\nNone");
 
 //init motor 2 label
+    motor2_label = lv_label_create(container, NULL);
+    lv_obj_set_style(motor2_label, &toggle_tabbtn_pressed);
+    lv_obj_set_width(motor2_label, (MOTORS_CONTAINER_WIDTH/2));
+    lv_obj_set_height(motor2_label, 20);
+    lv_label_set_align(motor2_label, LV_LABEL_ALIGN_CENTER);
+    lv_label_set_text(motor2_label, "");
+    
+    motor2_info = lv_label_create(container, NULL);
+    lv_obj_set_style(motor2_info, &toggle_tabbtn_pressed);
+    lv_obj_set_width(motor2_info, (MOTORS_CONTAINER_WIDTH/2));
+    lv_obj_set_height(motor2_info, 20);
+    lv_label_set_align(motor2_info, LV_LABEL_ALIGN_LEFT);
+    lv_label_set_text(motor2_info, "None");
+    
+    
+    
     if( motors.size() > 1 )
     {
-        motor2_label = lv_label_create(container, NULL);
-        lv_obj_set_style(motor2_label, &toggle_tabbtn_pressed);
-        lv_obj_set_width(motor2_label, (MOTORS_CONTAINER_WIDTH/2));
-        lv_obj_set_height(motor2_label, 20);
-        lv_label_set_align(motor2_label, LV_LABEL_ALIGN_CENTER);
         lv_label_set_text(motor2_label, titles.at(1).c_str());
-
-    //init motor 2 info label
-        motor2_info = lv_label_create(container, NULL);
-        lv_obj_set_style(motor2_info, &toggle_tabbtn_pressed);
-        lv_obj_set_width(motor2_info, (MOTORS_CONTAINER_WIDTH/2));
-        lv_obj_set_height(motor2_info, 20);
-        lv_label_set_align(motor2_info, LV_LABEL_ALIGN_LEFT);
-        lv_label_set_text(motor2_info, "None");
     }
 
 //align objects on container
@@ -90,6 +93,17 @@ MotorsDebugTab::MotorsDebugTab( std::vector<pros::Motor*> motors_vec, std::vecto
         lv_obj_set_pos(motor2_info, 255, 15);
     }
 }
+
+MotorsDebugTab::~MotorsDebugTab()
+{
+    lv_obj_del(motor1_label);
+    lv_obj_del(motor1_info);
+    lv_obj_del(motor2_label);
+    lv_obj_del(motor2_info);
+    
+    lv_obj_del(container);
+}
+
 
 
 /**
@@ -111,22 +125,22 @@ void MotorsDebugTab::update_label(int target_velocity, lv_obj_t *velocity_label)
 
 //info for first motor
     info1 += "Current Draw: " + std::to_string(motors.at(0)->get_current_draw()) + "\n";
-    info1 += "Voltage (mV): " + std::to_string(motors.at(0)->get_voltage()) + "\n";
+    info1 += "Voltage (mV): " + std::to_string(motors.at(0)->get_actual_voltage()) + "\n";
     info1 += "State: ";
     info1 += motors.at(0)->is_reversed() ? "reversed\n" : "not reversed\n";
     info1 += "Temperature: " + std::to_string(motors.at(0)->get_temperature()) + "\n";
-    info1 += "Encoder Position: " + std::to_string(motors.at(0)->get_position()) + "\n";
+    info1 += "Encoder Position: " + std::to_string(motors.at(0)->get_encoder_position()) + "\n";
     info1 += "Torque (Nm): " + std::to_string(motors.at(0)->get_torque()) + "\n";
 
 //info for second motor if it exists
     if ( motors.size() > 1 )
     {
         info2 += "Current Draw: " + std::to_string(motors.at(1)->get_current_draw()) + "\n";
-        info2 += "Voltage (mV): " + std::to_string(motors.at(1)->get_voltage()) + "\n";
+        info2 += "Voltage (mV): " + std::to_string(motors.at(1)->get_actual_voltage()) + "\n";
         info2 += "State: ";
         info2 += motors.at(1)->is_reversed() ? "reversed\n" : "not reversed\n";
         info2 += "Temperature: " + std::to_string(motors.at(1)->get_temperature()) + "\n";
-        info2 += "Encoder Position: " + std::to_string(motors.at(1)->get_position()) + "\n";
+        info2 += "Encoder Position: " + std::to_string(motors.at(1)->get_encoder_position()) + "\n";
         info2 += "Torque (Nm): " + std::to_string(motors.at(1)->get_torque()) + "\n";
     }
 //info for velocity label
@@ -145,11 +159,6 @@ void MotorsDebugTab::update_label(int target_velocity, lv_obj_t *velocity_label)
         lv_label_set_text(motor2_info, info2.c_str());
     }
     lv_label_set_text(velocity_label, velocity.c_str());
-
-}
-
-MotorsDebugTab::~MotorsDebugTab()
-{
 
 }
 
@@ -295,25 +304,26 @@ MotorsDebug::MotorsDebug()
 
 MotorsDebug::~MotorsDebug()
 {
-    Motors *motors = Motors::get_instance();
-    
     //sets motors to off
-    motors->frontLeft->move_velocity(0);
-    motors->backLeft->move_velocity(0);
-    motors->frontRight->move_velocity(0);
-    motors->backRight->move_velocity(0);
-    motors->right_intake->move_velocity(0);
-    motors->left_intake->move_velocity(0);
-    motors->tilter->move_velocity(0);
-    motors->lift->move_velocity(0);
+    Motors::front_left.move(0);
+    Motors::front_left.move(0);
+    Motors::back_right.move(0);
+    Motors::back_left.move(0);
+    Motors::right_intake.move(0);
+    Motors::left_intake.move(0);
+    Motors::tilter.move(0);
+    Motors::lift.move(0);
 
     //allow motor to go to zero for driver control if it is not set
     //already
-    motors->allow_left_chassis = true;
-    motors->allow_right_chassis = true;
-    motors->allow_intake = true;
-    motors->allow_tilter = true;
-    motors->allow_lift = true;
+    Motors::front_left.enable_driver_control();
+    Motors::front_left.enable_driver_control();
+    Motors::back_right.enable_driver_control();
+    Motors::back_left.enable_driver_control();
+    Motors::right_intake.enable_driver_control();
+    Motors::left_intake.enable_driver_control();
+    Motors::tilter.enable_driver_control();
+    Motors::lift.enable_driver_control();
 
     //deletes widgets instantiated by class
     lv_obj_del(title_label);
@@ -361,24 +371,26 @@ lv_res_t MotorsDebug::btn_back_action(lv_obj_t *btn)
  */
 lv_res_t MotorsDebug::tab_load_action(lv_obj_t *tabview, uint16_t act_id)
 {
-    Motors *motors = Motors::get_instance();
-    
-    //loads a new tab and sets default values for velocity of motors
-    //and if motor is allowed to hit zero velocity
-
     tab_loaded = act_id;
     target_velocity = 0;
 
-    motors->frontLeft->move_velocity(0);
-    motors->backLeft->move_velocity(0);
-    motors->frontRight->move_velocity(0);
-    motors->backRight->move_velocity(0);
+    Motors::front_left.move(0);
+    Motors::front_left.move(0);
+    Motors::back_right.move(0);
+    Motors::back_left.move(0);
+    Motors::right_intake.move(0);
+    Motors::left_intake.move(0);
+    Motors::tilter.move(0);
+    Motors::lift.move(0);
 
-    motors->allow_left_chassis = true;
-    motors->allow_right_chassis = true;
-    motors->allow_intake = true;
-    motors->allow_tilter = true;
-    motors->allow_lift = true;
+    Motors::front_left.enable_driver_control();
+    Motors::front_left.enable_driver_control();
+    Motors::back_right.enable_driver_control();
+    Motors::back_left.enable_driver_control();
+    Motors::right_intake.enable_driver_control();
+    Motors::left_intake.enable_driver_control();
+    Motors::tilter.enable_driver_control();
+    Motors::lift.enable_driver_control();
 
     return LV_RES_OK;
 
@@ -515,8 +527,6 @@ lv_res_t MotorsDebug::ddlist_brake_mode_action(lv_obj_t * ddlist)
  */
 void MotorsDebug::debug()
 {
-    Motors *motors = Motors::get_instance();
-    
     //used to check if user wants to continue cycling through
     //tabs. Will be set to zero and loop will break if user hits
     //the back button
@@ -525,11 +535,11 @@ void MotorsDebug::debug()
     lv_tabview_set_tab_act(tabview, 0, NULL);
     lv_scr_load(motor_debug_screen);
 
-    MotorsDebugTab l_chassis_tab_debug( {motors->frontLeft, motors->backLeft}, {"Front Left", "Back Left"}, l_chassis_tab );
-    MotorsDebugTab r_chassis_tab_debug( {motors->frontRight, motors->backRight}, {"Front Right", "Back Right"}, r_chassis_tab );
-    MotorsDebugTab intake_tab_debug( {motors->right_intake, motors->left_intake}, {"Right Intake", "Left Intake"}, intake_tab );
-    MotorsDebugTab tilter_tab_debug( {motors->tilter}, {"Tilter"}, intake_tab );
-    MotorsDebugTab lift_tab_debug( {motors->lift}, {"Lift"}, lift_tab );
+    MotorsDebugTab l_chassis_tab_debug( {&Motors::front_left, &Motors::back_left}, {"Front Left", "Back Left"}, l_chassis_tab );
+    MotorsDebugTab r_chassis_tab_debug( {&Motors::front_left, &Motors::back_right}, {"Front Right", "Back Right"}, r_chassis_tab );
+    MotorsDebugTab intake_tab_debug( {&Motors::right_intake, &Motors::left_intake}, {"Right Intake", "Left Intake"}, intake_tab );
+    MotorsDebugTab tilter_tab_debug( {&Motors::tilter}, {"Tilter"}, tilter_tab );
+    MotorsDebugTab lift_tab_debug( {&Motors::lift}, {"Lift"}, lift_tab );
 
     while ( cont )
     {
@@ -538,52 +548,42 @@ void MotorsDebug::debug()
         {
             case 0:
                 l_chassis_tab_debug.update_label(target_velocity, velocity_label);
-                motors->allow_left_chassis = motors->frontLeft->get_target_velocity() != 0 ? false : true;
                 break;
             case 1:
                 r_chassis_tab_debug.update_label(target_velocity, velocity_label);
-                motors->allow_right_chassis = motors->frontRight->get_target_velocity() != 0 ? false : true;
                 break;
             case 2:
-                intake_tab_debug.update_label(target_velocity, velocity_label);
-                motors->allow_intake = motors->right_intake->get_target_velocity() != 0 ? false : true;
+                tilter_tab_debug.update_label(target_velocity, velocity_label);
                 break;
             case 3:
-                tilter_tab_debug.update_label(target_velocity, velocity_label);
-                motors->allow_tilter = motors->tilter->get_target_velocity() != 0 ? false : true;
+                intake_tab_debug.update_label(target_velocity, velocity_label);
                 break;
             case 4:
                 lift_tab_debug.update_label(target_velocity, velocity_label);
-                motors->allow_lift = motors->lift->get_target_velocity() != 0 ? false : true;
                 break;
         }
 
-        motors->frontLeft->set_brake_mode(current_brake_mode);
-        motors->backLeft->set_brake_mode(current_brake_mode);
-        motors->frontRight->set_brake_mode(current_brake_mode);
-        motors->backRight->set_brake_mode(current_brake_mode);
-        motors->right_intake->set_brake_mode(current_brake_mode);
-        motors->left_intake->set_brake_mode(current_brake_mode);
-        motors->tilter->set_brake_mode(current_brake_mode);
-        motors->lift->set_brake_mode(current_brake_mode);
+        
+        Motors::front_left.set_brake_mode(current_brake_mode);
+        Motors::front_left.set_brake_mode(current_brake_mode);
+        Motors::back_right.set_brake_mode(current_brake_mode);
+        Motors::back_left.set_brake_mode(current_brake_mode);
+        Motors::right_intake.set_brake_mode(current_brake_mode);
+        Motors::left_intake.set_brake_mode(current_brake_mode);
+        Motors::tilter.set_brake_mode(current_brake_mode);
+        Motors::lift.set_brake_mode(current_brake_mode);
 
-/*        std::cout << current_brake_mode << "\n";
-        std::cout << motors->frontLeft.get_brake_mode() << "\n";
-        std::cout << motors->backLeft.get_brake_mode() << "\n";
-        std::cout << motors->frontRight.get_brake_mode() << "\n";
-        std::cout << motors->backRight.get_brake_mode() << "\n";
-        std::cout << motors->right_intake.get_brake_mode() << "\n";
-        std::cout << motors->left_intake.get_brake_mode() << "\n";
-        std::cout << motors->tilter.get_brake_mode() << "\n";
-        std::cout << motors->lift.get_brake_mode() << "\n\n\n";*/
 
         pros::delay(200);
     }
 
     //reallow motor to hit zero velocity for driver controll
-    motors->allow_left_chassis = true;
-    motors->allow_right_chassis = true;
-    motors->allow_intake = true;
-    motors->allow_tilter = true;
-    motors->allow_lift = true;
+    Motors::front_left.enable_driver_control();
+    Motors::front_left.enable_driver_control();
+    Motors::back_right.enable_driver_control();
+    Motors::back_left.enable_driver_control();
+    Motors::right_intake.enable_driver_control();
+    Motors::left_intake.enable_driver_control();
+    Motors::tilter.enable_driver_control();
+    Motors::lift.enable_driver_control();
 }

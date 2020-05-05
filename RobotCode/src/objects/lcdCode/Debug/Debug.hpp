@@ -3,7 +3,6 @@
  * @author: Aiden Carney
  * @reviewed_on: 10/15/2019
  * @reviewed_by: Aiden Carney
- * TODO: move starting of driver control task to this function because that task should be available during the debugger session
  *
  * gives user the option to visit debugger tabs by selecting an option from a button
  * matrix

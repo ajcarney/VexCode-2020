@@ -40,18 +40,18 @@ std::unordered_map <pros::controller_analog_e_t, std::string> Controller::PARTNE
 };
 
 std::unordered_map <pros::controller_digital_e_t, std::string> Controller::MASTER_CONTROLLER_DIGITAL_MAPPINGS = {
-    {pros::E_CONTROLLER_DIGITAL_L1, "Tilter Out"},
-    {pros::E_CONTROLLER_DIGITAL_L2, "Tilter In"},
+    {pros::E_CONTROLLER_DIGITAL_L1, "lift up"},
+    {pros::E_CONTROLLER_DIGITAL_L2, "lift dwon"},
     {pros::E_CONTROLLER_DIGITAL_R2, "Outake"},
     {pros::E_CONTROLLER_DIGITAL_R1, "Intake"},
-    {pros::E_CONTROLLER_DIGITAL_UP, "Intake constantly speed up"},
-    {pros::E_CONTROLLER_DIGITAL_DOWN, "Intake constantly speed down"},
+    {pros::E_CONTROLLER_DIGITAL_UP, "Tilter up"},
+    {pros::E_CONTROLLER_DIGITAL_DOWN, "Tilter down"},
     {pros::E_CONTROLLER_DIGITAL_LEFT, "None"},
     {pros::E_CONTROLLER_DIGITAL_RIGHT, "None"},
-    {pros::E_CONTROLLER_DIGITAL_X, "None"},
+    {pros::E_CONTROLLER_DIGITAL_X, "auto deploy"},
     {pros::E_CONTROLLER_DIGITAL_B, "Toggle brakes"},
-    {pros::E_CONTROLLER_DIGITAL_Y, "None"},
-    {pros::E_CONTROLLER_DIGITAL_A,  "Unit Test"}
+    {pros::E_CONTROLLER_DIGITAL_Y, "auto dump"},
+    {pros::E_CONTROLLER_DIGITAL_A,  "run auton"}
 };
 
 std::unordered_map <pros::controller_digital_e_t, std::string>  Controller::PARTNER_CONTROLLER_DIGITAL_MAPPINGS = {

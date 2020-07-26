@@ -11,7 +11,7 @@
 
 #include "Sensors.hpp"
 #include "../../Configuration.hpp"
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 
 
 namespace Sensors 
@@ -22,6 +22,7 @@ namespace Sensors
     AnalogInSensor potentiometer{POTENTIOMETER_PORT};
     pros::ADIDigitalIn limit_switch{LIMITSWITCH_PORT};
     pros::Vision vision_sensor{VISIONSENSOR_PORT};
+    pros::Imu imu{IMU_PORT};
     
     
     
@@ -30,13 +31,13 @@ namespace Sensors
     {
         Logger logger;
         log_entry entry;
-        entry.content = ("[INFO] " + std::to_string(pros::millis()) 
-            + " ADI Sensor Data"
-            +  " Right_Enc: " + std::to_string(right_encoder.get_absolute_position(false))
-            +  " Left_Enc: " + std::to_string(left_encoder.get_absolute_position(false))
-            +  " Strafe_Enc: " + std::to_string(strafe_encoder.get_absolute_position(false))
+        entry.content = ("[INFO], " + std::to_string(pros::millis()) 
+            + ", ADI Sensor Data"
+            +  ", Right_Enc: " + std::to_string(right_encoder.get_absolute_position(false))
+            +  ", Left_Enc: " + std::to_string(left_encoder.get_absolute_position(false))
+            +  ", Strafe_Enc: " + std::to_string(strafe_encoder.get_absolute_position(false))
             //+  " Pot: " + std::to_string(potentiometer.get_value(false))
-            +  " Limit_Switch: " + std::to_string(limit_switch.get_value()));
+            +  ", Limit_Switch: " + std::to_string(limit_switch.get_value()));
         entry.stream = "clog";
         logger.add(entry);
     }

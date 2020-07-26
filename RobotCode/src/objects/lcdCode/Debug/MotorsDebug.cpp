@@ -198,8 +198,8 @@ MotorsDebug::MotorsDebug()
 //init tabs
     l_chassis_tab = lv_tabview_add_tab(tabview, "Chassis (L)");
     r_chassis_tab = lv_tabview_add_tab(tabview, "Chassis (R)");
-    tilter_tab = lv_tabview_add_tab(tabview, "Tilter");
-    intake_tab = lv_tabview_add_tab(tabview, "Intake");
+    main_intake_tab = lv_tabview_add_tab(tabview, "Main Intake");
+    hoarding_intake_tab = lv_tabview_add_tab(tabview, "Hoarder");
     lift_tab = lv_tabview_add_tab(tabview, "Lift");
 
 //init back button
@@ -309,9 +309,8 @@ MotorsDebug::~MotorsDebug()
     Motors::front_left.move(0);
     Motors::back_right.move(0);
     Motors::back_left.move(0);
-    Motors::right_intake.move(0);
-    Motors::left_intake.move(0);
-    Motors::tilter.move(0);
+    Motors::main_intake.move(0);
+    Motors::hoarding_intake.move(0);
     Motors::lift.move(0);
 
     //allow motor to go to zero for driver control if it is not set
@@ -320,9 +319,8 @@ MotorsDebug::~MotorsDebug()
     Motors::front_left.enable_driver_control();
     Motors::back_right.enable_driver_control();
     Motors::back_left.enable_driver_control();
-    Motors::right_intake.enable_driver_control();
-    Motors::left_intake.enable_driver_control();
-    Motors::tilter.enable_driver_control();
+    Motors::main_intake.enable_driver_control();
+    Motors::hoarding_intake.enable_driver_control();
     Motors::lift.enable_driver_control();
 
     //deletes widgets instantiated by class
@@ -333,8 +331,8 @@ MotorsDebug::~MotorsDebug()
 
     lv_obj_del(l_chassis_tab);
     lv_obj_del(r_chassis_tab);
-    lv_obj_del(tilter_tab);
-    lv_obj_del(intake_tab);
+    lv_obj_del(main_intake_tab);
+    lv_obj_del(hoarding_intake_tab);
     lv_obj_del(lift_tab);
     lv_obj_del(tabview);
 
@@ -374,22 +372,23 @@ lv_res_t MotorsDebug::tab_load_action(lv_obj_t *tabview, uint16_t act_id)
     tab_loaded = act_id;
     target_velocity = 0;
 
+    //sets motors to off
     Motors::front_left.move(0);
     Motors::front_left.move(0);
     Motors::back_right.move(0);
     Motors::back_left.move(0);
-    Motors::right_intake.move(0);
-    Motors::left_intake.move(0);
-    Motors::tilter.move(0);
+    Motors::main_intake.move(0);
+    Motors::hoarding_intake.move(0);
     Motors::lift.move(0);
 
+    //allow motor to go to zero for driver control if it is not set
+    //already
     Motors::front_left.enable_driver_control();
     Motors::front_left.enable_driver_control();
     Motors::back_right.enable_driver_control();
     Motors::back_left.enable_driver_control();
-    Motors::right_intake.enable_driver_control();
-    Motors::left_intake.enable_driver_control();
-    Motors::tilter.enable_driver_control();
+    Motors::main_intake.enable_driver_control();
+    Motors::hoarding_intake.enable_driver_control();
     Motors::lift.enable_driver_control();
 
     return LV_RES_OK;
@@ -536,9 +535,9 @@ void MotorsDebug::debug()
     lv_scr_load(motor_debug_screen);
 
     MotorsDebugTab l_chassis_tab_debug( {&Motors::front_left, &Motors::back_left}, {"Front Left", "Back Left"}, l_chassis_tab );
-    MotorsDebugTab r_chassis_tab_debug( {&Motors::front_left, &Motors::back_right}, {"Front Right", "Back Right"}, r_chassis_tab );
-    MotorsDebugTab intake_tab_debug( {&Motors::right_intake, &Motors::left_intake}, {"Right Intake", "Left Intake"}, intake_tab );
-    MotorsDebugTab tilter_tab_debug( {&Motors::tilter}, {"Tilter"}, tilter_tab );
+    MotorsDebugTab r_chassis_tab_debug( {&Motors::front_right, &Motors::back_right}, {"Front Right", "Back Right"}, r_chassis_tab );
+    MotorsDebugTab main_intake_tab_debug( {&Motors::main_intake}, {"Main Intake"}, main_intake_tab );
+    MotorsDebugTab hoarder_tab_debug( {&Motors::hoarding_intake}, {"Hoarder"}, hoarding_intake_tab );
     MotorsDebugTab lift_tab_debug( {&Motors::lift}, {"Lift"}, lift_tab );
 
     while ( cont )
@@ -553,10 +552,10 @@ void MotorsDebug::debug()
                 r_chassis_tab_debug.update_label(target_velocity, velocity_label);
                 break;
             case 2:
-                tilter_tab_debug.update_label(target_velocity, velocity_label);
+                main_intake_tab_debug.update_label(target_velocity, velocity_label);
                 break;
             case 3:
-                intake_tab_debug.update_label(target_velocity, velocity_label);
+                hoarder_tab_debug.update_label(target_velocity, velocity_label);
                 break;
             case 4:
                 lift_tab_debug.update_label(target_velocity, velocity_label);
@@ -568,9 +567,8 @@ void MotorsDebug::debug()
         Motors::front_left.set_brake_mode(current_brake_mode);
         Motors::back_right.set_brake_mode(current_brake_mode);
         Motors::back_left.set_brake_mode(current_brake_mode);
-        Motors::right_intake.set_brake_mode(current_brake_mode);
-        Motors::left_intake.set_brake_mode(current_brake_mode);
-        Motors::tilter.set_brake_mode(current_brake_mode);
+        Motors::main_intake.set_brake_mode(current_brake_mode);
+        Motors::hoarding_intake.set_brake_mode(current_brake_mode);
         Motors::lift.set_brake_mode(current_brake_mode);
 
 
@@ -582,8 +580,7 @@ void MotorsDebug::debug()
     Motors::front_left.enable_driver_control();
     Motors::back_right.enable_driver_control();
     Motors::back_left.enable_driver_control();
-    Motors::right_intake.enable_driver_control();
-    Motors::left_intake.enable_driver_control();
-    Motors::tilter.enable_driver_control();
+    Motors::main_intake.enable_driver_control();
+    Motors::hoarding_intake.enable_driver_control();
     Motors::lift.enable_driver_control();
 }

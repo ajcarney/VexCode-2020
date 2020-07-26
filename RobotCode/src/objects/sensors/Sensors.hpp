@@ -25,6 +25,7 @@ namespace Sensors
     extern AnalogInSensor potentiometer;
     extern pros::ADIDigitalIn limit_switch;
     extern pros::Vision vision_sensor;
+    extern pros::Imu imu;
     
     void log_data();
     

@@ -51,39 +51,21 @@ class Autons
 
         const std::unordered_map <int, const char*> AUTONOMOUS_NAMES = {
             {1, "Driver Control"},             //used to find name of auton
-            {2, "five_cube_red_small_zone"},   //to keep title the same
-            {3, "five_cube_blue_small_zone"},
-            {4, "seven_cube_red_small_zone"},
-            {5, "seven_cube_blue_small_zone"},
-            {6, "red_big_zone"},
-            {7, "blue_big_zone"},
-            {8, "one_pt"},
-            {9, "skills"},
-            {10, "Debugger"}
+            {2, "one_pt"},                     //to keep title the same
+            {3, "skills"},
+            {4, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
-            {2, "scores five cubes in smallest\nzone for red"},
-            {3, "scores five cubes in smallest\nzone for blue"},
-            {4, "scores seven cubes in the\nsmallest zone for red"},
-            {5, "scores seven cubes in the\nsmallest zone for blue"},
-            {6, "scores in the big zone\nfor red"},
-            {7, "scores in the big zone\nfor blue"},
-            {8, "drives forward and\nbackwards"},
-            {9, "skills auton"},
-            {10, "opens debugger"}
+            {2, "drives forward and\nbackwards"},
+            {3, "skills auton"},
+            {4, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "None"},                     //used to find color of auton
-            {2, "red"},                     //selected to keep background the same
-            {3, "blue"},
-            {4, "red"},                     
-            {5, "blue"},
-            {6, "red"},
-            {7, "blue"},
-            {8, "None"},
-            {9, "None"},
-            {10, "None"}
+            {2, "None"},                     //selected to keep background the same  
+            {3, "None"},
+            {4, "None"}
         };
 
 
@@ -96,89 +78,6 @@ class Autons
          * function for deploying the tray
          */
         void deploy();
-        
-        
-        /**
-         * @return: None
-         *
-         * @see: Motors.hpp
-         * @see: Chassis.hpp
-         *
-         * function for dumping a stack
-         */
-        void dump_stack();
-
-        
-        
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores five cubes in the smallest zone for the red team
-         */
-        void five_cube_red_small_zone( autonConfig cnfg );
-
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores five cubes in the smallest zone for the blue team
-         */
-        void five_cube_blue_small_zone( autonConfig cnfg );
-
-
-
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores seven cubes in the smallest zone for the red team
-         */
-        void seven_cube_red_small_zone( autonConfig cnfg );
-
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores seven cubes in the smallest zone for the blue team
-         */
-        void seven_cube_blue_small_zone( autonConfig cnfg );
-        
-        
-        
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores cubes in the big zone for red
-         */
-        void red_big_zone( autonConfig cnfg );
-
-
-
-
-        /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * scores cubes in the big zone for blue
-         */
-        void blue_big_zone( autonConfig cnfg );
-
-
-
 
         /**
          * @param: autonConfig cnfg -> the configuration to use for the auton
@@ -189,9 +88,6 @@ class Autons
          * drives forward
          */
         void one_pt( autonConfig cnfg );
-
-
-
 
         /**
          * @param: autonConfig cnfg -> the configuration to use for the auton

@@ -13,7 +13,7 @@
 #include "main.h"
 
 #include "../../Configuration.hpp"
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 #include "Motor.hpp"
 
 
@@ -392,7 +392,7 @@ int Motor::set_port( int port )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not set port on motor port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not set port on motor port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -421,7 +421,7 @@ int Motor::tare_encoder( )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not tare encoder on motor port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not tare encoder on motor port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -451,7 +451,7 @@ int Motor::set_brake_mode( pros::motor_brake_mode_e_t brake_mode )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not set brakemode on motor port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not set brakemode on motor port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -481,7 +481,7 @@ int Motor::set_gearing( pros::motor_gearset_e_t gearset )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not set gearing on motor port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not set gearing on motor port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -511,7 +511,7 @@ int Motor::reverse_motor( )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not reverse motor on port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not reverse motor on port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -544,7 +544,7 @@ int Motor::set_pid( pid pid_consts )
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not set motor pid on motor port " + std::to_string(motor_port);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not set motor pid on motor port " + std::to_string(motor_port);
         entry.stream = "cerr";
         logger.add(entry);
         
@@ -585,7 +585,7 @@ void Motor::set_log_level( int logging )
 /**
  * sets new voltage by scaling from interval +/- 127 to +/- 12000
  */         
-int Motor::move( int voltage  )
+int Motor::move( int voltage )
 {
     int prev_max = 127;
     int prev_min = -127;
@@ -596,6 +596,15 @@ int Motor::move( int voltage  )
     set_voltage(scaled_voltage); //dont aquire lock because it will be acquired in this function
 
     return 1;
+}
+
+int Motor::user_move( int voltage ) {
+    if(allow_driver_control) {
+        move(voltage);
+        return 1;
+    }
+    
+    return 0;
 }
 
 
@@ -785,7 +794,7 @@ int Motor::run( int delta_t )
             
         case 1:
             log_msg = (
-                "[INFO]" + std::string(" Motor ") + std::to_string(motor_port)
+                "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
                 + ", Gear: " + std::to_string(get_gearset())
@@ -803,7 +812,7 @@ int Motor::run( int delta_t )
             
         case 2:
             log_msg = (
-                "[INFO]" + std::string(" Motor ") + std::to_string(motor_port)
+                "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
                 + ", Calc_Target_Vol: " + std::to_string(voltage)
@@ -823,7 +832,7 @@ int Motor::run( int delta_t )
             
         case 3:
             log_msg = (
-                "[INFO]" + std::string(" Motor ") + std::to_string(motor_port)
+                "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
                 + ", Calc_Target_Vol: " + std::to_string(voltage)
@@ -844,7 +853,7 @@ int Motor::run( int delta_t )
             
         case 4:
             log_msg = (
-                "[INFO]" + std::string(" Motor ") + std::to_string(motor_port)
+                "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
                 + ", Calc_Target_Vol: " + std::to_string(voltage)
@@ -867,7 +876,7 @@ int Motor::run( int delta_t )
             
         case 5:
             log_msg = (
-                "[INFO]" + std::string(" Motor ") + std::to_string(motor_port)
+                "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
                 + ", Calc_Target_Vol: " + std::to_string(voltage)

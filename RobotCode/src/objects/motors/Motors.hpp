@@ -22,10 +22,15 @@ namespace Motors
     extern Motor front_left;
     extern Motor back_right;
     extern Motor back_left;
-    extern Motor right_intake;
-    extern Motor left_intake;
-    extern Motor tilter;
+    extern Motor main_intake;
+    extern Motor hoarding_intake;
     extern Motor lift;
+    
+    void enable_driver_control();
+    void disable_driver_control();
+    void set_log_level(int log_level);
+    void register_motors();
+    void unregister_motors();
 };
 
 

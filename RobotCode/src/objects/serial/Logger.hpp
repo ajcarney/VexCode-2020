@@ -1,5 +1,5 @@
 /**
- * @file: ./RobotCode/src/objects/logger/Logger.hpp
+ * @file: ./RobotCode/src/objects/serial/Logger.hpp
  * @author: Aiden Carney
  * @reviewed_on: 2/9/2020
  * @reviewed_by: Aiden Carney
@@ -66,12 +66,12 @@ class Logger
         bool add( log_entry entry );
 
         /**
-         * @return: bool -> true on success and false if an error occured in the process
+         * @return: None
          *
          * builds up a cache of items from the queue for 50ms so that they can be
          * logged at closer to the max speed
          */
-        bool dump( );
+        void dump( );
 
 
 

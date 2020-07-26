@@ -7,7 +7,7 @@
  * contains implementation for wrapper class for analog in sensor
  */
 
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 #include "AnalogInSensor.hpp" 
 
 
@@ -42,7 +42,7 @@ double AnalogInSensor::get_value(bool high_res)
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not read analog sensor (not calibrated) ";
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not read analog sensor (not calibrated) ";
         entry.stream = "cerr";
         
         logger.add(entry);

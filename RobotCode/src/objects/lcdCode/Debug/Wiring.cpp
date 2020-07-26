@@ -65,9 +65,8 @@ Wiring::Wiring()
             "back right (200 RPM) - " + std::to_string(config->back_left_port) + "\n"
             "front left  (200 RPM) - " + std::to_string(config->front_left_port) + "\n"
             "back left  (200 RPM) - " + std::to_string(config->back_right_port) + "\n"
-            "right intake   (100 RPM) - " + std::to_string(config->left_intake_port) + "\n"
-            "left intake    (100 RPM) - " + std::to_string(config->right_intake_port) + "\n"
-            "tilter     100 RPM) - " + std::to_string(config->tilter_port) + "\n"
+            "main intake   (100 RPM) - " + std::to_string(config->main_intake_port) + "\n"
+            "hoarding intake    (100 RPM) - " + std::to_string(config->hoarding_intake_port) + "\n"
             "lift      (100 RPM) - " + std::to_string(config->lift_port) + "\n"
     );
 

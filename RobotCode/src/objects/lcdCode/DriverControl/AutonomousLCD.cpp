@@ -12,7 +12,7 @@
 #include "main.h"
 
 #include "../../../Autons.hpp"
-#include "../../logger/Logger.hpp"
+#include "../../serial/Logger.hpp"
 #include "../../position_tracking/PositionTracker.hpp"
 #include "../AutonSelection/OptionsScreen.hpp"
 #include "../Debug/Debug.hpp"

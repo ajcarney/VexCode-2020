@@ -12,7 +12,7 @@
 
 #include "main.h"
 
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 #include "Encoder.hpp" 
 
 
@@ -63,7 +63,7 @@ double Encoder::get_position(int unique_id)
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not get encoder position with unique id " + std::to_string(unique_id);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not get encoder position with unique id " + std::to_string(unique_id);
         entry.stream = "cerr";
         
         logger.add(entry);
@@ -99,7 +99,7 @@ int Encoder::reset(int unique_id)
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR] " + std::to_string(pros::millis()) + "could not get encoder position with unique id " + std::to_string(unique_id);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not get encoder position with unique id " + std::to_string(unique_id);
         entry.stream = "cerr";
         
         logger.add(entry);

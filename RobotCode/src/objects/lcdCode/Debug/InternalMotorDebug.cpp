@@ -20,7 +20,7 @@
 #include "../../../Configuration.hpp"
 #include "../../motors/Motor.hpp"
 #include "../../motors/MotorThread.hpp"
-#include "../../logger/Logger.hpp"
+#include "../../serial/Logger.hpp"
 
 
 

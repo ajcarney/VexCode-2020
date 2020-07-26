@@ -28,6 +28,7 @@
 #define POTENTIOMETER_PORT       'G'
 #define LIMITSWITCH_PORT         'H'
 #define VISIONSENSOR_PORT        21
+#define IMU_PORT                 20
 
 
 typedef struct
@@ -72,7 +73,6 @@ class Configuration
         static Configuration* get_instance();
         
         pid internal_motor_pid;
-        pid tilter_pid_consts;
         pid lift_pid;
         pid chassis_pid;
         
@@ -80,18 +80,16 @@ class Configuration
         int back_left_port;
         int front_left_port;
         int back_right_port;
-        int left_intake_port;
-        int right_intake_port;
-        int tilter_port;
+        int main_intake_port;
+        int hoarding_intake_port;
         int lift_port;
         
         bool front_right_reversed;
         bool back_left_reversed;
         bool front_left_reversed;
         bool back_right_reversed;
-        bool left_intake_reversed;
-        bool right_intake_reversed;
-        bool tilter_reversed;
+        bool main_intake_reversed;
+        bool hoarding_intake_reversed;
         bool lift_reversed;
         
         std::vector<int> lift_setpoints;

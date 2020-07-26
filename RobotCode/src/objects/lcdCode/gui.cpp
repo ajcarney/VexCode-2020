@@ -54,14 +54,7 @@ int chooseAuton()
         {
             //starts driver control for debugging purposes
             MotorThread* motor_thread = MotorThread::get_instance();
-            motor_thread->register_motor(Motors::front_right);
-            motor_thread->register_motor(Motors::front_left);
-            motor_thread->register_motor(Motors::back_right);
-            motor_thread->register_motor(Motors::back_left);
-            motor_thread->register_motor(Motors::right_intake);
-            motor_thread->register_motor(Motors::left_intake);
-            motor_thread->register_motor(Motors::tilter);
-            motor_thread->register_motor(Motors::lift);
+            Motors::register_motors();
             motor_thread->start_thread();
             
             pros::Task driver_control_task (driver_control,
@@ -76,14 +69,7 @@ int chooseAuton()
             //auton is being selected
             driver_control_task.remove();
             
-            motor_thread->unregister_motor(Motors::front_right);
-            motor_thread->unregister_motor(Motors::front_left);
-            motor_thread->unregister_motor(Motors::back_right);
-            motor_thread->unregister_motor(Motors::back_left);
-            motor_thread->unregister_motor(Motors::right_intake);
-            motor_thread->unregister_motor(Motors::left_intake);
-            motor_thread->unregister_motor(Motors::tilter);
-            motor_thread->unregister_motor(Motors::lift);
+            Motors::unregister_motors();
             motor_thread->stop_thread();
         }
         

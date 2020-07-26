@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from PIL import Image
+import io
 import time
 import math
 import stopwatch
@@ -26,11 +28,18 @@ class robot:
         self.squareVertexes = []
         self.lineVertexes = []
 
+        self.iteration = 0
 
     def __calcSleepTime(self, distance, iterations):
         return (distance / (10*(2 ** self.controlPanelFrame.speed))) / iterations
 
 
+    def __generate_postscript(self):
+        # ps = self.canvas.postscript(colormode="color")
+        # im = Image.open(io.BytesIO(ps.encode('utf-8')))
+        # im.save("ps/test" + str(self.iteration) + ".jpg")
+        # self.iteration += 1
+        pass
 
     def __calcCenters(self):
         """
@@ -210,9 +219,10 @@ class robot:
             self.canvas.move(self.line, x, y)
 
             self.master.update()
+            self.__generate_postscript()
             time.sleep(self.__calcSleepTime(self.__encoderTicks(abs(units)), iterations))
 
-            eus = self.__encoderTicks(d) #shows distance moved
+            eus = self.__encoderTicks(d)  # shows distance moved
             distanceMoved = distanceMoved + eus
 
             self.__updateDistanceLabel(str(round(distanceMoved, 2)) ,"encoder ticks")
@@ -258,7 +268,7 @@ class robot:
             while not self.controlPanelFrame.keepRunning:
                 time.sleep(0.1)
                 self.master.update()
-
+                
         self.master.update()
 
 
@@ -361,6 +371,7 @@ class robot:
         self.line = self.canvas.create_polygon(self.lineVertexes, width=3)
         self.__rotateInPlace(turn)
         self.__update()
+        self.__generate_postscript()
 
         self.orientationDegrees = angle % 360
 
@@ -427,6 +438,8 @@ class robot:
         while turned < abs(angle): #turn to specified angle
             self.__rotate(toMove, pivotPoints)
             self.__update()
+            self.__generate_postscript()
+            
             time.sleep(self.__calcSleepTime(angle, angle))
 
             turned += .5
@@ -455,6 +468,8 @@ class robot:
         while turned < abs(angle): #turn to specified angle
             self.__rotate(toMove, pivotPoints)
             self.__update()
+            self.__generate_postscript()
+            
             time.sleep(self.__calcSleepTime(angle, angle))
             turned += .5
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
@@ -480,6 +495,8 @@ class robot:
         while turned < abs(angle): #turn to specified angle
             self.__rotateInPlace(toMove)
             self.__update()
+            self.__generate_postscript()
+            
             time.sleep(self.__calcSleepTime(angle, angle))
             turned += .5
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
@@ -506,6 +523,8 @@ class robot:
         while turned < abs(angle): #turn to specified angle
             self.__rotateInPlace(toMove)
             self.__update()
+            self.__generate_postscript()
+            
             time.sleep(self.__calcSleepTime(angle*2, angle))
             turned += .5
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")

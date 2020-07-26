@@ -46,7 +46,7 @@ BatteryDebug::BatteryDebug()
     lv_obj_set_width(title_label, 440);
     lv_obj_set_height(title_label, 20);
     lv_label_set_align(title_label, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(title_label, "Field Control - Debug");
+    lv_label_set_text(title_label, "Battery - Debug");
 
 //init headers label
     labels_label = lv_label_create(battery_screen, NULL);

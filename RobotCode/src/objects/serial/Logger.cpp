@@ -1,12 +1,12 @@
 /**
- * @file: ./RobotCode/src/objects/logger/Logger.cpp
+ * @file: ./RobotCode/src/objects/serial/Logger.cpp
  * @author: Aiden Carney
  * @reviewed_on: 2/9/2020
  * @reviewed_by: Aiden Carney
  *
- * @see Writer.hpp
+ * @see Logger.hpp
  *
- * contains implementation for the writer class
+ * contains implementation for the logger class
  */
 
 #include <atomic>
@@ -109,7 +109,7 @@ log_entry Logger::get_entry( )
  * builds up a cache of items 
  * this is used so that data can be sent at closer to the max speed
  */
-bool Logger::dump( )
+void Logger::dump( )
 {
     std::vector<log_entry> entries;
     

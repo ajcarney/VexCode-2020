@@ -13,7 +13,8 @@
 #include "objects/motors/Motors.hpp"
 #include "objects/motors/MotorThread.hpp"
 #include "objects/subsystems/chassis.hpp"
-#include "objects/logger/Logger.hpp"
+#include "objects/serial/Logger.hpp"
+#include "objects/serial/Server.hpp"
 #include "objects/subsystems/Lift.hpp"
 
 int final_auton_choice;
@@ -34,9 +35,8 @@ AutonomousLCD auton_lcd;
     motor_thread->register_motor(Motors::front_left);
     motor_thread->register_motor(Motors::back_right);
     motor_thread->register_motor(Motors::back_left);
-    motor_thread->register_motor(Motors::right_intake);
-    motor_thread->register_motor(Motors::left_intake);
-    motor_thread->register_motor(Motors::tilter);
+    motor_thread->register_motor(Motors::main_intake);
+    motor_thread->register_motor(Motors::hoarding_intake);
     motor_thread->register_motor(Motors::lift);
     motor_thread->start_thread();
     
@@ -107,34 +107,10 @@ void autonomous() {
            break;
 
         case 2:
-           auton.five_cube_red_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 3:
-           auton.five_cube_blue_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 4:
-           auton.seven_cube_red_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 5:
-           auton.seven_cube_blue_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 6:
-            auton.red_big_zone(OptionsScreen::cnfg);
-            break;
-
-        case 7:
-            auton.blue_big_zone(OptionsScreen::cnfg);
-            break;
-
-        case 8:
             auton.one_pt(OptionsScreen::cnfg);
             break;
 
-        case 9:
+        case 3:
             auton.skills(OptionsScreen::cnfg);
             break;
 
@@ -149,8 +125,11 @@ void autonomous() {
      pros::ADIDigitalIn limit_switch('A');
      while ( 1 )
      {
+        pros::delay(2000);
+        std::cout << (limit_switch.get_value()) << "\n";
         if ( limit_switch.get_value() )
-        {    
+        {
+            std::cout << "dumping" << "\n";
             logger.dump();
         }
      }
@@ -164,6 +143,7 @@ void autonomous() {
      std::cerr << "program caught " << signal << "\n" << std::flush;
      std::cerr << "errno: " << errno << "\n" << std::flush;
      std::cerr << "strerror: " << std::strerror(errno) << "\n" << std::flush;
+     pros::delay(100); // wait for stdout to be flushed
      raise(signal);
  }
 
@@ -183,13 +163,21 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
  void opcontrol() {
-     Logger logger;
-     // pros::Task write_task (log_thread_fn,
-     //                      (void*)NULL,
-     //                      TASK_PRIORITY_DEFAULT,
-     //                      TASK_STACK_DEPTH_DEFAULT,
-     //                      "logger_thread");
+    Logger logger;
+    // pros::ADIDigitalIn limit_switch('A');
+    // pros::Task write_task (log_thread_fn,
+    //                       (void*)NULL,
+    //                       TASK_PRIORITY_DEFAULT,
+    //                       TASK_STACK_DEPTH_DEFAULT,
+    //                       "logger_thread");
      
+    fflush(stdin);
+    std::cin.clear();
+
+    
+    Server server;
+    server.start_server();
+    server.set_debug_mode(true);
      
      // int stop = pros::millis() + 8000;
      // 
@@ -226,33 +214,31 @@ void autonomous() {
      //     pros::delay(10);
      // }
 
-     
-     std::cout << "opcontrol started\n";
+    std::cout << "opcontrol started\n";
 
-     std::signal(SIGSEGV, Exit);
-     std::signal(SIGTERM, Exit);
-     std::signal(SIGINT, Exit);
-     std::signal(SIGILL, Exit);
-     std::signal(SIGABRT, Exit);
-     std::signal(SIGFPE, Exit);
-     std::signal(SIGBUS, Exit);
-     std::signal(SIGALRM, Exit);
-     std::signal(SIGSTOP, Exit);
-     std::signal(SIGUSR1, Exit);
-     std::signal(SIGUSR2, Exit);
-     std::signal(SIGKILL, Exit);
-
-     pros::delay(100);
-
-     lv_scr_load(tempScreen::temp_screen);
+    std::signal(SIGSEGV, Exit);
+    std::signal(SIGTERM, Exit);
+    std::signal(SIGINT, Exit);
+    std::signal(SIGILL, Exit);
+    std::signal(SIGABRT, Exit);
+    std::signal(SIGFPE, Exit);
+    std::signal(SIGBUS, Exit);
+    std::signal(SIGALRM, Exit);
+    std::signal(SIGSTOP, Exit);
+    std::signal(SIGUSR1, Exit);
+    std::signal(SIGUSR2, Exit);
+    std::signal(SIGKILL, Exit);
     
-     pros::Task driver_control_task (driver_control,
+    pros::delay(100);
+    
+    lv_scr_load(tempScreen::temp_screen);
+
+    pros::Task driver_control_task (driver_control,
                                     (void*)NULL,
                                     TASK_PRIORITY_DEFAULT,
                                     TASK_STACK_DEPTH_DEFAULT,
                                     "DriverControlTask");
 
-     // std::cout << "starting\n";
      // Motors motors;
      // Motors::record_macro();
      // 
@@ -266,43 +252,23 @@ void autonomous() {
      // std::cout << "done\n";
 
      //update controller with color of cube and if it is loaded or not
-     DriverControlLCD lcd(final_auton_choice);
      
-     Controller controllers;
-     std::string controller_text = "no cube loaded";
-     std::string prev_controller_text = "";
-     while(1)
-     {
-         int cube = Sensors::check_for_cube();
-         if ( cube == 1 )
-         {
-             controller_text = "green           ";   // pad with spaces to remove junk from previous prints
-             std::cout << "green cube loaded\n";
-         }
-         else if ( cube == 2 )
-         {
-             controller_text = "orange          ";
-             std::cout << "orange cube loaded\n";
-         }
-         else if ( cube == 3 )
-         {
-             controller_text = "purple          ";
-             std::cout << "purple cube loaded\n";
-         }
-         else 
-         {
-             controller_text = "no cube loaded  ";
-             std::cout << "no cube loaded\n";
-         }
-         std::cout << "here\n";
-         pros::delay(60);
-         
-         if ( controller_text != prev_controller_text )
-         {
-             controllers.master.print( 1, 0, controller_text.c_str() );
-         }
-         
-         lcd.update_labels();
-         
-     }
- }
+    // Controller controllers;
+    // std::string controller_text = "no cube loaded";
+    // std::string prev_controller_text = "";
+    DriverControlLCD lcd(final_auton_choice);
+    while(1)
+    {
+        lcd.update_labels();
+        server.handle_requests();
+        // std::cout << "handling requests\n";
+
+        // if ( limit_switch.get_value() )
+        // {
+        //     std::cout << "dumping" << "\n";
+        //     logger.dump();
+        // }
+        
+        pros::delay(10);
+    }
+}

@@ -3,7 +3,6 @@
  * @author: Aiden Carney
  * @reviewed_on:
  * @reviewed_by:
- * TODO:
  *
  * contains implementation for functions that handle motor functions
  */
@@ -14,7 +13,7 @@
 
 #include "main.h"
 
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 #include "Motor.hpp"
 #include "MotorThread.hpp"
 
@@ -96,13 +95,13 @@ int MotorThread::register_motor( Motor &motor )
         
         sprintf(buffer, "%p", &motor);
         entry.stream = "clog";
-        entry.content = "[INFO] " + std::to_string(pros::millis()) +  " motor added at " + buffer;
+        entry.content = "[INFO], " + std::to_string(pros::millis()) +  ", motor added at " + buffer;
         logger.add(entry);
     } 
     catch ( ... )
     {
         sprintf(buffer, "%p", &motor);
-        entry.content = "[WARNING] " + std::to_string(pros::millis()) +  " could not add motor at " + buffer;
+        entry.content = "[WARNING], " + std::to_string(pros::millis()) +  ", could not add motor at " + buffer;
         entry.stream = "cerr";
         logger.add(entry);
 
@@ -130,13 +129,13 @@ int MotorThread::unregister_motor( Motor &motor )
         
         sprintf(buffer, "%p", &motor);
         entry.stream = "clog";
-        entry.content = "[INFO] " + std::to_string(pros::millis()) + " motor removed at " + buffer;
+        entry.content = "[INFO] " + std::to_string(pros::millis()) + ", motor removed at " + buffer;
         logger.add(entry);
     }
     else 
     {
         sprintf(buffer, "%p", &motor);
-        entry.content = "[WARNING] " + std::to_string(pros::millis()) +  " could not remove motor at " + buffer;
+        entry.content = "[WARNING] " + std::to_string(pros::millis()) +  ", could not remove motor at " + buffer;
         entry.stream = "cerr";
         logger.add(entry);
         

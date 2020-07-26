@@ -329,7 +329,21 @@ class Motor
          * takes range [-127,127] and scales it to [-12000,12000]
          * makes it easier to map to controller input
          */        
-        int move( int voltage  );
+        int move( int voltage );
+        
+        /**
+         * @param: int voltage -> the voltage to set the motor to
+         * @return: int -> if the motor voltage was set or not
+         *
+         * @see: pros::Motor
+         *
+         * takes range [-127,127] and scales it to [-12000,12000]
+         * makes it easier to map to controller input. This function acts as 
+         * a wrapper to move but with a check to see if the driver control lock
+         * is taken. Use this function when using the controller in driver control 
+         * to set the motor value.
+         */        
+        int user_move( int voltage );
         
         /**
          * @param: int velocity -> the velocity to set the motor to

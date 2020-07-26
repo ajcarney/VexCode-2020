@@ -28,11 +28,6 @@ Configuration::Configuration( )
     internal_motor_pid.kI = 37;
     internal_motor_pid.kD = 11;
     internal_motor_pid.I_max = INT32_MAX;
-
-    tilter_pid_consts.kP = 1;
-    tilter_pid_consts.kI = 0;
-    tilter_pid_consts.kD = 0;
-    tilter_pid_consts.I_max = INT32_MAX;
     
     lift_pid.kP = .1;
     lift_pid.kI = 0.0001;
@@ -49,18 +44,16 @@ Configuration::Configuration( )
     back_left_port = 19;
     front_left_port = 10;
     back_right_port = 20;
-    left_intake_port = 1;
-    right_intake_port = 2;
-    tilter_port = 15;
+    main_intake_port = 1;
+    hoarding_intake_port = 2;
     lift_port = 16;
     
     front_right_reversed = 1;
     back_left_reversed = 0;
     front_left_reversed = 0;
     back_right_reversed = 1;
-    left_intake_reversed = 0;
-    right_intake_reversed = 1;
-    tilter_reversed = 0;
+    main_intake_reversed = 0;
+    hoarding_intake_reversed = 1;
     lift_reversed = 0;
     
     
@@ -146,7 +139,7 @@ int Configuration::init()
     std::ifstream input("/usd/config.json"); //open file with library
     if ( input.fail() )
     {
-        std::cerr << "[ERROR] " << pros::millis() << " configuration file could not be opened\n";
+        std::cerr << "[ERROR], " << pros::millis() << ", configuration file could not be opened\n";
         return 0;
     }
     nlohmann::json contents;
@@ -159,7 +152,7 @@ int Configuration::init()
     for ( int i1 = 0; i1 < 4; i1++)
     {
         double value1 = contents["internal_motor_pid"][i1];
-        double value2 = contents["tilter_pid_consts"][i1];
+        double value2 = contents["lift_pid"][i1];
 
         std::cout << value1 << "\n";
         constants1.push_back(value1);
@@ -171,10 +164,10 @@ int Configuration::init()
     internal_motor_pid.kD = constants1.at(2);
     internal_motor_pid.I_max = constants1.at(3);
 
-    tilter_pid_consts.kP = constants2.at(0);
-    tilter_pid_consts.kI = constants2.at(1);
-    tilter_pid_consts.kD = constants2.at(2);
-    tilter_pid_consts.I_max = constants2.at(3);
+    lift_pid.kP = constants2.at(0);
+    lift_pid.kI = constants2.at(1);
+    lift_pid.kD = constants2.at(2);
+    lift_pid.I_max = constants2.at(3);
 
 
 
@@ -183,27 +176,18 @@ int Configuration::init()
     back_left_port = contents["back_left_port"];
     front_left_port = contents["front_left_port"];
     back_right_port = contents["back_right_port"];
-    left_intake_port = contents["left_intake_port"];
-    right_intake_port = contents["right_intake_port"];
-    tilter_port = contents["tilter_port"];
+    main_intake_port = contents["main_intake_port"];
+    hoarding_intake_port = contents["hoarding_intake_port"];
     lift_port = contents["lift_port"];
 
     front_right_reversed = contents["front_right_reversed"] == 1 ? true : false; //read motor port reversals
     back_left_reversed = contents["back_left_reversed"] == 1 ? true : false;
     front_left_reversed = contents["front_left_reversed"] == 1 ? true : false;
     back_right_reversed = contents["back_right_reversed"] == 1 ? true : false;
-    left_intake_reversed = contents["left_intake_reversed"] == 1 ? true : false;
-    right_intake_reversed = contents["right_intake_reversed"] == 1 ? true : false;
-    tilter_reversed = contents["tilter_reversed"] == 1 ? true : false;
+    main_intake_reversed = contents["main_intake_reversed"] == 1 ? true : false;
+    hoarding_intake_reversed = contents["hoarding_intake_reversed"] == 1 ? true : false;
     lift_reversed = contents["lift_reversed"] == 1 ? true : false;
 
-
-    tilter_setpoints.clear();
-    for ( int i2 = 0; i2 < contents["tilter_setpoints"].size(); i2++)
-    {
-        tilter_setpoints.push_back(contents["tilter_setpoints"][i2]);
-
-    }
     
     lift_setpoints.clear();
     for ( int i2 = 0; i2 < contents["lift_setpoints"].size(); i2++)
@@ -218,6 +202,8 @@ int Configuration::init()
         intake_speeds.push_back(contents["intake_speeds"][i3]);
 
     }
+    
+    return 1;
 }
 
 
@@ -231,8 +217,8 @@ void Configuration::print_config_options()
 {
     std::cout << "drive PID constants\n";
     internal_motor_pid.print();
-    std::cout << "tilter PID constants\n";
-    tilter_pid_consts.print();
+    std::cout << "lift PID constants\n";
+    lift_pid.print();
 
     std::cout << "\n";
 
@@ -240,26 +226,17 @@ void Configuration::print_config_options()
     std::cout << "back_left_port: " << back_left_port << "\n";
     std::cout << "front_left_port: " << front_left_port << "\n";
     std::cout << "back_right_port: " << back_right_port << "\n";
-    std::cout << "left_intake_port: " << left_intake_port << "\n";
-    std::cout << "right_intake_port: " << right_intake_port << "\n";
-    std::cout << "tilter_port: " << tilter_port << "\n";
+    std::cout << "main_intake_port: " << main_intake_port << "\n";
+    std::cout << "hoarding_intake_port: " << hoarding_intake_port << "\n";
     std::cout << "lift_port: " << lift_port << "\n";
 
     std::cout << "front_right_reversed: " << front_right_reversed << "\n";
     std::cout << "back_left_reversed: " << back_left_reversed << "\n";
     std::cout << "front_left_reversed: " << front_left_reversed << "\n";
     std::cout << "back_right_reversed: " << back_right_reversed << "\n";
-    std::cout << "left_intake_reversed: " << left_intake_reversed << "\n";
-    std::cout << "right_intake_reversed: " << right_intake_reversed << "\n";
-    std::cout << "tilter_reversed: " << tilter_reversed << "\n";
+    std::cout << "main_intake_reversed: " << main_intake_reversed << "\n";
+    std::cout << "hoarding_intake_reversed: " << hoarding_intake_reversed << "\n";
     std::cout << "lift_reversed: " << lift_reversed << "\n";
-
-    std::cout << "\ntilter_setpoints: ";
-    for ( int i = 0; i < tilter_setpoints.size() - 1; i++ )
-    {
-        std::cout << tilter_setpoints.at(i) << ", ";
-    }
-    std::cout << tilter_setpoints.at(tilter_setpoints.size() - 1) << "\n";
 
 
     std::cout << "\nlift_setpoints: ";

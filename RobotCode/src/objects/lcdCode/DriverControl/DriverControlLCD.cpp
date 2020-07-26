@@ -12,7 +12,7 @@
 #include "main.h"
 
 #include "../../../Autons.hpp"
-#include "../../logger/Logger.hpp"
+#include "../../serial/Logger.hpp"
 #include "../../position_tracking/PositionTracker.hpp"
 #include "../AutonSelection/OptionsScreen.hpp"
 #include "../Debug/Debug.hpp"
@@ -150,14 +150,7 @@ lv_res_t DriverControlLCD::btn_run_auton_action(lv_obj_t *btn)
     
     Autons auton_obj;
     
-    Motors::front_left.disable_driver_control();
-    Motors::front_left.disable_driver_control();
-    Motors::back_right.disable_driver_control();
-    Motors::back_left.disable_driver_control();
-    Motors::right_intake.disable_driver_control();
-    Motors::left_intake.disable_driver_control();
-    Motors::tilter.disable_driver_control();
-    Motors::lift.disable_driver_control();
+    Motors::disable_driver_control();
     
     switch(auton)
     {
@@ -165,47 +158,16 @@ lv_res_t DriverControlLCD::btn_run_auton_action(lv_obj_t *btn)
            break;
 
         case 2:
-           auton_obj.five_cube_red_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 3:
-           auton_obj.five_cube_blue_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 4:
-           auton_obj.seven_cube_red_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 5:
-           auton_obj.seven_cube_blue_small_zone(OptionsScreen::cnfg);
-           break;
-
-        case 6:
-            auton_obj.red_big_zone(OptionsScreen::cnfg);
-            break;
-
-        case 7:
-            auton_obj.blue_big_zone(OptionsScreen::cnfg);
-            break;
-
-        case 8:
             auton_obj.one_pt(OptionsScreen::cnfg);
             break;
 
-        case 9:
+        case 3:
             auton_obj.skills(OptionsScreen::cnfg);
             break;
 
     }
 
-    Motors::front_left.enable_driver_control();
-    Motors::front_left.enable_driver_control();
-    Motors::back_right.enable_driver_control();
-    Motors::back_left.enable_driver_control();
-    Motors::right_intake.enable_driver_control();
-    Motors::left_intake.enable_driver_control();
-    Motors::tilter.enable_driver_control();
-    Motors::lift.enable_driver_control();
+    Motors::enable_driver_control();
     
     return LV_RES_OK;
 }
@@ -256,14 +218,7 @@ void DriverControlLCD::update_labels()
     if(log_data)
     {
         lv_label_set_text(btn_toggle_logging_label, "Stop Logging");
-        Motors::front_right.set_log_level(1);
-        Motors::front_left.set_log_level(1);
-        Motors::back_right.set_log_level(1);
-        Motors::back_left.set_log_level(1);
-        Motors::right_intake.set_log_level(1);
-        Motors::left_intake.set_log_level(1);
-        Motors::tilter.set_log_level(1);
-        Motors::lift.set_log_level(1);
+        Motors::set_log_level(1);
     
         pos_tracker->start_logging();
     
@@ -272,14 +227,7 @@ void DriverControlLCD::update_labels()
     else 
     {
         lv_label_set_text(btn_toggle_logging_label, "Start Logging");
-        Motors::front_right.set_log_level(0);
-        Motors::front_left.set_log_level(0);
-        Motors::back_right.set_log_level(0);
-        Motors::back_left.set_log_level(0);
-        Motors::right_intake.set_log_level(0);
-        Motors::left_intake.set_log_level(0);
-        Motors::tilter.set_log_level(0);
-        Motors::lift.set_log_level(0);
+        Motors::set_log_level(0);
     
         pos_tracker->stop_logging();
     }

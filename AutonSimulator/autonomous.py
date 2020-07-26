@@ -75,8 +75,20 @@ class auton:
         """
         self.nextFrame(2)
     
+        self.robot.forward(1000)
+        self.nextFrame(.1)
         
+        self.robot.turnLeft(90)
+        self.nextFrame(.1)
         
+        self.robot.backward(1000)
+        self.nextFrame(.1)
+        
+        self.robot.turnRight(90)
+        self.nextFrame(.1)
+        
+        self.robot.forward(1000)
+        self.nextFrame(.1)
      
 
         

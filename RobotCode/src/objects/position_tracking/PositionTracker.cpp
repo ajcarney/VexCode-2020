@@ -12,7 +12,7 @@
 
 #include "main.h"
 
-#include "../logger/Logger.hpp"
+#include "../serial/Logger.hpp"
 #include "../sensors/Sensors.hpp"
 #include "PositionTracker.hpp"
 
@@ -78,11 +78,11 @@ void PositionTracker::calc_position(void*)
         
         if(log_data)
         {
-            entry.content = ("[INFO] " + std::to_string(pros::millis()) 
-                + " Position Tracking"
-                +  " X_POS: " + std::to_string(current_position.x_pos)
-                +  " Y_POS: " + std::to_string(current_position.y_pos)
-                +  " Angle: " + std::to_string(current_position.angle));
+            entry.content = ("[INFO], " + std::to_string(pros::millis()) 
+                + ", Position Tracking Data"
+                +  ", X_POS: " + std::to_string(current_position.x_pos)
+                +  ", Y_POS: " + std::to_string(current_position.y_pos)
+                +  ", Angle: " + std::to_string(current_position.angle));
             entry.stream = "clog";
             logger.add(entry);
         }

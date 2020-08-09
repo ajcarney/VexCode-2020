@@ -97,6 +97,8 @@ class MotorThread
          * logs that the motor was removed to the logger queue
          */
         int unregister_motor( Motor &motor );
+        
+        int is_registered(Motor &motor);
     
     
 };

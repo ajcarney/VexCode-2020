@@ -28,6 +28,8 @@ AutonomousLCD auton_lcd;
  */
  void initialize()
  {
+     pros::c::serctl(SERCTL_ACTIVATE, 0);
+     pros::c::serctl(SERCTL_DISABLE_COBS, NULL);
     //Sensors::potentiometer.calibrate();
     
     MotorThread* motor_thread = MotorThread::get_instance();

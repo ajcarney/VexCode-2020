@@ -7,9 +7,9 @@
  * contains implementation for functions that handle motor functions
  */
 
+#include <atomic>
 #include <stdio.h>
 #include <vector>
-#include <atomic>
 
 #include "main.h"
 
@@ -146,4 +146,20 @@ int MotorThread::unregister_motor( Motor &motor )
     lock.exchange(false);
     return 1;
     
+}
+
+
+int MotorThread::is_registered(Motor &motor) {
+    int registered = 0;
+    
+    while ( lock.exchange( true ) );
+    
+    auto element = std::find(begin(motors), end(motors), &motor);
+    if ( element != motors.end()) {
+        registered = 1;
+    }
+    
+    lock.exchange(false);
+    
+    return registered;
 }

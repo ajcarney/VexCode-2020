@@ -20,6 +20,16 @@ namespace Motors
     Motor hoarding_intake {Configuration::get_instance()->hoarding_intake_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->hoarding_intake_reversed};
     Motor lift {Configuration::get_instance()->lift_port, pros::E_MOTOR_GEARSET_36, Configuration::get_instance()->lift_reversed};
 
+    std::array<Motor*, 7> motor_array = {
+        &front_right,
+        &front_left,
+        &back_right,
+        &back_left,
+        &main_intake,
+        &hoarding_intake,
+        &lift        
+    };
+
     void enable_driver_control() {
         Motors::front_left.enable_driver_control();
         Motors::front_left.enable_driver_control();

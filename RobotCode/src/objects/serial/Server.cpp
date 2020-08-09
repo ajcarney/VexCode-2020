@@ -9,12 +9,16 @@
 #include <atomic>
 #include <cstdint>
 #include <queue>
+#include <string>
 
 #include "main.h"
 #include "pros/apix.h"
 
-#include "Server.hpp"
+#include "../../Configuration.hpp"
+#include "../motors/Motors.hpp"
+#include "../motors/MotorThread.hpp"
 #include "Logger.hpp"
+#include "Server.hpp"
 
 std::queue<server_request> Server::request_queue;
 std::atomic<bool> Server::lock = ATOMIC_VAR_INIT(false);
@@ -87,7 +91,7 @@ void Server::read_stdin(void*) {
             }
 
             char checksum = getchar();  // checksum is directly after end of message
-            std::cout << "here6\n";
+
             pros::delay(10);
             if(debug) {
                 entry.stream = "clog";
@@ -134,40 +138,285 @@ int Server::handle_request(server_request request) {
     log_entry entry;
     entry.stream = "clog";
 
-    // std::string return_msg = "";
-    std::string return_msg = (
-        std::to_string('\xAA')
-        + std::to_string('\x55')
-        + std::to_string('\x1E')
-    );
+    std::string return_msg;
+    return_msg.push_back('\xAA');
+    return_msg.push_back('\x55');
+    return_msg.push_back('\x1E');
     
     std::string return_msg_body;
+    int status;
 
     switch(request.command_id) {
-        // motor interaction post cases
-        case 45232:  //0xB0 0xB0
-            break;
-        case 45233:  //0xB0 0xB1
-            break;
-        case 45234:  //0xB0 0xB2
-            break;
-        case 45235:  //0xB0 0xB3
-            break;
-        case 45236:  //0xB0 0xB4
-            break;
-        case 45237:  //0xB0 0xB5 
-            break;
-        case 45238:  //0xB0 0xB6
-            break;
-        case 45239:  //0xB0 0xB7
-            break;
-        case 45240:  //0xB0 0xB8
-            break;
-        case 45241:  //0xB0 0xB9
+    // motor interaction post cases
+        case 45232: {  //0xB0 0xB0  Set voltage
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int voltage = std::stoi(request.msg);
+                
+                status = Motors::motor_array.at(motor_number)->set_voltage(voltage);
+            }
             break;
             
-        // motor interaction post cases
-        
+        case 45233: {  //0xB0 0xB1  Set Slew Rate
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int slew_rate = std::stoi(request.msg);
+                
+                status = Motors::motor_array.at(motor_number)->set_slew(slew_rate);
+            }
+            break;
+            
+        case 45234: {  //0xB0 0xB2  Set Port
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int port = std::stoi(request.msg);
+                
+                status = Motors::motor_array.at(motor_number)->set_port(port);
+            }
+            break;
+            
+        case 45235: {  //0xB0 0xB3  Tare IME
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                
+                status = Motors::motor_array.at(motor_number)->tare_encoder();
+            }
+            break;
+            
+        case 45236: {  //0xB0 0xB4  Set Brakemode
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                pros::motor_brake_mode_e_t new_brake_mode = static_cast<pros::motor_brake_mode_e_t>(std::stoi(request.msg));
+                
+                status = Motors::motor_array.at(motor_number)->set_brake_mode(new_brake_mode);
+            }
+            break;
+            
+        case 45237: {  //0xB0 0xB5  Set Gearing
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                pros::motor_gearset_e_t new_gearing = static_cast<pros::motor_gearset_e_t>(std::stoi(request.msg));
+                
+                status = Motors::motor_array.at(motor_number)->set_gearing(new_gearing);
+            }
+            break;
+            
+        case 45238: {  //0xB0 0xB6  Set PID
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                
+                char buffer1[8];
+                char buffer2[8];
+                char buffer3[8];
+                char buffer4[8];
+                
+                std::copy(request.msg.begin(), request.msg.begin() + 8, buffer1);
+                std::copy(request.msg.begin() + 8, request.msg.begin() + 16, buffer2);
+                std::copy(request.msg.begin() + 16, request.msg.begin() + 24, buffer3);
+                std::copy(request.msg.begin() + 24, request.msg.begin() + 32, buffer4);
+                
+                double n1 = *reinterpret_cast<double*>(buffer1);
+                double n2 = *reinterpret_cast<double*>(buffer2);
+                double n3 = *reinterpret_cast<double*>(buffer3);
+                double n4 = *reinterpret_cast<double*>(buffer4);
+                
+                pid pid_constants;
+                pid_constants.kP = n1;
+                pid_constants.kI = n2;
+                pid_constants.kD = n3;
+                pid_constants.I_max = n4;
+                
+                status = Motors::motor_array.at(motor_number)->set_pid(pid_constants);
+            }
+            break;
+            
+        case 45239: {  //0xB0 0xB7  Reverse Motor
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int reveresed = std::stoi(request.msg);
+                status = Motors::motor_array.at(motor_number)->reverse_motor();
+            }
+            break;
+        case 45240: {  //0xB0 0xB8  Set Log Level
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int new_log_level = std::stoi(request.msg);
+                Motors::motor_array.at(motor_number)->set_log_level(new_log_level);
+                status = 1;
+            }
+            break;
+        case 45241: {  //0xB0 0xB9  Set Slew enabled/disabled
+                int motor_number = std::stoi(std::to_string(request.msg.at(0)));
+                request.msg.erase(0);
+                int enabled = std::stoi(request.msg);
+                if(enabled) {
+                    Motors::motor_array.at(motor_number)->enable_slew();
+                } else {
+                    Motors::motor_array.at(motor_number)->disable_slew();
+                }
+                status = 1;
+            }
+            break;
+            
+            
+    // motor interaction get cases
+        case 41120: {  // 0xA0 0xA0  Actual Velocity
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_actual_velocity());
+            }
+            break;
+            
+        case 41121: {  // 0xA0 0xA1  Actual Voltage
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_actual_voltage());
+            }
+            break;
+            
+        case 41122: {  // 0xA0 0xA2  Current Draw
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_current_draw());
+            }
+            break;
+            
+        case 41123: {  // 0xA0 0xA3  Encoder Position
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_encoder_position());
+            }
+            break;
+            
+        case 41124: {  // 0xA0 0xA4  Brakemode
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_brake_mode());
+            }
+            break;
+            
+        case 41125: {  // 0xA0 0xA5  Gearset
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_gearset());
+            }
+            break;
+            
+        case 41126: {  // 0xA0 0xA6  Port
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_port());
+            }
+            break;
+            
+        case 41127: {  // 0xA0 0xA7  PID Constants
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body += std::to_string(Motors::motor_array.at(motor_number)->get_pid().kP);
+                return_msg_body += " " + std::to_string(Motors::motor_array.at(motor_number)->get_pid().kI);
+                return_msg_body += " " + std::to_string(Motors::motor_array.at(motor_number)->get_pid().kD);
+                return_msg_body += " " + std::to_string(Motors::motor_array.at(motor_number)->get_pid().I_max);
+            }
+            break;
+            
+        case 41128: {  // 0xA0 0xA8  Slew Rate
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_slew_rate());
+            }
+            break;
+            
+        case 41129: {  // 0xA0 0xA9  Power
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_power());
+            }
+            break;
+            
+        case 41130: {  // 0xA0 0xAA  Temperature
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_temperature());
+            }
+            break;
+            
+        case 41131: {  // 0xA0 0xAB  Torque
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_torque());
+            }
+            break;
+            
+        case 41132: {  // 0xA0 0xAC  Direction
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_direction());
+            }
+            break;
+            
+        case 41133: {  // 0xA0 0xAD  Efficiency
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->get_efficiency());
+            }
+            break;
+            
+        case 41134: {  // 0xA0 0xAE  is stopped
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->is_stopped());
+            }
+            break;
+            
+        case 41135: {  // 0xA0 0xAF  is reversed
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+                return_msg_body = std::to_string(Motors::motor_array.at(motor_number)->is_reversed());
+            }
+            break;
+            
+        case 41376: {  // 0xA1 0xA0  is registered
+                int motor_number = request.msg.at(0) - 48;
+                request.msg.erase(0);    
+                
+                status = 1;
+            
+                MotorThread* motor_thread = MotorThread::get_instance();
+                return_msg_body = std::to_string(motor_thread->is_registered(*Motors::motor_array.at(motor_number)));
+            }
+            break;
         
         // encoder interaction post cases
         // encoder iteraction get cases
@@ -183,20 +432,25 @@ int Server::handle_request(server_request request) {
         
         // sd card interaction post cases
         
+        // misc 
+        case 43936:  // 0xAB 0xA0
+            status = 1;
+            return_msg_body = " debug msg received: " + request.msg;
+            break;
+        
         default:
+            status = 1;
             return_msg_body = " [INFO], " + std::to_string(pros::millis()) + ", Invalid Command: " + request.msg;
             break;
                     
         
     }
     
-    return_msg = (
-        std::to_string(return_msg_body.length() + 2)
-        + std::to_string(((request.return_id >> 8) & 0xFF))  // high byte
-        + std::to_string((request.return_id & 0xFF))  // low byte
-        + return_msg_body
-        + std::to_string('\xC6')
-    );
+    return_msg.push_back((char)return_msg_body.length() + 2);
+    return_msg.push_back((char)(request.return_id >> 8) & 0xFF);
+    return_msg.push_back((char)request.return_id & 0xFF);
+    return_msg += return_msg_body;
+    return_msg.push_back('\xC6');
     
     entry.content = return_msg;
     

@@ -10,6 +10,8 @@
 #ifndef __MOTORS_HPP__
 #define __MOTORS_HPP__
 
+#include <array>
+
 #include "main.h"
 
 #include "../../Configuration.hpp"
@@ -26,11 +28,15 @@ namespace Motors
     extern Motor hoarding_intake;
     extern Motor lift;
     
+    extern std::array<Motor*, 7> motor_array;
+    
     void enable_driver_control();
     void disable_driver_control();
     void set_log_level(int log_level);
     void register_motors();
     void unregister_motors();
+    
+    
 };
 
 

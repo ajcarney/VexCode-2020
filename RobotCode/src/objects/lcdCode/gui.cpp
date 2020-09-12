@@ -45,13 +45,9 @@ int chooseAuton()
 
         auton = scr1.selectAuton( auton ); //get auton option
 
-        if ( auton == auton_data.driver_control_num ) //if prog with no auton is selected
-        {
+        if ( auton == auton_data.driver_control_num ) {  //if prog with no auton is selected
             finalAutonChoice = 1;
-        }
-        
-        else if ( auton == auton_data.debug_auton_num ) //if debugger is selected
-        {
+        } else if ( auton == auton_data.debug_auton_num ) {  //if debugger is selected
             //starts driver control for debugging purposes
             MotorThread* motor_thread = MotorThread::get_instance();
             Motors::register_motors();
@@ -71,34 +67,37 @@ int chooseAuton()
             
             Motors::unregister_motors();
             motor_thread->stop_thread();
+        } else {
+            finalAutonChoice = auton;
         }
         
-        else
-        {
-            while ( !(scr2.back) && !(finalAutonChoice) )
-            //if user selects a program with an auton
-            {
-                autonConfig cnfg = scr2.getOptions( auton ); //get config options
-
-                if ( !(scr2.back) ) //if user does not want to go back from screen 2
-                {
-
-                    scr3.getConfirmation( auton ); //gets confirmation from user
-                    if ( scr3.confirm )
-                    {
-                        finalAutonChoice = auton;
-                    }
-
-
-                }
-                else 
-                {
-                    break;
-                }
-
-
-            }
-        }
+        // selection screen has been removed temporarily because options are not in use
+        // else
+        // {
+        //     while ( !(scr2.back) && !(finalAutonChoice) )
+        //     //if user selects a program with an auton
+        //     {
+        //         autonConfig cnfg = scr2.getOptions( auton ); //get config options
+        // 
+        //         if ( !(scr2.back) ) //if user does not want to go back from screen 2
+        //         {
+        // 
+        //             scr3.getConfirmation( auton ); //gets confirmation from user
+        //             if ( scr3.confirm )
+        //             {
+        //                 finalAutonChoice = auton;
+        //             }
+        // 
+        // 
+        //         }
+        //         else 
+        //         {
+        //             break;
+        //         }
+        // 
+        // 
+        //     }
+        // }
 
     }
 

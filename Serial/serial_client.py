@@ -6,12 +6,14 @@ Created on Sun Jul 26 11:00:42 2020
 @author: aiden
 """
 
+import multiprocessing as mp
 import serial
 import subprocess
 import threading
 import time
 import queue
 from functools import wraps
+import sys
 
 
 
@@ -76,52 +78,48 @@ class Client:
         self.recv_queue_lock = threading.Lock()
     
     
-    def get_command(self, id1, id2, msg=""):
+    def _send_message(self, id1, id2, msg=""):
         msg = id1 + id2 + msg
         with self.send_queue_lock:
             self.send_queue.put(msg)
+    
+    
+    def _receive_message(self, max_wait=5, sent_message=""):
+        if max_wait is None:
+            max_wait = sys.maxsize - 1
             
         start = time.time()
         while 1:  # set max waiting time to 5 sec
-            if self.recv_queue.empty():
-                time.sleep(.01)
-            else:
+            if not self.recv_queue.empty():
                 with self.recv_queue_lock:
                     received = self.recv_queue.get()
                 break
+            
             end = time.time()
             
-            if (end - start) > 5:
-                raise TimeoutError("No response returned from host with sent message: " + msg)
+            if (end - start) > max_wait:
+                error_msg = "No response returned from host in allotted time"
+                if sent_message:
+                    error_msg += " with sent message: " + sent_message
+                raise TimeoutError(error_msg)
     
         return received
+    
+    
+    def get_command(self, id1, id2, msg=""):
+        self._send_message(id1, id2, msg)
+        return self._receive_message(5, msg)
         
     def post_command(self, id1, id2, msg=""):
         pass
     
     def debug(self, debug_message):
-        msg = '\xAB' + '\xA0' + debug_message
-        with self.send_queue_lock:
-            self.send_queue.put(msg)
-            
-        start = time.time()
-        while 1:  # set max waiting time to 5 sec
-            if self.recv_queue.empty():
-                time.sleep(.01)
-            else:
-                with self.recv_queue_lock:
-                    received = self.recv_queue.get()
-                break
-            end = time.time()
-            
-            if (end - start) > 5:
-                raise TimeoutError("No response returned from host with sent message: " + debug_message)
-    
-        return received
+        self._send_message('\xAB', '\xA0', debug_message)
+        return self._receive_message(5, debug_message)
     
     
 class ServerConnection:
-    def __init__(self, debug=False, read_chunk_size=20):
+    def __init__(self, debug=False, read_chunk_size=1024):
         self.connection = None
         self.debug = debug 
         self.read_chunk_size = read_chunk_size
@@ -225,8 +223,8 @@ class ServerConnection:
         
     
     @serial_exception_handler
-    def read_byte(self):
-        return self.connection.read(1)
+    def read_bytes(self):
+        return self.connection.read(self.connection.in_waiting)
 
     @serial_exception_handler
     def write_bytes(self, send_array):
@@ -238,30 +236,24 @@ class ServerConnection:
         read_check = 0
         while 1:
             if self.run_reading_thread:
-                for i in range(self.read_chunk_size):
-                    byte = self.read_byte()
-                    
-                    if read_check == 0 and int.from_bytes(byte, "big") == 0xAA:
+                bytes_read = iter(self.read_bytes())
+                terminal_output = ""
+                for byte in bytes_read:
+                    if read_check == 0 and byte == 0xAA:
                         read_check = 1
-                        print("here1")
-                    elif read_check == 1 and int.from_bytes(byte, "big") == 0x55:
+                    elif read_check == 1 and byte == 0x55:
                         read_check = 2
-                        print("here2")
-                    elif read_check == 2 and int.from_bytes(byte, "big") == 0x1E:
+                    elif read_check == 2 and byte == 0x1E:
                         read_check = 3
-                        print("here3")
                     elif read_check == 3:
-                        num_bytes_following = int.from_bytes(byte, "big")
-                        uid_msb = int.from_bytes(self.read_byte(), "big")
-                        uid_lsb = int.from_bytes(self.read_byte(), "big")
-                        # print("uid msb:", uid_msb)
-                        # print("uid lsb:", uid_lsb)
+                        num_bytes_following = byte
+                        uid_msb = next(bytes_read)
+                        uid_lsb = next(bytes_read)
                         uid = (uid_msb << 8) | uid_lsb
-                        
                         msg = ""
-                        for i in range(num_bytes_following - 2):
+                        for _ in range(num_bytes_following - 2):
                             try:
-                                char = self.read_byte().decode("ascii")
+                                char = chr(next(bytes_read))
                             except UnicodeDecodeError:
                                 if self.debug:
                                     print("failed to decode character")
@@ -269,17 +261,17 @@ class ServerConnection:
                                 
                             msg += char
                         if self.debug:
-                            print("message received: ", msg)
+                            print("message received: ", msg, "at", time.time())
                             
-                        checksum = self.read_byte()
-                        if int.from_bytes(checksum, "big") == 0xC6:
+                        checksum = next(bytes_read)
+                        if checksum == 0xC6:
                             # find server with that id and add message to its queue
                             for client in self.clients:
                                 if client.uid == uid:
                                     with client.recv_queue_lock:
                                         client.recv_queue.put(msg)
                                         
-                        elif int.from_bytes(checksum, "big") != 0xC6 and self.debug:
+                        elif checksum != 0xC6 and self.debug:
                             print("checksum failed - received: ", checksum)
                             
                         read_check = 0
@@ -287,62 +279,69 @@ class ServerConnection:
                     else:  # if response from server is not part of message send to stdout
                         read_check = 0
                         try:
-                            char = byte.decode("ascii")
+                            char = chr(byte)
                         except UnicodeDecodeError:
                             print(byte)
                             char = ""
-                        print(char, end="")
+                        terminal_output += char
+                        # print(char, end="")
+                with open("log.txt", "a") as f:
+                    f.write(terminal_output)   
+                    terminal_output = ""
 
-                    
+                time.sleep(.1)        
+            
             
     def write_thread(self):
         while 1:
             if self.run_writing_thread:
-                with self.client_lock:
-                    for client in self.clients:
-                        with client.send_queue_lock:
-                            if not client.send_queue.empty():
-                                to_write = client.send_queue.get()
-                            else:
-                                continue
+                send_array = bytearray()
+                for client in self.clients:
+                    with client.send_queue_lock:
+                        if not client.send_queue.empty():
+                            to_write = client.send_queue.get()
+                        else:
+                            continue
+                    
+                    
+                    send_array.append(0xAA)
+                    send_array.append(0x55)
+                    send_array.append(0x1E)
+                    send_array.append(len(to_write) + 2)  # add two for the uid bytes
+                    
+                    send_array.append((client.uid >> 8) & 0xFF)
+                    send_array.append(client.uid & 0xFF)
+                    
+                    for i in to_write:
+                        send_array.append(ord(i))
                         
-                        
-                        send_array = bytearray()
-                        send_array.append(0xAA)
-                        send_array.append(0x55)
-                        send_array.append(0x1E)
-                        send_array.append(len(to_write) + 2)  # add two for the uid bytes
-                        
-                        send_array.append((client.uid >> 8) & 0xFF)
-                        send_array.append(client.uid & 0xFF)
-                        
-                        for i in to_write:
-                            send_array.append(ord(i))
+                    send_array.append(0xC6)
+                    
+                    if self.debug:
+                        print("Message added to be sent: ", to_write, "at", time.time())
+                    
+                if send_array:
+                    self.write_bytes(send_array)
+                    if self.debug:
+                        print("Message array sent at", time.time())
                             
-                        send_array.append(0xC6)
-                        
-                        if self.debug:
-                            print("Message sent: ", send_array)
-                        
-                    
-                        self.write_bytes(send_array)
-                        
                     # write garbage on the stream to help clear any blocking functions on server
-                    # send_array = bytearray()
-                    # send_array.append(0xFF)
-                    # send_array.append(0xFF)
-                    # send_array.append(0xFF)
-                    # send_array.append(0xFF)
-                    # send_array.append(0xFF)
+                # send_array = bytearray()
+                # send_array.append(0xFF)
+                # send_array.append(0xFF)
+                # send_array.append(0xFF)
+                # send_array.append(0xFF)
+                # send_array.append(0xFF)
+                
+                # self.write_bytes(send_array)
                     
-                    # self.write_bytes(send_array)
-                    
-                time.sleep(.05)
+                # time.sleep(.01)
                 
         
-    def add_client(self, client):
+    def add_clients(self, *args):
         with self.client_lock:
-            self.clients.append(client)
+            for client in args:
+                self.clients.append(client)
             
     
     def start_server(self):
@@ -354,6 +353,37 @@ class ServerConnection:
         self.run_reading_thread = False        
         
         
+def handle_requests_async(connection, *args, **kwargs):
+    clients = []
+    for i in range(55000, 55000 + len(args)):
+        client = Client(i)
+        clients.append(client)
+        
+    connection.add_clients(*clients)
+        
+    for request, client in zip(args, clients):
+        client._send_message(request[0], request[1], request[2])
+    
+    responses = [None for i in range(len(args))]
+    i = 0
+    start = time.time()
+    dt = 0
+    while None in responses and dt < kwargs.get("max_wait", 5):
+        try:
+            response = clients[i]._receive_message(max_wait=.001)
+            responses[i] = response
+        except TimeoutError:
+            pass
+        i += 1
+        
+        if i > len(clients) - 1:
+            i = 0
+        dt = time.time() - start
+        
+    return responses
+        
+
+
 if __name__ == "__main__":
     c = ServerConnection(debug=True)
     x = c.mount_vex_brain()       
@@ -361,8 +391,16 @@ if __name__ == "__main__":
     client = Client(55000)
     c.add_client(client)
     while 1:
-        client.debug("test")
-        time.sleep(2)
+        print("starting debug msg at", time.time())
+        client.get_command('\xA0', '\xA0', "0")
+        # start = time.time()
+        # print("start time:", start)
+        # for i in range(20):
+        #     client._send_message('\xAB', '\xA0', "test")
+
+        # print("time to send 20 messages: ", time.time() - start)
+        print("ended debug msg at", time.time())
+        time.sleep(20)
         
         
         

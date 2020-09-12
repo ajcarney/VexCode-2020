@@ -57,8 +57,7 @@ void driver_control(void*)
     int back_left;
     int back_right;
     
-    while ( true )
-    {
+    while ( true ) {
         shift_key_pressing = controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT) || controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_Y);
     
         if(std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) < 5) {   // define deadzone for left analog input on the y axis

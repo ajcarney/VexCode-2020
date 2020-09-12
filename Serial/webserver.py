@@ -48,48 +48,85 @@ motors = {
 app = flask.Flask(__name__)
 
 
-def get_motor_data(client, motor_num):
-    try:
-        motor_data = {
-            "Actual Velocity":client.get_command('\xA0', '\xA0', motor_num),
-            "Actual Voltage":client.get_command('\xA0', '\xA1', motor_num),
-            "Current Draw":client.get_command('\xA0', '\xA2', motor_num),
-            "Encoder Position":client.get_command('\xA0', '\xA3', motor_num),
-            "Brakemode":client.get_command('\xA0', '\xA4', motor_num),
-            "Gearset":client.get_command('\xA0', '\xA5', motor_num),
-            "Port":client.get_command('\xA0', '\xA6', motor_num),
-            "PID Constants":client.get_command('\0xA0', '\xA7', motor_num),
-            "Slew Rate":client.get_command('\xA0', '\xA8', motor_num),
-            "Power":client.get_command('\xA0', '\xA9', motor_num),
-            "Temperature":client.get_command('\xA0', '\xAA', motor_num),
-            "Torque":client.get_command('\xA0', '\xAB', motor_num),
-            "Direction":client.get_command('\xA0', '\xAC', motor_num),
-            "Efficiency":client.get_command('\xA0', '\xAD', motor_num),
-            "Is Stopped":client.get_command('\xA0', '\xAE', motor_num),
-            "Is Reversed":client.get_command('\0A0', '\xAF', motor_num),
-            "Is Registered":client.get_command('\xA1', '\xA0', motor_num)
-        }
-    except TimeoutError as e:
-        print(e)
-        motor_data = {
-            "Actual Velocity":None,
-            "Actual Voltage":None,
-            "Current Draw":None,
-            "Encoder Position":None,
-            "Brakemode":None,
-            "Gearset":None,
-            "Port":None,
-            "PID Constants":None,
-            "Slew Rate":None,
-            "Power":None,
-            "Temperature":None,
-            "Torque":None,
-            "Direction":None,
-            "Efficiency":None,
-            "Is Stopped":None,
-            "Is Reversed":None,
-            "Is Registered":None
-        }
+def get_motor_data(connection, motor_num):
+    data = serial_client.handle_requests_async(connection, 
+        ('\xA0', '\xA0', motor_num),
+        ('\xA0', '\xA1', motor_num),
+        ('\xA0', '\xA2', motor_num),                                          
+        ('\xA0', '\xA3', motor_num),                                                   
+        ('\xA0', '\xA4', motor_num),
+        ('\xA0', '\xA5', motor_num),
+        ('\xA0', '\xA6', motor_num),
+        ('\xA0', '\xA7', motor_num),
+        ('\xA0', '\xA8', motor_num),
+        ('\xA0', '\xA9', motor_num),
+        ('\xA0', '\xAA', motor_num),
+        ('\xA0', '\xAB', motor_num),    
+        ('\xA0', '\xAC', motor_num),
+        ('\xA0', '\xAD', motor_num),
+        ('\xA0', '\xAE', motor_num),
+        ('\xA0', '\xAF', motor_num),
+        ('\xA1', '\xA0', motor_num)                                               
+    )
+    motor_data = {
+        "Actual Velocity":data[0],
+        "Actual Voltage":data[1],
+        "Current Draw":data[2],
+        "Encoder Position":data[3],
+        "Brakemode":data[4],
+        "Gearset":data[5],
+        "Port":data[6],
+        "PID Constants":data[7],
+        "Slew Rate":data[8],
+        "Power":data[9],
+        "Temperature":data[10],
+        "Torque":data[11],
+        "Direction":data[12],
+        "Efficiency":data[13],
+        "Is Stopped":data[14],
+        "Is Reversed":data[15],
+        "Is Registered":data[16]
+    }        
+        # motor_data = {
+        #     "Actual Velocity":client.get_command('\xA0', '\xA0', motor_num),
+        #     "Actual Voltage":client.get_command('\xA0', '\xA1', motor_num),
+        #     "Current Draw":client.get_command('\xA0', '\xA2', motor_num),
+        #     "Encoder Position":client.get_command('\xA0', '\xA3', motor_num),
+        #     "Brakemode":client.get_command('\xA0', '\xA4', motor_num),
+        #     "Gearset":client.get_command('\xA0', '\xA5', motor_num),
+        #     "Port":client.get_command('\xA0', '\xA6', motor_num),
+        #     "PID Constants":client.get_command('\xA0', '\xA7', motor_num),
+        #     "Slew Rate":client.get_command('\xA0', '\xA8', motor_num),
+        #     "Power":client.get_command('\xA0', '\xA9', motor_num),
+        #     "Temperature":client.get_command('\xA0', '\xAA', motor_num),
+        #     "Torque":client.get_command('\xA0', '\xAB', motor_num),
+        #     "Direction":client.get_command('\xA0', '\xAC', motor_num),
+        #     "Efficiency":client.get_command('\xA0', '\xAD', motor_num),
+        #     "Is Stopped":client.get_command('\xA0', '\xAE', motor_num),
+        #     "Is Reversed":client.get_command('\xA0', '\xAF', motor_num),
+        #     "Is Registered":client.get_command('\xA1', '\xA0', motor_num)
+        # }
+    # except TimeoutError as e:
+        # print(e)
+        # motor_data = {
+        #     "Actual Velocity":None,
+        #     "Actual Voltage":None,
+        #     "Current Draw":None,
+        #     "Encoder Position":None,
+        #     "Brakemode":None,
+        #     "Gearset":None,
+        #     "Port":None,
+        #     "PID Constants":None,
+        #     "Slew Rate":None,
+        #     "Power":None,
+        #     "Temperature":None,
+        #     "Torque":None,
+        #     "Direction":None,
+        #     "Efficiency":None,
+        #     "Is Stopped":None,
+        #     "Is Reversed":None,
+        #     "Is Registered":None
+        # }
     
     return motor_data
 
@@ -120,23 +157,20 @@ def handle_invalid_usage(error):
 @app.route("/api/motor_data/<motor_number>", methods=["GET"])
 def api_get_motor_data(motor_number):
     if int(motor_number) in motors.keys():
-        data = get_motor_data(motor_client, motor_number)
+        data = get_motor_data(server_conn, motor_number)
         return flask.jsonify(data)
     
     else:
         raise InvalidUsage("Motor Number supplied was not valid", status_code=406)
 
-@app.route("/api/debug", methods=["GET"])
-def api_debug():
-    motor_client.debug("test message")
+# @app.route("/api/debug", methods=["GET"])
+# def api_debug():
+#     motor_client.debug("test message")
 
     
 server_conn = serial_client.ServerConnection(debug=True)
 x = server_conn.mount_vex_brain()       
 server_conn.start_server()
-motor_client = serial_client.Client(55000)
-server_conn.add_client(motor_client)
-
 
 
 

@@ -35,12 +35,13 @@ class Logger
         static std::atomic<bool> lock;
 
         /**
-         * @return: log_entry -> the string that was received from the queue
+         * @param: num_entries -> max number of entries to get
+         * @return: std::vector<log_entry> -> the list of items gotton from queue
          *
          * gets an object from the logger queue
          * returns an empty string if the queue is empty
          */
-        log_entry get_entry( );
+        std::vector<log_entry> get_entries(int num_entries);
 
         /**
          * @param: log_entry contents -> what to log

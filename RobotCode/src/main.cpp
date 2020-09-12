@@ -28,8 +28,7 @@ AutonomousLCD auton_lcd;
  */
  void initialize()
  {
-     pros::c::serctl(SERCTL_ACTIVATE, 0);
-     pros::c::serctl(SERCTL_DISABLE_COBS, NULL);
+     pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
     //Sensors::potentiometer.calibrate();
     
     MotorThread* motor_thread = MotorThread::get_instance();
@@ -47,18 +46,16 @@ AutonomousLCD auton_lcd;
     config->init();
     config->print_config_options();
 
-
-
     final_auton_choice = chooseAuton();
 
  	DriverControlLCD::auton = final_auton_choice;
 
-    std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
-    std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
-    std::cout << OptionsScreen::cnfg.accelleration_ctrl << '\n';
-    std::cout << OptionsScreen::cnfg.check_motor_tmp << '\n';
-    std::cout << OptionsScreen::cnfg.use_previous_macros << '\n';
-    std::cout << OptionsScreen::cnfg.record << '\n';
+    // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
+    // std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
+    // std::cout << OptionsScreen::cnfg.accelleration_ctrl << '\n';
+    // std::cout << OptionsScreen::cnfg.check_motor_tmp << '\n';
+    // std::cout << OptionsScreen::cnfg.use_previous_macros << '\n';
+    // std::cout << OptionsScreen::cnfg.record << '\n';
 
     std::cout << "initalize finished" << "\n";
     lv_scr_load(tempScreen::temp_screen);
@@ -165,6 +162,13 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
  void opcontrol() {
+     // pros::ADIAnalogIn l1 (1);
+     // pros::ADIAnalogIn l2 (2);
+     // pros::ADIAnalogIn l3 (3);
+     // while(1) {
+     //     std::cout << l1.get_value() << " " << l2.get_value() << " " << l3.get_value() << "\n";
+     //     pros::delay(50);
+     // }
     Logger logger;
     // pros::ADIDigitalIn limit_switch('A');
     // pros::Task write_task (log_thread_fn,
@@ -172,15 +176,14 @@ void autonomous() {
     //                       TASK_PRIORITY_DEFAULT,
     //                       TASK_STACK_DEPTH_DEFAULT,
     //                       "logger_thread");
-     
-    fflush(stdin);
-    std::cin.clear();
-
+    
+    
     
     Server server;
+    server.clear_stdin();
     server.start_server();
     server.set_debug_mode(true);
-     
+    
      // int stop = pros::millis() + 8000;
      // 
      // Lift lift(Motors::lift, {0, 800});
@@ -203,7 +206,6 @@ void autonomous() {
      // logger.dump();
      // logger.dump();
      // logger.dump();
-     
      // 
      // Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
      // int stop = pros::millis() + 8000;
@@ -215,9 +217,9 @@ void autonomous() {
      //     chassis.turn_left(13, 12000, INT32_MAX, false, false, true );
      //     pros::delay(10);
      // }
-
+    
     std::cout << "opcontrol started\n";
-
+    
     std::signal(SIGSEGV, Exit);
     std::signal(SIGTERM, Exit);
     std::signal(SIGINT, Exit);
@@ -234,13 +236,13 @@ void autonomous() {
     pros::delay(100);
     
     lv_scr_load(tempScreen::temp_screen);
-
+    
     pros::Task driver_control_task (driver_control,
                                     (void*)NULL,
                                     TASK_PRIORITY_DEFAULT,
                                     TASK_STACK_DEPTH_DEFAULT,
                                     "DriverControlTask");
-
+    
      // Motors motors;
      // Motors::record_macro();
      // 
@@ -252,9 +254,9 @@ void autonomous() {
      // }
      // 
      // std::cout << "done\n";
-
+    
      //update controller with color of cube and if it is loaded or not
-     
+    
     // Controller controllers;
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
@@ -262,15 +264,15 @@ void autonomous() {
     while(1)
     {
         lcd.update_labels();
-        server.handle_requests();
+        server.handle_requests(50);
         // std::cout << "handling requests\n";
-
+    
         // if ( limit_switch.get_value() )
         // {
         //     std::cout << "dumping" << "\n";
-        //     logger.dump();
+        logger.dump();
         // }
-        
-        pros::delay(10);
+    
+        pros::delay(5);
     }
 }

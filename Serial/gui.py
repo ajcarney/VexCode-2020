@@ -20,6 +20,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.properties import StringProperty
 from kivy.event import EventDispatcher
+import sys
 
 
 class Data:
@@ -171,7 +172,7 @@ class VexServer(App):
         body_text = ""
         for key, value in Data.get_instance().motors_data.get(self.settings.motor_selected, {}).items():
             body_text += key + ": " + str(value) + '\n'
-        print(self.motor_data_body)
+        # print(self.motor_data_body)
         self.motor_data_body = body_text
 
     def build(self):

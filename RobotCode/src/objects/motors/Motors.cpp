@@ -61,22 +61,24 @@ namespace Motors
     }
     
     void register_motors() {
-        MotorThread::get_instance()->register_motor(Motors::front_right);
-        MotorThread::get_instance()->register_motor(Motors::front_left);
-        MotorThread::get_instance()->register_motor(Motors::back_right);
-        MotorThread::get_instance()->register_motor(Motors::back_left);
-        MotorThread::get_instance()->register_motor(Motors::main_intake);
-        MotorThread::get_instance()->register_motor(Motors::hoarding_intake);
-        MotorThread::get_instance()->register_motor(Motors::lift);
+        MotorThread* motor_thread = MotorThread::get_instance();
+        motor_thread->register_motor(Motors::front_right);
+        motor_thread->register_motor(Motors::front_left);
+        motor_thread->register_motor(Motors::back_right);
+        motor_thread->register_motor(Motors::back_left);
+        motor_thread->register_motor(Motors::main_intake);
+        motor_thread->register_motor(Motors::hoarding_intake);
+        motor_thread->register_motor(Motors::lift);
     }
     
     void unregister_motors() {
-        MotorThread::get_instance()->unregister_motor(Motors::front_right);
-        MotorThread::get_instance()->unregister_motor(Motors::front_left);
-        MotorThread::get_instance()->unregister_motor(Motors::back_right);
-        MotorThread::get_instance()->unregister_motor(Motors::back_left);
-        MotorThread::get_instance()->unregister_motor(Motors::main_intake);
-        MotorThread::get_instance()->unregister_motor(Motors::hoarding_intake);
-        MotorThread::get_instance()->unregister_motor(Motors::lift);
+        MotorThread* motor_thread = MotorThread::get_instance();
+        motor_thread->unregister_motor(Motors::front_right);
+        motor_thread->unregister_motor(Motors::front_left);
+        motor_thread->unregister_motor(Motors::back_right);
+        motor_thread->unregister_motor(Motors::back_left);
+        motor_thread->unregister_motor(Motors::main_intake);
+        motor_thread->unregister_motor(Motors::hoarding_intake);
+        motor_thread->unregister_motor(Motors::lift);
     }
 };

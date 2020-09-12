@@ -29,10 +29,8 @@ bool Server::debug = false;
 
 Server::Server() { 
     if(read_thread == NULL) {
-        read_thread = new pros::Task( read_stdin, (void*)NULL, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "server_thread");
+        read_thread = new pros::Task( read_stdin, (void*)NULL, 2, TASK_STACK_DEPTH_DEFAULT, "server_thread");
         read_thread->suspend();
-        // pros::c::serctl(SERCTL_ACTIVATE, 0);
-        // pros::c::serctl(SERCTL_DISABLE_COBS, NULL);
     }
 
     num_instances += 1;
@@ -57,9 +55,10 @@ void Server::read_stdin(void*) {
     int read_check = 0;
     Logger logger;
     log_entry entry;
+    int wait_check = 0;
     
     while(1) {
-        char byte = getchar();
+        char byte = getchar_unlocked();
 
         if(debug) {
             entry.stream = "clog";
@@ -78,21 +77,20 @@ void Server::read_stdin(void*) {
             int len_msg = (int)byte - 4;  // byte read will be length of bytes to follow 
                                           // subtract 4 because next four bytes are handled different
                                           // because they are identifiers
-            uint8_t return_msb = getchar();
-            uint8_t return_lsb = getchar();
-            uint8_t command_msb = getchar();
-            uint8_t command_lsb = getchar();
+            uint8_t return_msb = getchar_unlocked();
+            uint8_t return_lsb = getchar_unlocked();
+            uint8_t command_msb = getchar_unlocked();
+            uint8_t command_lsb = getchar_unlocked();
                         
             uint16_t return_id = (return_msb << 8) | return_lsb;
             uint16_t command_id = (command_msb << 8) | command_lsb;
 
             for(int i=0; i<len_msg; i++) {  // read rest message
-                msg.push_back(getchar());
+                msg.push_back(getchar_unlocked());
             }
 
-            char checksum = getchar();  // checksum is directly after end of message
+            char checksum = getchar_unlocked();  // checksum is directly after end of message
 
-            pros::delay(10);
             if(debug) {
                 entry.stream = "clog";
                 entry.content = (
@@ -108,12 +106,12 @@ void Server::read_stdin(void*) {
 
             if(checksum == '\xC6')
             {
-                while ( lock.exchange( true ) ); //aquire lock
-                
                 server_request request;
                 request.return_id = return_id;
                 request.command_id = command_id;
                 request.msg = msg;
+                
+                while ( lock.exchange( true ) ); //aquire lock
                 request_queue.push(request);
                 msg = '\0';
                 lock.exchange( false ); //release lock
@@ -126,7 +124,12 @@ void Server::read_stdin(void*) {
         } else {
             read_check = 0;
         }
-        pros::delay(10);        
+        
+        wait_check += 1;
+        if(wait_check > 1024) {
+            wait_check = 0;
+            pros::delay(10);
+        }
     }
 }
 
@@ -433,10 +436,24 @@ int Server::handle_request(server_request request) {
         // sd card interaction post cases
         
         // misc 
-        case 43936:  // 0xAB 0xA0
+        case 43936:  // 0xAB 0xA0  debug
             status = 1;
             return_msg_body = " debug msg received: " + request.msg;
             break;
+            
+        case 43937:  // 0xAB 0xA1  init server
+            status = 1;
+            pros::c::serctl(SERCTL_DISABLE_COBS, NULL);
+            set_server_task_priority(TASK_PRIORITY_DEFAULT);  // more messages are sure to follow so give read task more CPU time
+            return_msg_body = "server is running";
+            break;
+            
+        case 43938:  // 0xAB 0xA2  shutdown server
+            status = 1;
+            pros::c::serctl(SERCTL_ENABLE_COBS, NULL);
+            set_server_task_priority(2);
+            return_msg_body = "server is running";
+            break;            
         
         default:
             status = 1;
@@ -446,10 +463,11 @@ int Server::handle_request(server_request request) {
         
     }
     
-    return_msg.push_back((char)return_msg_body.length() + 2);
+    return_msg.push_back(return_msg_body.length() + 2);
     return_msg.push_back((char)(request.return_id >> 8) & 0xFF);
     return_msg.push_back((char)request.return_id & 0xFF);
     return_msg += return_msg_body;
+    // return_msg += std::to_string(pros::millis());
     return_msg.push_back('\xC6');
     
     entry.content = return_msg;
@@ -470,23 +488,40 @@ void Server::stop_server() {
     read_thread->suspend();
 }
 
+void Server::set_server_task_priority(int new_prio) {
+    read_thread->set_priority(new_prio);
+}
+
 void Server::set_debug_mode(bool debug_mode) {
     debug = debug_mode;
+}
+
+void Server::clear_stdin() {
+    fflush(stdin);
+    std::cin.clear();
 }
 
 
 
 int Server::handle_requests(int max_requests) {
-    for(int i=0; i<max_requests; i++) {
-        if ( !request_queue.empty() ) {
-            while ( lock.exchange( true ) ); //aquire lock
-            server_request request = request_queue.front();
-            request_queue.pop();
-            lock.exchange( false ); //release lock
-            
-            handle_request(request);
-        }
+    std::vector<server_request> requests;
+    
+    if ( !request_queue.empty() ) {
+        while ( lock.exchange( true ) ); //aquire lock
+        for(int i=0; i<max_requests; i++) {
+            if ( !request_queue.empty() ) {
+                server_request request = request_queue.front();
+                request_queue.pop();
+                
+                requests.push_back(request);
+            }
+        }    
+        lock.exchange( false ); //release lock
     }
     
-    return 1;
+    for (int i=0; i<requests.size(); i++) {
+        handle_request(requests.at(i));
+    }
+    
+    return requests.size();
 }

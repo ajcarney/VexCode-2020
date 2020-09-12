@@ -1,8 +1,8 @@
 /**
  * @file: ./RobotCode/src/objects/serial/Server.hpp
  * @author: Aiden Carney
- * @reviewed_on: 2/9/2020
- * @reviewed_by: Aiden Carney
+ * @reviewed_on:
+ * @reviewed_by: 
  *
  * contains class for a server that works over serial communication
  */
@@ -55,7 +55,11 @@ class Server
          */
         void stop_server();
         
+        void set_server_task_priority(int new_prio);
+        
         void set_debug_mode(bool debug_mode);
+        
+        void clear_stdin();
         
         int handle_requests(int max_requests=10);
 };

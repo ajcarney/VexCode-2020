@@ -40,15 +40,15 @@ bool Logger::log( log_entry entry )
 {
     if ( entry.stream == "cout" )
     {
-        std::cout << entry.content << "\n";
+        std::cout << pros::millis() << " " << entry.content << "\n";
     }
     else if ( entry.stream == "cerr" )
     {
-        std::cerr << entry.content << "\n";
+        std::cerr << pros::millis() << " " << entry.content << "\n";
     }
     else if ( entry.stream == "clog" )
     {
-        std::clog << entry.content << "\n";
+        std::clog << pros::millis() << " " << entry.content << "\n";
     }
     else
     {
@@ -84,21 +84,23 @@ bool Logger::add( log_entry entry )
 /**
  * gets an item from the queue by acquiring the lock and releasing it
  */
-log_entry Logger::get_entry( )
+std::vector<log_entry> Logger::get_entries(int num_entries)
 {
-    log_entry contents;
+    std::vector<log_entry> contents;
 
-    //checks if there are items to be written, useful so that this function is
-    //not blocking if the queue is empty
-    if ( !logger_queue.empty() )
-    {
-        while ( lock.exchange( true ) ); //aquire lock
-        contents = logger_queue.front();
-        logger_queue.pop();
-        lock.exchange( false ); //release lock because there is no more iteraction
-                                //with the queue
-
+    while ( lock.exchange( true ) ); //aquire lock
+    
+    for(int i=0; i<num_entries; i++) {
+        if ( !logger_queue.empty() ) {
+            contents.push_back(logger_queue.front());
+            logger_queue.pop();
+        } else {
+            break;
+        }
     }
+    
+    lock.exchange( false ); //release lock because there is no more iteraction
+                            //with the queue
     return contents;
 }
 
@@ -111,25 +113,8 @@ log_entry Logger::get_entry( )
  */
 void Logger::dump( )
 {
-    std::vector<log_entry> entries;
-    
-    int start = pros::millis();
-    while ( pros::millis() < (start + 50) )
-    {
-        log_entry entry = get_entry();
+    std::vector<log_entry> entries = get_entries(50);
 
-        if ( !entry.stream.empty() )
-        {
-            entries.push_back( entry );
-        }
-        else //object returned was empty meaning queue is empty
-             //it would be wasteful to look at the queue when it is known to be empty
-        {
-            break;
-        }
-    }
-    
-    
     for ( int i = 0; i < entries.size(); i++ )
     {
         log(entries.at(i));

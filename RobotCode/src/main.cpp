@@ -30,7 +30,7 @@ AutonomousLCD auton_lcd;
  {
      pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
     //Sensors::potentiometer.calibrate();
-    
+
     MotorThread* motor_thread = MotorThread::get_instance();
     motor_thread->register_motor(Motors::front_right);
     motor_thread->register_motor(Motors::front_left);
@@ -40,7 +40,7 @@ AutonomousLCD auton_lcd;
     motor_thread->register_motor(Motors::hoarding_intake);
     motor_thread->register_motor(Motors::lift);
     motor_thread->start_thread();
-    
+
     pros::delay(100); //wait for terminal to start and lvgl
     Configuration* config = Configuration::get_instance();
     config->init();
@@ -48,7 +48,7 @@ AutonomousLCD auton_lcd;
 
     final_auton_choice = chooseAuton();
 
- 	DriverControlLCD::auton = final_auton_choice;
+ 	  DriverControlLCD::auton = final_auton_choice;
 
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
     // std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
@@ -176,16 +176,16 @@ void autonomous() {
     //                       TASK_PRIORITY_DEFAULT,
     //                       TASK_STACK_DEPTH_DEFAULT,
     //                       "logger_thread");
-    
-    
-    
+
+
+
     Server server;
     server.clear_stdin();
     server.start_server();
     server.set_debug_mode(true);
-    
+
      // int stop = pros::millis() + 8000;
-     // 
+     //
      // Lift lift(Motors::lift, {0, 800});
      // while ( pros::millis() < stop )
      // {
@@ -206,20 +206,20 @@ void autonomous() {
      // logger.dump();
      // logger.dump();
      // logger.dump();
-     // 
+     //
      // Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
      // int stop = pros::millis() + 8000;
-     // 
+     //
      // chassis.turn_left(13, 12000, INT32_MAX, true, false, true);
-     // 
+     //
      // while ( pros::millis() < stop )
      // {
      //     chassis.turn_left(13, 12000, INT32_MAX, false, false, true );
      //     pros::delay(10);
      // }
-    
+
     std::cout << "opcontrol started\n";
-    
+
     std::signal(SIGSEGV, Exit);
     std::signal(SIGTERM, Exit);
     std::signal(SIGINT, Exit);
@@ -232,31 +232,31 @@ void autonomous() {
     std::signal(SIGUSR1, Exit);
     std::signal(SIGUSR2, Exit);
     std::signal(SIGKILL, Exit);
-    
+
     pros::delay(100);
-    
+
     lv_scr_load(tempScreen::temp_screen);
-    
+
     pros::Task driver_control_task (driver_control,
                                     (void*)NULL,
                                     TASK_PRIORITY_DEFAULT,
                                     TASK_STACK_DEPTH_DEFAULT,
                                     "DriverControlTask");
-    
+
      // Motors motors;
      // Motors::record_macro();
-     // 
+     //
      // Writer writer;
      // while( writer.get_count() > 0 )
      // {
      //     std::cout << pros::millis() << " " << writer.get_count() << "\n";
      //     pros::delay(1);
      // }
-     // 
+     //
      // std::cout << "done\n";
-    
+
      //update controller with color of cube and if it is loaded or not
-    
+
     // Controller controllers;
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
@@ -266,13 +266,13 @@ void autonomous() {
         lcd.update_labels();
         server.handle_requests(50);
         // std::cout << "handling requests\n";
-    
+
         // if ( limit_switch.get_value() )
         // {
         //     std::cout << "dumping" << "\n";
         logger.dump();
         // }
-    
+
         pros::delay(5);
     }
 }

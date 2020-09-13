@@ -120,6 +120,9 @@ void Controller::update_button_history()
         if(element.second->size() > 3) {
             element.second->pop_front();
         }
+        for(int i=0; i<element.second->size(); i++) {
+            std::cout << element.second->at(0) << element.second->at(1) << element.second->at(2) << "\n";
+        }
     }
     for (std::pair<pros::controller_digital_e_t, std::deque<bool>*> element : partner_btn_history) {
         element.second->push_back(master.get_digital(element.first));
@@ -158,7 +161,7 @@ bool Controller::btn_get_start_press(pros::controller_digital_e_t btn, int contr
             press_start = true;
         }
     }
-    
+
     return press_start;
 }
 
@@ -171,8 +174,6 @@ bool Controller::btn_is_pressing(pros::controller_digital_e_t btn, int controlle
     else {
         pressing = partner_btn_history.at(btn)->at(2);
     }
-    
+
     return pressing;
 }
-
-

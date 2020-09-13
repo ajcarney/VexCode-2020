@@ -28,12 +28,12 @@ Configuration::Configuration( )
     internal_motor_pid.kI = 37;
     internal_motor_pid.kD = 11;
     internal_motor_pid.I_max = INT32_MAX;
-    
+
     lift_pid.kP = .1;
     lift_pid.kI = 0.0001;
     lift_pid.kD = 0;
     lift_pid.I_max = INT32_MAX;
-    
+
     chassis_pid.kP = 60;
     chassis_pid.kI = 0.01;
     chassis_pid.kD = 0;
@@ -44,10 +44,10 @@ Configuration::Configuration( )
     back_left_port = 19;
     front_left_port = 10;
     back_right_port = 20;
-    main_intake_port = 1;
+    main_intake_port = 6;
     hoarding_intake_port = 2;
     lift_port = 16;
-    
+
     front_right_reversed = 1;
     back_left_reversed = 0;
     front_left_reversed = 0;
@@ -55,8 +55,8 @@ Configuration::Configuration( )
     main_intake_reversed = 0;
     hoarding_intake_reversed = 1;
     lift_reversed = 0;
-    
-    
+
+
     //536D motor config
     // front_right_port = 13;
     // back_left_port = 1;
@@ -66,7 +66,7 @@ Configuration::Configuration( )
     // right_intake_port = 11;
     // tilter_port = 17;
     // lift_port = 12;
-    // 
+    //
     // front_right_reversed = 1;
     // back_left_reversed = 0;
     // front_left_reversed = 0;
@@ -75,8 +75,8 @@ Configuration::Configuration( )
     // right_intake_reversed = 1;
     // tilter_reversed = 1;
     // lift_reversed = 0;
-    
-    
+
+
     //536A motor config
     // front_right_port = 20;
     // back_left_port = 2;
@@ -86,7 +86,7 @@ Configuration::Configuration( )
     // right_intake_port = 1;
     // tilter_port = 13;
     // lift_port = 11;
-    // 
+    //
     // front_right_reversed = 1;
     // back_left_reversed = 1;
     // front_left_reversed = 1;
@@ -99,7 +99,7 @@ Configuration::Configuration( )
     std::vector<int> vec1 {100, 300, 400, 500};
     std::vector<int> vec2 {100, 300, 400, 500};
     std::vector<int> vec3 {-63, -30, 0, 30, 63};
-    
+
     tilter_setpoints = vec1;
     lift_setpoints = vec2;
     intake_speeds = vec3;
@@ -188,7 +188,7 @@ int Configuration::init()
     hoarding_intake_reversed = contents["hoarding_intake_reversed"] == 1 ? true : false;
     lift_reversed = contents["lift_reversed"] == 1 ? true : false;
 
-    
+
     lift_setpoints.clear();
     for ( int i2 = 0; i2 < contents["lift_setpoints"].size(); i2++)
     {
@@ -202,7 +202,7 @@ int Configuration::init()
         intake_speeds.push_back(contents["intake_speeds"][i3]);
 
     }
-    
+
     return 1;
 }
 
@@ -254,4 +254,3 @@ void Configuration::print_config_options()
     }
     std::cout << intake_speeds.at(intake_speeds.size() - 1) << "\n";
 }
-

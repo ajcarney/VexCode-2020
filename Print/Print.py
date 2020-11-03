@@ -398,3 +398,18 @@ class Print(DirectoryTree.DirectoryTree): #inherits DirectoryTree so that
             print("queuing ", file)
             command = "lpr -P HP-Color-LaserJet-M553 -o sides=two-sided-long-edge " + str(file)
             os.system(command)
+
+    def output_pdf(self, files=None):
+        """
+        merges code by file and also barriers if they are in the list
+
+        @params = (optional) type list of path of files to print
+        @return = None
+        """     
+        
+        if files:
+            self.print_order = files
+            
+        command = "psmerge " + " ".join(files) + " > all.ps; ps2pdf all.ps; rm all.ps"
+        os.system(command)
+        

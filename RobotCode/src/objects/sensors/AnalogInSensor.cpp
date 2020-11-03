@@ -12,6 +12,11 @@
 
 
 
+AnalogInSensor::AnalogInSensor() {
+    sensor = NULL;
+}
+
+
 AnalogInSensor::AnalogInSensor(char port)
 {        
     sensor = new pros::ADIAnalogIn(port);
@@ -24,6 +29,14 @@ AnalogInSensor::~AnalogInSensor()
 }
 
 
+void AnalogInSensor::set_port(char port)
+{
+    if(sensor != NULL) {
+        delete sensor;
+    }
+    
+    sensor = new pros::ADIAnalogIn(port);    
+}
 
 
 double AnalogInSensor::get_raw_value()

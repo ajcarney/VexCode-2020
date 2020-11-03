@@ -119,15 +119,21 @@ void Controller::update_button_history()
         element.second->push_back(master.get_digital(element.first));
         if(element.second->size() > 3) {
             element.second->pop_front();
-        }
-        for(int i=0; i<element.second->size(); i++) {
-            std::cout << element.second->at(0) << element.second->at(1) << element.second->at(2) << "\n";
+        } 
+        
+        while(element.second->size() < 3) {  // forces deque size to be no less than 3
+            element.second->push_back(master.get_digital(element.first));
         }
     }
+    
     for (std::pair<pros::controller_digital_e_t, std::deque<bool>*> element : partner_btn_history) {
         element.second->push_back(master.get_digital(element.first));
         if(element.second->size() > 3) {
             element.second->pop_front();
+        }
+        
+        while(element.second->size() < 3) {  // forces deque size to be no less than 3
+            element.second->push_back(master.get_digital(element.first));
         }
     }
 }

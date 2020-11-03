@@ -23,8 +23,11 @@ class AnalogInSensor
         bool calibrated;
         
     public:
+        AnalogInSensor();
         AnalogInSensor(char port);
         ~AnalogInSensor();
+        
+        void set_port(char port);
         
         double get_raw_value();
         double get_value(bool high_res);

@@ -12,6 +12,7 @@
 
 #include "main.h"
 
+#include "BallDetector.hpp"
 #include "Encoder.hpp"
 #include "AnalogInSensor.hpp"
 
@@ -24,21 +25,11 @@ namespace Sensors
     extern Encoder strafe_encoder;
     extern AnalogInSensor potentiometer;
     extern pros::ADIDigitalIn limit_switch;
-    extern pros::Vision vision_sensor;
+    
+    extern BallDetector filter;
     extern pros::Imu imu;
     
     void log_data();
-    
-    /**
-     * @return: int -> a number representing the color cube loaded
-     *
-     * @see: pros docs
-     *
-     * 0 = no cube, 1 = green, 2 = orange, 3 = purple
-     * checks what color cube is loaded if any
-     * also sets color of led on vision sensor to the color of the cube loaded
-     */
-    int check_for_cube();
 }
 
 

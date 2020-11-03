@@ -138,28 +138,15 @@ void SensorsDebug::debug()
     //the back button
     all_cont = 1;
 
+    std::vector<Motor*> v1(Motors::motor_array.begin(), Motors::motor_array.end());
+    std::vector<std::string> v2(Motors::motor_names_array.begin(), Motors::motor_names_array.end());
+    
     IMEsDebugger imes_debug(
         imes_tab, 
         SENSORS_CONTAINER_WIDTH, 
         SENSORS_CONTAINER_HEIGHT, 
-        {
-            &Motors::front_left, 
-            &Motors::front_right,
-            &Motors::back_left,
-            &Motors::back_right,
-            &Motors::main_intake,
-            &Motors::hoarding_intake,
-            &Motors::lift
-        },
-        {
-            "Front Left",
-            "Front Right",
-            "Back Left",
-            "Back Right",
-            "Main Intake",
-            "Hoarding Intake",
-            "Lift"
-        }
+        v1,
+        v2
     );
     AnalogInDebugger analog_in_debug(analog_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::potentiometer}, {"Pot 1"});
     DigitalInDebugger digital_in_debug(digital_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::limit_switch}, {"Limit Switch 1"});

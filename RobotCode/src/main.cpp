@@ -28,18 +28,10 @@ AutonomousLCD auton_lcd;
  */
  void initialize()
  {
-     pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
-    //Sensors::potentiometer.calibrate();
+    pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
 
-    MotorThread* motor_thread = MotorThread::get_instance();
-    motor_thread->register_motor(Motors::front_right);
-    motor_thread->register_motor(Motors::front_left);
-    motor_thread->register_motor(Motors::back_right);
-    motor_thread->register_motor(Motors::back_left);
-    motor_thread->register_motor(Motors::main_intake);
-    motor_thread->register_motor(Motors::hoarding_intake);
-    motor_thread->register_motor(Motors::lift);
-    motor_thread->start_thread();
+    Motors::register_motors();
+    MotorThread::get_instance()->start_thread();
 
     pros::delay(100); //wait for terminal to start and lvgl
     Configuration* config = Configuration::get_instance();
@@ -47,9 +39,16 @@ AutonomousLCD auton_lcd;
     config->print_config_options();
 
     final_auton_choice = chooseAuton();
+    Autons autons;
+    config->filter_color = autons.AUTONOMOUS_COLORS.at(final_auton_choice);
 
- 	  DriverControlLCD::auton = final_auton_choice;
+    DriverControlLCD::auton = final_auton_choice;
 
+    Sensors::imu.reset();  // calibrate imu
+    while(Sensors::imu.is_calibrating() && Sensors::imu.get_status() != 255) {
+        pros::delay(10);
+    }
+    
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
     // std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
     // std::cout << OptionsScreen::cnfg.accelleration_ctrl << '\n';
@@ -59,7 +58,7 @@ AutonomousLCD auton_lcd;
 
     std::cout << "initalize finished" << "\n";
     lv_scr_load(tempScreen::temp_screen);
- }
+}
 
 
 

@@ -61,13 +61,14 @@ Wiring::Wiring()
     lv_label_set_align(motor_info, LV_LABEL_ALIGN_LEFT);
 
     std::string motors_text = (
-            "front right (200 RPM) - " + std::to_string(config->front_right_port) + "\n"
-            "back right (200 RPM) - " + std::to_string(config->back_left_port) + "\n"
-            "front left  (200 RPM) - " + std::to_string(config->front_left_port) + "\n"
-            "back left  (200 RPM) - " + std::to_string(config->back_right_port) + "\n"
-            "main intake   (100 RPM) - " + std::to_string(config->main_intake_port) + "\n"
-            "hoarding intake    (100 RPM) - " + std::to_string(config->hoarding_intake_port) + "\n"
-            "lift      (100 RPM) - " + std::to_string(config->lift_port) + "\n"
+            "front right     (200 RPM) - " + std::to_string(config->front_right_port) + "\n"
+            "back right      (200 RPM) - " + std::to_string(config->back_left_port) + "\n"
+            "front left      (200 RPM) - " + std::to_string(config->front_left_port) + "\n"
+            "back left       (200 RPM) - " + std::to_string(config->back_right_port) + "\n"
+            "left intake     (600 RPM) - " + std::to_string(config->left_intake_port) + "\n"
+            "right intake    (600 RPM) - " + std::to_string(config->right_intake_port) + "\n"
+            "diff1           (600 RPM) - " + std::to_string(config->diff1_port) + "\n"
+            "diff2           (600 RPM) - " + std::to_string(config->diff2_port) + "\n"
     );
 
     lv_label_set_text(motor_info, motors_text.c_str());

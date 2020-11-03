@@ -19,14 +19,16 @@
 #include "../lib/json.hpp"
 
 
-#define RIGHT_ENC_TOP_PORT       'A'
-#define RIGHT_ENC_BOTTOM_PORT    'B'
-#define LEFT_ENC_TOP_PORT        'C'
-#define LEFT_ENC_BOTTOM_PORT     'D'
-#define STRAFE_ENC_TOP_PORT      'E'
-#define STRAFE_ENC_BOTTOM_PORT   'F'
-#define POTENTIOMETER_PORT       'G'
+#define RIGHT_ENC_TOP_PORT       'C'
+#define RIGHT_ENC_BOTTOM_PORT    'D'
+#define LEFT_ENC_TOP_PORT        'E'
+#define LEFT_ENC_BOTTOM_PORT     'F'
+#define STRAFE_ENC_TOP_PORT      'G'
+#define STRAFE_ENC_BOTTOM_PORT   'H'
+#define POTENTIOMETER_PORT       'B'
 #define LIMITSWITCH_PORT         'H'
+
+#define DETECTOR1_PORT           'A'
 #define VISIONSENSOR_PORT        21
 #define IMU_PORT                 20
 
@@ -80,21 +82,26 @@ class Configuration
         int back_left_port;
         int front_left_port;
         int back_right_port;
-        int main_intake_port;
-        int hoarding_intake_port;
-        int lift_port;
+        int left_intake_port;
+        int right_intake_port;
+        int diff1_port;
+        int diff2_port;
         
         bool front_right_reversed;
         bool back_left_reversed;
         bool front_left_reversed;
         bool back_right_reversed;
-        bool main_intake_reversed;
-        bool hoarding_intake_reversed;
-        bool lift_reversed;
+        bool left_intake_reversed;
+        bool right_intake_reversed;
+        bool diff1_reversed;
+        bool diff2_reversed;
         
         std::vector<int> lift_setpoints;
         std::vector<int> tilter_setpoints;
         std::vector<int> intake_speeds;
+        
+        int filter_threshold;
+        std::string filter_color;  // color to remove
         
         
         /**

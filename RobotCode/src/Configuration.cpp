@@ -44,17 +44,22 @@ Configuration::Configuration( )
     back_left_port = 19;
     front_left_port = 10;
     back_right_port = 20;
-    main_intake_port = 6;
-    hoarding_intake_port = 2;
-    lift_port = 16;
+    left_intake_port = 16;
+    right_intake_port = 7;
+    diff1_port = 1;
+    diff2_port = 2;
 
     front_right_reversed = 1;
     back_left_reversed = 0;
     front_left_reversed = 0;
     back_right_reversed = 1;
-    main_intake_reversed = 0;
-    hoarding_intake_reversed = 1;
-    lift_reversed = 0;
+    left_intake_reversed = 1;
+    right_intake_reversed = 0;
+    diff1_reversed = 0;
+    diff2_reversed = 0;
+    
+    filter_threshold = 2500;
+    filter_color = "blue";
 
 
     //536D motor config
@@ -176,18 +181,21 @@ int Configuration::init()
     back_left_port = contents["back_left_port"];
     front_left_port = contents["front_left_port"];
     back_right_port = contents["back_right_port"];
-    main_intake_port = contents["main_intake_port"];
-    hoarding_intake_port = contents["hoarding_intake_port"];
-    lift_port = contents["lift_port"];
+    left_intake_port = contents["left_intake_port"];
+    right_intake_port = contents["right_intake_port"];
+    diff1_port = contents["diff1_port"];
+    diff2_port = contents["diff2_port"];
 
     front_right_reversed = contents["front_right_reversed"] == 1 ? true : false; //read motor port reversals
     back_left_reversed = contents["back_left_reversed"] == 1 ? true : false;
     front_left_reversed = contents["front_left_reversed"] == 1 ? true : false;
     back_right_reversed = contents["back_right_reversed"] == 1 ? true : false;
-    main_intake_reversed = contents["main_intake_reversed"] == 1 ? true : false;
-    hoarding_intake_reversed = contents["hoarding_intake_reversed"] == 1 ? true : false;
-    lift_reversed = contents["lift_reversed"] == 1 ? true : false;
+    left_intake_reversed = contents["left_intake_reversed"] == 1 ? true : false;
+    right_intake_reversed = contents["right_intake_reversed"] == 1 ? true : false;
+    diff1_reversed = contents["diff1_reversed"] == 1 ? true : false;
+    diff2_reversed = contents["diff2_reversed"] == 1 ? true : false;
 
+    filter_threshold = contents["filter_threshold"];
 
     lift_setpoints.clear();
     for ( int i2 = 0; i2 < contents["lift_setpoints"].size(); i2++)
@@ -226,17 +234,21 @@ void Configuration::print_config_options()
     std::cout << "back_left_port: " << back_left_port << "\n";
     std::cout << "front_left_port: " << front_left_port << "\n";
     std::cout << "back_right_port: " << back_right_port << "\n";
-    std::cout << "main_intake_port: " << main_intake_port << "\n";
-    std::cout << "hoarding_intake_port: " << hoarding_intake_port << "\n";
-    std::cout << "lift_port: " << lift_port << "\n";
+    std::cout << "left_intake_port: " << left_intake_port << "\n";
+    std::cout << "right_intake_port: " << right_intake_port << "\n";
+    std::cout << "diff1_port: " << diff1_port << "\n";
+    std::cout << "diff2_port: " << diff2_port << "\n";
 
     std::cout << "front_right_reversed: " << front_right_reversed << "\n";
     std::cout << "back_left_reversed: " << back_left_reversed << "\n";
     std::cout << "front_left_reversed: " << front_left_reversed << "\n";
     std::cout << "back_right_reversed: " << back_right_reversed << "\n";
-    std::cout << "main_intake_reversed: " << main_intake_reversed << "\n";
-    std::cout << "hoarding_intake_reversed: " << hoarding_intake_reversed << "\n";
-    std::cout << "lift_reversed: " << lift_reversed << "\n";
+    std::cout << "left_intake_reversed: " << left_intake_reversed << "\n";
+    std::cout << "right_intake_reversed: " << right_intake_reversed << "\n";
+    std::cout << "diff1_reversed: " << diff1_reversed << "\n";
+    std::cout << "diff2_reversed: " << diff2_reversed << "\n";
+        
+    std::cout << "\nfilter threshold: " << filter_threshold << "\n";
 
 
     std::cout << "\nlift_setpoints: ";

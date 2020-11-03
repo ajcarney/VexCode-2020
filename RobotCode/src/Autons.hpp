@@ -62,10 +62,10 @@ class Autons
             {4, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
-            {1, "None"},                     //used to find color of auton
-            {2, "None"},                     //selected to keep background the same  
-            {3, "None"},
-            {4, "None"}
+            {1, "none"},                     //used to find color of auton
+            {2, "none"},                     //selected to keep background the same  
+            {3, "none"},
+            {4, "none"}
         };
 
 

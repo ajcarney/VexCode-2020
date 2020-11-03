@@ -27,6 +27,7 @@ help_dict = {
     "show_order":"shows current order of files to be printed in",
     "tree":"add cover sheet of tree to files",
     "print":"prints code",
+    "pdf":"converts all code into one large pdf",
     "cancel":"cancels all printer jobs",
     "status":"shows current print jobs",
     "exit":"ends session"
@@ -122,6 +123,9 @@ while 1:
 
     elif command.upper() == "PRINT":
         printer.print_code(print_order)
+
+    elif command.upper() == "PDF":
+        printer.output_pdf(print_order)
 
     elif command.upper() == "CANCEL":
         os.system("lprm -P HP-Color-LaserJet-M553 -")

@@ -37,7 +37,6 @@ Autons::~Autons( ) {
  */
 void Autons::deploy() {
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
-    Lift lift( Motors::lift, {0, 500, 700} );
 }
 
 
@@ -47,8 +46,6 @@ void Autons::deploy() {
  */
 void Autons::one_pt( autonConfig cnfg ) {
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
-    Lift lift( Motors::lift, {0, 500, 700} );
-    lift.set_pid_constants({1, 0, 0, INT32_MAX}); // pid for not holding is different than raising
     
     chassis.straight_drive(-900, 9000, 4000);
     chassis.straight_drive(900, 12000, 4000);
@@ -68,8 +65,6 @@ void Autons::one_pt( autonConfig cnfg ) {
  */
 void Autons::skills( autonConfig cnfg ) {
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
-    Lift lift( Motors::lift, {0, 500, 700} );
-    lift.set_pid_constants({1, 0, 0, INT32_MAX}); // pid for not holding is different than raising
     
     //seven_cube_red_small_zone();  //start with small zone auton
     chassis.turn_right(180, 12000, 2000);

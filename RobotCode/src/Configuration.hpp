@@ -26,10 +26,9 @@
 #define STRAFE_ENC_TOP_PORT      'G'
 #define STRAFE_ENC_BOTTOM_PORT   'H'
 #define POTENTIOMETER_PORT       'B'
-#define LIMITSWITCH_PORT         'H'
+#define DETECTOR1_PORT           'H'
 
-#define DETECTOR1_PORT           'A'
-#define VISIONSENSOR_PORT        21
+#define VISIONSENSOR_PORT        9
 #define IMU_PORT                 20
 
 
@@ -62,10 +61,10 @@ class Configuration
     private:
         Configuration();
         static Configuration *config_obj;
-        
+
     public:
         ~Configuration();
-        
+
         /**
          * @return: Configuration -> instance of class to be used throughout program
          *
@@ -73,11 +72,11 @@ class Configuration
          * not yet exist
          */
         static Configuration* get_instance();
-        
+
         pid internal_motor_pid;
         pid lift_pid;
         pid chassis_pid;
-        
+
         int front_right_port;
         int back_left_port;
         int front_left_port;
@@ -86,7 +85,7 @@ class Configuration
         int right_intake_port;
         int diff1_port;
         int diff2_port;
-        
+
         bool front_right_reversed;
         bool back_left_reversed;
         bool front_left_reversed;
@@ -95,25 +94,25 @@ class Configuration
         bool right_intake_reversed;
         bool diff1_reversed;
         bool diff2_reversed;
-        
+
         std::vector<int> lift_setpoints;
         std::vector<int> tilter_setpoints;
         std::vector<int> intake_speeds;
-        
+
         int filter_threshold;
         std::string filter_color;  // color to remove
-        
-        
+
+
         /**
          * @return: int -> 1 if file was successfully read, 0 if no changes were made
          *
-         * @see: ../lib/json.hpp 
+         * @see: ../lib/json.hpp
          *
          * parses json file looking for data to set variables to
          */
         int init();
-        
-        
+
+
         /**
          * @return: None
          *

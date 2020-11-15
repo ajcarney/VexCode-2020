@@ -35,7 +35,7 @@
 void driver_control(void*)
 {
     Configuration *config = Configuration::get_instance();
-    
+
     Controller controllers;
 
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
@@ -53,7 +53,7 @@ void driver_control(void*)
 
     while ( true ) {
         controllers.update_button_history();
-        
+
     // section for front roller intake movement
         if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {  // define velocity for main intake
             Motors::left_intake.user_move(127);
@@ -65,7 +65,7 @@ void driver_control(void*)
             Motors::left_intake.user_move(0);
             Motors::right_intake.user_move(0);
         }
-        
+
         if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define velocity for indexer
             diff.auto_index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
@@ -79,8 +79,8 @@ void driver_control(void*)
         } else {
             diff.stop();
         }
-        
-    // section for setting filter color 
+
+    // section for setting filter color
         if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_A)) {  // cycle filter colors
             if(config->filter_color == "red") {
                 config->filter_color = "blue";
@@ -90,9 +90,10 @@ void driver_control(void*)
                 config->filter_color = "red";
             }
             controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
+            std::cout << "filtering " << config->filter_color << "\n";
             diff.update_filter_color(config->filter_color);
         }
-        
+
     // section for intaking ball
         // if(config->filter_color == "none" && controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {
         //     Motors::main_intake.user_move(127);
@@ -103,15 +104,15 @@ void driver_control(void*)
         // } else {
         //     Motors::main_intake.user_move(0);
         // }
-        
-        
+
+
     // section for chassis movement
         if(std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) < 5) {   // define deadzone for left analog input on the y axis
             left_analog_y = 0;
         } else {
             left_analog_y = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         }
-        
+
         if(std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)) < 5) {   // define deadzone for right analog input on the y axis
             right_analog_y = 0;
         } else {
@@ -121,11 +122,11 @@ void driver_control(void*)
         // float corrected_speed = ( .000043326431866017 * std::pow( leftDriveSpeed, 3 ) ) + ( 0.29594689028631 * leftDriveSpeed);
         Motors::front_left.user_move(left_analog_y);
         Motors::back_left.user_move(left_analog_y);
-    
+
         // float corrected_speed = ( .000043326431866017 * std::pow( rightDriveSpeed, 3 ) ) + ( 0.29594689028631 * rightDriveSpeed);
         Motors::front_right.user_move(right_analog_y);
         Motors::back_right.user_move(right_analog_y);
-        
+
         pros::delay(5);
 
 

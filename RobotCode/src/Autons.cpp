@@ -36,7 +36,7 @@ Autons::~Autons( ) {
  * deploys by outtaking and bringing the lift up
  */
 void Autons::deploy() {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
+
 }
 
 
@@ -45,11 +45,7 @@ void Autons::deploy() {
  * to stop touching the cube
  */
 void Autons::one_pt( autonConfig cnfg ) {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
-    
-    chassis.straight_drive(-900, 9000, 4000);
-    chassis.straight_drive(900, 12000, 4000);
-    
+
     deploy();
 }
 
@@ -64,10 +60,5 @@ void Autons::one_pt( autonConfig cnfg ) {
  * straight drive moving
  */
 void Autons::skills( autonConfig cnfg ) {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 12.4 );
-    
-    //seven_cube_red_small_zone();  //start with small zone auton
-    chassis.turn_right(180, 12000, 2000);
-    chassis.straight_drive(700);
 
 }

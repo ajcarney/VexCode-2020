@@ -35,6 +35,8 @@ class Server
         static int num_instances;
         static bool debug;
         
+        static int delay;
+        
         int handle_request(server_request request);
         
     public:

@@ -22,11 +22,10 @@ namespace Sensors
 {
     extern Encoder right_encoder;
     extern Encoder left_encoder;
-    extern Encoder strafe_encoder;
     extern AnalogInSensor potentiometer;
     extern pros::ADIDigitalIn limit_switch;
     
-    extern BallDetector filter;
+    extern BallDetector ball_detector;
     extern pros::Imu imu;
     
     void log_data();

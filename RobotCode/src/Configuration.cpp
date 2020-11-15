@@ -53,8 +53,8 @@ Configuration::Configuration( )
     back_left_reversed = 0;
     front_left_reversed = 0;
     back_right_reversed = 1;
-    left_intake_reversed = 1;
-    right_intake_reversed = 0;
+    left_intake_reversed = 0;
+    right_intake_reversed = 1;
     diff1_reversed = 0;
     diff2_reversed = 0;
     

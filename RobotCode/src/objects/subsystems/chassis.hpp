@@ -12,12 +12,35 @@
 #define __CHASSIS_HPP__
 
 #include <tuple>
+#include <queue>
 
 #include "main.h"
 
 #include "../motors/Motor.hpp"
 #include "../sensors/Sensors.hpp"
 
+
+typedef enum {
+    e_straight_drive
+} chassis_commands;
+
+typedef struct {
+    int r_setpoint;
+    int l_setpoint;
+    int relative_heading=0;
+    int max_voltage=12000;
+    int timeout=INT32_MAX;
+    bool motor_slew;
+    bool tare_encoders=true;
+    bool asynch=false;
+    bool log_data=false;
+} chassis_params;
+
+typedef struct {
+    chassis_params args;
+    int tracking_id;
+    chassis_commands command;
+} chassis_command;
 
 /**
  * @see: Motors.hpp
@@ -36,10 +59,23 @@ class Chassis
         int setpoint_l;
         int t;
         
-        Motor *front_left_drive;
-        Motor *front_right_drive;
-        Motor *back_left_drive;
-        Motor *back_right_drive;        
+        static Motor *front_left_drive;
+        static Motor *front_right_drive;
+        static Motor *back_left_drive;
+        static Motor *back_right_drive;       
+         
+        static Encoder* left_encoder;
+        static Encoder* right_encoder;
+        static pros::Imu* imu;
+        
+        pros::Task *thread;  // the motor thread
+        static std::queue<chassis_command> command_queue;
+        static std::atomic<bool> lock;
+        static int num_instances;
+
+        static void chassis_motion_task(void*);
+        
+        bool straight_drive_task(chassis_params args);  // functions called by thread for asynchronous movement
         
         /**
          * @param: int left_encoder_ticks -> the setpoint in encoder ticks for the left side of the drive
@@ -52,13 +88,14 @@ class Chassis
          * runs a separate pid loop for each motor with the hopes of it driving straighter
          */
         std::tuple<int, int> calc_pid( int left_encoder_ticks, int right_encoder_ticks, bool log_data=false );
-        
+                
         double wheel_diameter;
         double chassis_width;
+        double gear_ratio;
         
 
     public:
-        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, double chassis_size, double wheel_size=4.05);
+        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_size, double gear_ratio=1, double wheel_size=4.05);
         ~Chassis();
 
         /**
@@ -75,7 +112,7 @@ class Chassis
          * can be used as a blocking or non blocking function so that other commands
          * can be run at the same time as this command
          */
-        bool straight_drive( int encoder_ticks, int max_voltage=12000, int timeout=INT32_MAX, bool tare_encoders=true, bool wait_until_settled=true, bool log_data=false );
+        bool drive( int encoder_ticks, int max_voltage=12000, int timeout=INT32_MAX, bool tare_encoders=true, bool wait_until_settled=true, bool log_data=false );
         
         
         /**
@@ -117,6 +154,7 @@ class Chassis
         
         
         
+        bool straight_drive(int relative_heading, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to
@@ -135,7 +173,9 @@ class Chassis
          * takes average of front and back encoders
          * first value is the left side, second value is the right side
          */
-        std::tuple<int, int> get_average_encoders();
+        std::tuple<int, int> get_average_encoders(int l_uid, int r_uid);
+        
+        double calc_delta_theta(double prev_angle, double reference_heading, double delta_l, double delta_r);
         
         /**
          * @param: pros::motor_brake_mode_e_t new_brake_mode -> the new brakemode for the chassis

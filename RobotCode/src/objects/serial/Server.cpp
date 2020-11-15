@@ -25,6 +25,7 @@ std::atomic<bool> Server::lock = ATOMIC_VAR_INIT(false);
 pros::Task *Server::read_thread = NULL;
 int Server::num_instances = 0;
 bool Server::debug = false;
+int Server::delay = 100;
 
 
 Server::Server() { 
@@ -445,6 +446,7 @@ int Server::handle_request(server_request request) {
             status = 1;
             pros::c::serctl(SERCTL_DISABLE_COBS, NULL);
             set_server_task_priority(TASK_PRIORITY_DEFAULT);  // more messages are sure to follow so give read task more CPU time
+            delay = 10; // lower delay because of expected messages
             return_msg_body = "server is running";
             break;
             
@@ -452,7 +454,8 @@ int Server::handle_request(server_request request) {
             status = 1;
             pros::c::serctl(SERCTL_ENABLE_COBS, NULL);
             set_server_task_priority(2);
-            return_msg_body = "server is running";
+            delay = 100;
+            return_msg_body = "server is no longer running";
             break;            
         
         default:

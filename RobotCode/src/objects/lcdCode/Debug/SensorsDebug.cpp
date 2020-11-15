@@ -158,12 +158,10 @@ void SensorsDebug::debug()
         {
             &Sensors::right_encoder,
             &Sensors::left_encoder,
-            &Sensors::strafe_encoder
         }, 
         {
             "R Encoder",
             "L Encoder",
-            "Strafe Encoder"
         }
     );
 

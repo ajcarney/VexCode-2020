@@ -16,6 +16,7 @@
 
 #include "objects/lcdCode/gui.hpp"
 #include "objects/subsystems/chassis.hpp"
+#include "objects/subsystems/Differential.hpp"
 #include "objects/controller/controller.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/sensors/Sensors.hpp"
@@ -33,11 +34,12 @@
  */
 void driver_control(void*)
 {
+    Configuration *config = Configuration::get_instance();
+    
     Controller controllers;
 
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, 16 );
-
-    Configuration *config = Configuration::get_instance();
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
+    Differential diff(Motors::diff1, Motors::diff2, Sensors::ball_detector, config->filter_color);
 
     int left_analog_y = 0;
     int right_analog_y = 0;
@@ -47,6 +49,7 @@ void driver_control(void*)
     int back_left;
     int back_right;
 
+    bool auto_filter = true;
 
     while ( true ) {
         controllers.update_button_history();
@@ -63,8 +66,22 @@ void driver_control(void*)
             Motors::right_intake.user_move(0);
         }
         
+        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define velocity for indexer
+            diff.auto_index();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
+            diff.index();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
+            diff.filter();
+        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
+            diff.raise_brake();
+        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            diff.lower_brake();
+        } else {
+            diff.stop();
+        }
+        
     // section for setting filter color 
-        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_DOWN)) {  // cycle filter colors
+        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_A)) {  // cycle filter colors
             if(config->filter_color == "red") {
                 config->filter_color = "blue";
             } else if(config->filter_color == "blue") {
@@ -73,6 +90,7 @@ void driver_control(void*)
                 config->filter_color = "red";
             }
             controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
+            diff.update_filter_color(config->filter_color);
         }
         
     // section for intaking ball
@@ -99,31 +117,14 @@ void driver_control(void*)
         } else {
             right_analog_y = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
         }
-        
-        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_DOWN)) {  // define velocity strafing
-            front_left = -127;
-            back_left = 127;
-            front_right = 127;
-            back_right = -127;
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_B)) {
-            front_left = 127;
-            back_left = -127;
-            front_right = -127;
-            back_right = 127;
-        } else {
-            front_left = left_analog_y;
-            back_left = left_analog_y;
-            front_right = right_analog_y;
-            back_right = right_analog_y;
-        }
 
         // float corrected_speed = ( .000043326431866017 * std::pow( leftDriveSpeed, 3 ) ) + ( 0.29594689028631 * leftDriveSpeed);
-        Motors::front_left.user_move(front_left);
-        Motors::back_left.user_move(back_left);
+        Motors::front_left.user_move(left_analog_y);
+        Motors::back_left.user_move(left_analog_y);
     
         // float corrected_speed = ( .000043326431866017 * std::pow( rightDriveSpeed, 3 ) ) + ( 0.29594689028631 * rightDriveSpeed);
-        Motors::front_right.user_move(front_right);
-        Motors::back_right.user_move(back_right);
+        Motors::front_right.user_move(right_analog_y);
+        Motors::back_right.user_move(right_analog_y);
         
         pros::delay(5);
 

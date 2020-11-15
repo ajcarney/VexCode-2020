@@ -18,11 +18,10 @@ namespace Sensors
 {
     Encoder right_encoder{RIGHT_ENC_TOP_PORT, RIGHT_ENC_BOTTOM_PORT, false};
     Encoder left_encoder{LEFT_ENC_TOP_PORT, LEFT_ENC_BOTTOM_PORT, true};
-    Encoder strafe_encoder{STRAFE_ENC_TOP_PORT, STRAFE_ENC_BOTTOM_PORT, false};
     AnalogInSensor potentiometer{POTENTIOMETER_PORT};
     pros::ADIDigitalIn limit_switch{LIMITSWITCH_PORT};
     
-    BallDetector filter{DETECTOR1_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
+    BallDetector ball_detector{DETECTOR1_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
     pros::Imu imu{IMU_PORT};
     
     
@@ -36,8 +35,7 @@ namespace Sensors
             + ", Sensor Data"
             +  ", Right_Enc: " + std::to_string(right_encoder.get_absolute_position(false))
             +  ", Left_Enc: " + std::to_string(left_encoder.get_absolute_position(false))
-            +  ", Strafe_Enc: " + std::to_string(strafe_encoder.get_absolute_position(false))
-            +  ", Detector_1: " + std::to_string(std::get<0>(filter.debug())));
+            +  ", Detector_1: " + std::to_string(std::get<0>(ball_detector.debug())));
         entry.stream = "clog";
         logger.add(entry);
     }

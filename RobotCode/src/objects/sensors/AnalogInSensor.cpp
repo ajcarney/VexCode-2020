@@ -25,7 +25,9 @@ AnalogInSensor::AnalogInSensor(char port)
 
 AnalogInSensor::~AnalogInSensor()
 {
-    delete sensor;
+    if(sensor != NULL) {
+        delete sensor;
+    }
 }
 
 

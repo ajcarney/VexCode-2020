@@ -34,15 +34,15 @@ Configuration::Configuration( )
     lift_pid.kD = 0;
     lift_pid.I_max = INT32_MAX;
 
-    chassis_pid.kP = 60;
-    chassis_pid.kI = 0.01;
-    chassis_pid.kD = 0;
+    chassis_pid.kP = 38;
+    chassis_pid.kI = .00125;
+    chassis_pid.kD = 4;
     chassis_pid.I_max = INT32_MAX;
 
     //536C motor config
-    front_right_port = 7;
-    back_left_port = 19;
-    front_left_port = 20;
+    front_right_port = 9;
+    back_left_port = 7;
+    front_left_port = 8;
     back_right_port = 10;
     left_intake_port = 12;
     right_intake_port = 11;
@@ -50,15 +50,15 @@ Configuration::Configuration( )
     diff2_port = 2;
 
     front_right_reversed = 1;
-    back_left_reversed = 0;
+    back_left_reversed = 1;
     front_left_reversed = 0;
-    back_right_reversed = 1;
+    back_right_reversed = 0;
     left_intake_reversed = 0;
     right_intake_reversed = 1;
     diff1_reversed = 0;
     diff2_reversed = 0;
 
-    filter_threshold = 2500;
+    filter_threshold = 2830;
     filter_color = "blue";
 
 

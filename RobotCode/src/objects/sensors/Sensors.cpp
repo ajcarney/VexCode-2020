@@ -16,7 +16,7 @@
 
 namespace Sensors
 {
-    Encoder right_encoder{RIGHT_ENC_TOP_PORT, RIGHT_ENC_BOTTOM_PORT, false};
+    Encoder right_encoder{RIGHT_ENC_TOP_PORT, RIGHT_ENC_BOTTOM_PORT, true};
     Encoder left_encoder{LEFT_ENC_TOP_PORT, LEFT_ENC_BOTTOM_PORT, true};
     AnalogInSensor potentiometer{POTENTIOMETER_PORT};
     

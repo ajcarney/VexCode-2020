@@ -25,22 +25,22 @@ typedef enum {
 } chassis_commands;
 
 typedef struct {
-    int r_setpoint;
-    int l_setpoint;
+    double setpoint;
     int relative_heading=0;
     int max_voltage=12000;
     int timeout=INT32_MAX;
-    bool motor_slew;
-    bool tare_encoders=true;
+    bool motor_slew=false;
+    bool correct_heading=true;
     bool asynch=false;
     bool log_data=false;
 } chassis_params;
 
 typedef struct {
     chassis_params args;
-    int tracking_id;
+    int command_uid;
     chassis_commands command;
-} chassis_command;
+} chassis_action;
+
 
 /**
  * @see: Motors.hpp
@@ -50,15 +50,7 @@ typedef struct {
  */
 class Chassis
 {
-    private:
-        int integral_r;
-        int integral_l;
-        int prev_error_r;
-        int prev_error_l;
-        int setpoint_r;
-        int setpoint_l;
-        int t;
-        
+    private:        
         static Motor *front_left_drive;
         static Motor *front_right_drive;
         static Motor *back_left_drive;
@@ -69,13 +61,15 @@ class Chassis
         static pros::Imu* imu;
         
         pros::Task *thread;  // the motor thread
-        static std::queue<chassis_command> command_queue;
-        static std::atomic<bool> lock;
+        static std::queue<chassis_action> command_queue;
+        static std::vector<int> commands_finished;
+        static std::atomic<bool> send_lock;
+        static std::atomic<bool> receive_lock;
         static int num_instances;
-
-        static void chassis_motion_task(void*);
         
-        bool straight_drive_task(chassis_params args);  // functions called by thread for asynchronous movement
+        static void straight_drive_task(chassis_params args);  // functions called by thread for asynchronous movement
+        static void turn_right_task(chassis_params args);
+        static void turn_right_task(chassis_params args);
         
         /**
          * @param: int left_encoder_ticks -> the setpoint in encoder ticks for the left side of the drive
@@ -89,13 +83,15 @@ class Chassis
          */
         std::tuple<int, int> calc_pid( int left_encoder_ticks, int right_encoder_ticks, bool log_data=false );
                 
-        double wheel_diameter;
-        double chassis_width;
-        double gear_ratio;
+        static double wheel_diameter;
+        static double width;
+        static double gear_ratio;
+        
+        static void chassis_motion_task(void*);
         
 
     public:
-        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_size, double gear_ratio=1, double wheel_size=4.05);
+        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
         ~Chassis();
 
         /**
@@ -154,7 +150,7 @@ class Chassis
         
         
         
-        bool straight_drive(int relative_heading, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false);
+        int straight_drive(int encoder_ticks, int relative_heading=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to
@@ -173,9 +169,9 @@ class Chassis
          * takes average of front and back encoders
          * first value is the left side, second value is the right side
          */
-        std::tuple<int, int> get_average_encoders(int l_uid, int r_uid);
+        static std::tuple<double, double> get_average_encoders(int l_uid, int r_uid);
         
-        double calc_delta_theta(double prev_angle, double reference_heading, double delta_l, double delta_r);
+        static double calc_delta_theta(double prev_angle, double delta_l, double delta_r);
         
         /**
          * @param: pros::motor_brake_mode_e_t new_brake_mode -> the new brakemode for the chassis

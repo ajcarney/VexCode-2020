@@ -42,6 +42,7 @@ class Differential
         static Motor *diff1;
         static Motor *diff2;
         static BallDetector *ball_detector;
+        static AnalogInSensor *potentiometer;
         static std::string filter_color;
         
         static int num_instances;
@@ -53,7 +54,7 @@ class Differential
         static void differential_motion_task(void*);
                 
     public:
-        Differential(Motor &differential1, Motor &differential2, BallDetector &detector, std::string color);
+        Differential(Motor &differential1, Motor &differential2, BallDetector &detector, AnalogInSensor &pot, std::string color);
         ~Differential();
     
         void index();

@@ -44,9 +44,14 @@ AutonomousLCD auton_lcd;
 
     DriverControlLCD::auton = final_auton_choice;
 
-    Sensors::imu.reset();  // calibrate imu
-    while(Sensors::imu.is_calibrating() && Sensors::imu.get_status() != 255) {
-        pros::delay(10);
+    bool calibrated = false;
+    while(!calibrated) {  // block until imu is connected and calibrated
+        std::cout << errno << " " << std::strerror(errno) << "\n";
+        Sensors::imu.reset();  // calibrate imu
+        while(Sensors::imu.is_calibrating()) {
+            pros::delay(10);
+            calibrated = true;
+        }
     }
     
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
@@ -255,22 +260,34 @@ void autonomous() {
      // std::cout << "done\n";
 
      //update controller with color of cube and if it is loaded or not
-
+     
     // Controller controllers;
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
+    
+    Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd(final_auton_choice);
+    
+    double prev_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
+    double ref_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
+    int l_id = Sensors::left_encoder.get_unique_id();
+    int r_id = Sensors::right_encoder.get_unique_id();
+    double prev_l = Sensors::left_encoder.get_position(l_id);
+    double prev_r = Sensors::right_encoder.get_position(r_id);
+    pros::delay(1);
+    chassis.straight_drive(-1000, 0, 12000, 10000);
     while(1)
     {
+        // double delta_theta = chassis.calc_delta_theta(prev_angle, ref_angle, Sensors::left_encoder.get_position(l_id) - prev_l, Sensors::right_encoder.get_position(r_id) - prev_r);
+        // prev_angle = prev_angle + delta_theta;
+        // prev_l = Sensors::left_encoder.get_position(l_id);
+        // prev_r = Sensors::right_encoder.get_position(r_id);
+        // 
+        // std::cout << "delta theta: " << delta_theta << "  |  new angle: " << prev_angle << "\n";
         lcd.update_labels();
-        server.handle_requests(50);
+        // server.handle_requests(50);
         // std::cout << "handling requests\n";
-
-        // if ( limit_switch.get_value() )
-        // {
-        //     std::cout << "dumping" << "\n";
-        logger.dump();
-        // }
+        // logger.dump();
 
         pros::delay(5);
     }

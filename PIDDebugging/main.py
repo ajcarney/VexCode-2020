@@ -5,25 +5,23 @@ Created on Sun Jan  5 17:13:31 2020
 
 @author: aiden
 """
-import sys
+import streamlit as st
 
-import parser
+import data_parser
 import graph
 
-if len(sys.argv) == 1:
-    file = input("enter file to parse: ")
-else:
-    file = sys.argv[1]
+# if len(sys.argv) == 1:
+#     file = input("enter file to parse: ")
+# else:
+#     file = sys.argv[1]
+file = "./data.txt"
 
-parser.gen_sample_data()    
-p = parser.Parser()
+# parser.gen_sample_data()    
+p = data_parser.Parser()
 p.parse_file(file)
-
+p.print_data()
 g = graph.DebugGraph(
-    p.get_data()["time"],
-    p.get_data()["velocity"],
-    p.get_data()["voltage"],            
-    p.get_data()["setpoint"],
+    p.get_data(),
     {
         "kP":p.get_data()["pid_constants"]["kP"],
         "kI":p.get_data()["pid_constants"]["kI"],
@@ -33,9 +31,10 @@ g = graph.DebugGraph(
         "gearset":p.get_data()["gearset"],
         "slew":p.get_data()["slew_rate"]
     }
-    )  
-
-g.get_graph().show()   
-g.get_graph().savefig("test2.png", bbox_inches='tight')
-
-
+)  
+y1 = st.sidebar.selectbox("Y1 data", ["velocity", "voltage", "heading", "position"], 1)
+track_y1 = st.sidebar.checkbox("Graph Y1 setpoint")
+y2 = st.sidebar.selectbox("Y2 data", ["velocity", "voltage", "heading", "position", "None"], 4)
+track_y2 = st.sidebar.checkbox("Graph Y2 setpoint")
+plot = g.make_graph(y1, y2, track_y1, track_y2)
+st.plotly_chart(plot, use_container_width=True)

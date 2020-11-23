@@ -28,7 +28,7 @@ class BallDetector
         int threshold;
                         
     public:
-        BallDetector(char line_sensor_port, char vision_port, int threshold);
+        BallDetector(char line_sensor_port, char vision_port, int detector_threshold);
         ~BallDetector();
                         
         int set_threshold(int new_threshold);

@@ -12,11 +12,11 @@
 
 
 
-BallDetector::BallDetector(char line_sensor_port, char vision_port, int threshold) {
+BallDetector::BallDetector(char line_sensor_port, char vision_port, int detector_threshold) {
     ball_detector.set_port(line_sensor_port);
     vision_sensor = new pros::Vision(vision_port);
 
-    threshold = threshold;
+    threshold = detector_threshold;
 
     time_since_last_ball = 0;
 
@@ -48,18 +48,19 @@ int BallDetector::check_for_ball() {
         std::cout << red.signature << " " << blue.signature << "\n";
         if(red.signature == 255) {
             vision_sensor->set_led(0x4287f5);  // blue
-            std::cout << "color is not red, color is blue\n";
+            // std::cout << "color is not red, color is blue\n";
             return 1;
         } else if(blue.signature == 255) {
             vision_sensor->set_led(0xf7070f);  // red
-            std::cout << "color is not blue, color is red\n";
+            // std::cout << "color is not blue, color is red\n";
             return 2;
         } else {
             vision_sensor->set_led(0xf2ff00);  // yellow for error
             return -1;
         }
     }
-
+    vision_sensor->set_led(0x4cbb17);  // kelly green
+    
     time_since_last_ball = pros::millis() - time_since_last_ball;  // get time elapsed
     return 0;  // no ball is detected
 }

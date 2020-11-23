@@ -21,15 +21,15 @@
 
 #define RIGHT_ENC_TOP_PORT       'C'
 #define RIGHT_ENC_BOTTOM_PORT    'D'
-#define LEFT_ENC_TOP_PORT        'E'
-#define LEFT_ENC_BOTTOM_PORT     'F'
+#define LEFT_ENC_TOP_PORT        'A'
+#define LEFT_ENC_BOTTOM_PORT     'B'
 #define STRAFE_ENC_TOP_PORT      'G'
 #define STRAFE_ENC_BOTTOM_PORT   'H'
-#define POTENTIOMETER_PORT       'B'
-#define DETECTOR1_PORT           'H'
+#define POTENTIOMETER_PORT       'G'
+#define DETECTOR1_PORT           'E'
 
-#define VISIONSENSOR_PORT        9
-#define IMU_PORT                 20
+#define VISIONSENSOR_PORT        5
+#define IMU_PORT                 15
 
 
 typedef struct

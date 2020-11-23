@@ -149,7 +149,7 @@ void SensorsDebug::debug()
         v2
     );
     AnalogInDebugger analog_in_debug(analog_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::potentiometer}, {"Pot 1"});
-    DigitalInDebugger digital_in_debug(digital_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::limit_switch}, {"Limit Switch 1"});
+    // DigitalInDebugger digital_in_debug(digital_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::limit_switch}, {"Limit Switch 1"});
     IMUDebugger imu_debug(imu_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, &Sensors::imu);
     EncoderDebugger encoder_debug(
         encoders_tab, 
@@ -225,9 +225,9 @@ void SensorsDebug::debug()
 
                 break;
 
-            case 2:
-                digital_in_debug.update_info();
-                break;
+            // case 2:
+            //     digital_in_debug.update_info();
+            //     break;
             // 
             // case 3:
             //     load_vision_sensor_page();
@@ -238,10 +238,10 @@ void SensorsDebug::debug()
             //     lv_tabview_set_tab_act(tabview, 0, NULL);
             //     //tab_loaded = 0;
             //     break;
-            case 3:
+            case 2:
                 imu_debug.update_info();
                 
-            case 4:
+            case 3:
                 encoder_debug.update_info();
             
         }

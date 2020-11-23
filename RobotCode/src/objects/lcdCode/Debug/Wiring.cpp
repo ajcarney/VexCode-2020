@@ -88,7 +88,6 @@ Wiring::Wiring()
         "strafe enc top    - " + STRAFE_ENC_TOP_PORT + "\n" +
         "strafe enc bottom - " + STRAFE_ENC_BOTTOM_PORT + "\n" +
         "potentiometer     - " + POTENTIOMETER_PORT + "\n" +
-        "limit switch      - " + LIMITSWITCH_PORT + "\n" +
         "vision sensor     - " + std::to_string(VISIONSENSOR_PORT) + "\n"
     );
 

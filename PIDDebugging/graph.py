@@ -5,121 +5,212 @@ Created on Sun Dec 29 12:38:16 2019
 
 @author: aiden
 """
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 class DebugGraph:
     """
     class for making a graph for debugging PID data
     """
-    def __init__(self, time_data, velocity_data, voltage_data, setpoint, parameters):
+    def __init__(self, data_dict, parameters):
+        self.time_data = data_dict.get("time")
+        self.vel_data = data_dict.get("velocity")
+        self.vol_data = data_dict.get("voltage")
+        self.vel_sp = data_dict.get("vel_sp")
+        self.heading_sp = data_dict.get("heading_sp")
+        self.heading_data = data_dict.get("heading_data")
+        self.position_sp = data_dict.get("position_sp")
+        self.position_r_data = data_dict.get("position_r")
+        self.position_l_data = data_dict.get("position_l")
+        self.integral_data = data_dict.get("integral")
         
-#        #calculate axes and round to the nearest 50 that has the higher absolute value
-#        time_max = (abs(max(time_data)) / max(time_data)) * 50 * math.ceil(abs(max(time_data))/50)
-#        
-#        velocity_min = (abs(min(velocity_data)) / min(velocity_data)) * 50 * math.ceil(abs(min(velocity_data))/50)
-#        velocity_max = (abs(max(velocity_data)) / max(velocity_data)) * 50 * math.ceil(abs(max(velocity_data))/50)
-#        
-#        voltage_min = (abs(min(voltage_data)) / min(voltage_data)) * 50 * math.ceil(abs(min(voltage_data))/50)
-#        voltage_max = (abs(max(voltage_data)) / max(voltage_data)) * 50 * math.ceil(abs(max(voltage_data))/50)
-#        
-        #set up graph
-        self.__graph = plt.figure(dpi=800)
-        self.__ax_vol = self.__graph.add_subplot(111)
-        self.__ax_vel = self.__ax_vol.twinx()
-        
-        #set up axes
-#        self.__ax_vel.set_xlim(0, time_max)
-#        self.__ax_vel.set_ylim(velocity_min, velocity_max)
-#        
-#        self.__ax_vol.set_xlim(0, time_max)
-#        self.__ax_vol.set_ylim(voltage_min, voltage_max)
-        
-        #plot lines
-        if type(setpoint) != list:
-            setpoint_x = [0, max(time_data)]
-            setpoint_y = [setpoint, setpoint]
-        else:
-            setpoint_x = setpoint
-            setpoint_y = time_data
-            
-        self.__voltage_line = self.__ax_vol.plot(time_data, voltage_data, color="green", alpha=.25)
-        self.__setpoint_line = self.__ax_vel.plot(setpoint_y, setpoint_x, color="blue", linestyle=":")
-        self.__velocity_line = self.__ax_vel.plot(time_data, velocity_data, color="blue")
-        
-        #set up axis titles
-        self.__ax_vel.set_ylabel("Velocity (RPM)")
-        self.__ax_vol.set_ylabel("Voltage (mV)")
-        self.__ax_vol.set_xlabel("Time (ms)")
-        
-        #set axis default colors
-        for tl in self.__ax_vel.get_yticklabels():
-            tl.set_color("blue")
-        
-        for tl in self.__ax_vol.get_yticklabels():
-            tl.set_color("green")
-        
-        #add legend for lines
-        self.__graph.legend(
-            [
-                Line2D([0], [0], color="blue"),
-                Line2D([0], [0], color='blue', linestyle=":"), 
-                Line2D([0], [0], color="green")
-            ], 
-            ["Actual Velocity", "Setpoint", "Actual Voltage"],
-            loc=7, bbox_to_anchor=(1.4, .75))
-        self.__graph.subplots_adjust(right=1)   
         
         #add legend for constants
-        constants_text = "kP : " + str(parameters.get("kP")) + "\n"
-        constants_text += "kI : " + str(parameters.get("kI")) + "\n"
-        constants_text += "kD: " + str(parameters.get("kD")) + "\n"
-        constants_text += "Integral Max: " + str(parameters.get("I_max")) + "\n"
-        constants_text += "\n"
-        constants_text += "Brakemode: " + parameters.get("brakemode") + "\n"
-        constants_text += "Gearset: " + parameters.get("gearset") + "\n"
-        constants_text += "Slew Rate (mV/ms): " + str(parameters.get("slew")) + "\n"
-        
-        self.__graph.text(
-            1.13, 
-            .25,
-            constants_text,
+        self.constants_text = "kP : " + str(parameters.get("kP")) + "\n"
+        self.constants_text += "kI : " + str(parameters.get("kI")) + "\n"
+        self.constants_text += "kD: " + str(parameters.get("kD")) + "\n"
+        self.constants_text += "Integral Max: " + str(parameters.get("I_max")) + "\n"
+        self.constants_text += "\n"
+        self.constants_text += "Brakemode: " + str(parameters.get("brakemode")) + "\n"
+        self.constants_text += "Gearset: " + str(parameters.get("gearset")) + "\n"
+        self.constants_text += "Slew Rate (mV/ms): " + str(parameters.get("slew")) + "\n"
+  
+    def make_graph(self, y1, y2=None, track_y1_sp=True, track_y2_sp=True):
+        """
+        returns a graph object with given axis parameters
+        """
+        title = "PID Tuning - "
+        x = self.time_data
+        if y1 == "velocity":
+            y1_data = [self.vel_data.get("back_right"), self.vel_data.get("front_right"), self.vel_data.get("back_left"), self.vel_data.get("front_left")]
+            y1_sp = self.vel_sp
+            y1_title = "Velocity (RPM)"
+            name1 = ["Back Right Velocity", "Front Right Velocity", "Back Left Velocity", "Front Left Velocity"]
+            title += "Velocity"
+        elif y1 == "voltage":
+            y1_data = [self.vol_data.get("back_right"), self.vol_data.get("front_right"), self.vol_data.get("back_left"), self.vol_data.get("front_left")]
+            y1_sp = []
+            y1_title = "Voltage (mV)"
+            name1 = ["Back Right Voltage", "Front Right Voltage", "Back Left Voltage", "Front Left Voltage"]
+            title += "Voltage"
+        elif y1 == "heading":
+            y1_data = [self.heading_data]
+            y1_sp = self.heading_sp
+            y1_title = "Relative Heading (Degrees)"
+            name1 = ["Relative Heading of Robot"]
+            title += "Relative Heading of Robot"
+        elif y1 == "position":
+            y1_data = [self.position_l_data, self.position_r_data]
+            y1_sp = self.position_sp
+            y1_title = "Position"
+            name1 = ["Position of Right Sensor", "Position of Left Sensor"]
+            title += "Position of Sensor"
+        elif y1 == "integral":
+            y1_data = [self.integral_data]
+            y1_sp = []
+            name1 = ["Integral Value"]
+            title += "Integral"
+        else:
+            y1_data = []
+            y1_sp = []
+            y1_title = ""
+            name1 = ""
+            
+            
+        if y2 == "velocity":
+            y2_data = [self.vel_data.get("back_right"), self.vel_data.get("front_right"), self.vel_data.get("back_left"), self.vel_data.get("front_left")]
+            y2_sp = self.vel_sp
+            y2_title = "Velocity (RPM)"
+            name2 = ["Back Right Velocity", "Front Right Velocity", "Back Left Velocity", "Front Left Velocity"]
+            title += "Velocity"
+        elif y2 == "voltage":
+            y2_data = [self.vol_data.get("back_right"), self.vol_data.get("front_right"), self.vol_data.get("back_left"), self.vol_data.get("front_left")]
+            y2_sp = []
+            y2_title = "Voltage (mV)"
+            name2 = ["Back Right Voltage", "Front Right Voltage", "Back Left Voltage", "Front Left Voltage"]
+            title += "Voltage"
+        elif y2 == "heading":
+            y2_data = [self.heading_data]
+            y2_sp = self.heading_sp
+            y2_title = "Relative Heading (Degrees)"
+            name2 = ["Relative Heading of Robot"]
+            title += "Relative Heading of Robot"
+        elif y2 == "position":
+            y2_data = [self.position_l_data, self.position_r_data]
+            y2_sp = self.position_sp
+            y2_title = "Position"
+            name2 = ["Position of Right Sensor", "Position of Left Sensor"]
+            title += "Position of Sensor"
+        elif y2 == "integral":
+            y2_data = [self.integral_data]
+            y2_sp = []
+            name2 = ["Integral Value"]
+            title += "Integral"
+        else:
+            y2_data = []
+            y2_sp = []
+            y2_title = ""
+            name2 = ""
+            
+        if y2_data:
+            plot = make_subplots(specs=[[{"secondary_y": True}]])
+        else:
+            plot = go.Figure()
+
+        for data, name in zip(y1_data, name1):
+            plot.add_trace(
+                go.Scatter(
+                    x=x, 
+                    y=data, 
+                    mode="lines", 
+                    line={'dash': 'solid', 'color': 'blue'},
+                    name=name,
+                    yaxis="y1",
+                )
             )
-        self.__graph.subplots_adjust(right=1)   
-        
-        
-        #add title
-        self.__graph.suptitle("Velocity and Voltage vs Time - PID Tuning")
-
-
-        
-    def set_velocity_color(self, color):
-        """
-        sets the color of the velocity line on the graph
-        """
-        self.__setpoint_line.set_color(color)
-        self.__velocity_line.set_color(color)
-        
-        for tl in self.__ax_vel.get_yticklabels():
-            tl.set_color(color)
+        if track_y1_sp:
+            plot.add_trace(
+                go.Scatter(
+                    x=x, 
+                    y=y1_sp, 
+                    mode="lines", 
+                    line={'dash': 'dash', 'color': 'blue'},
+                    name="Setpoint",
+                    yaxis="y1",
+                )
+            )
             
-            
-    def set_voltage_color(self, color):
-        """
-        sets the color of the voltage line on the graph
-        """
-        self.__voltage_line.set_color(color)
         
-        for tl in self.__ax_vol.get_yticklabels():
-            tl.set_color(color)
+        if y2_data:
+            for data, name in zip(y2_data, name2):
+                plot.add_trace(
+                    go.Scatter(
+                        x=x, 
+                        y=data, 
+                        mode="lines", 
+                        line={'dash': 'solid', 'color': 'green'},
+                        name=name,
+                    ), 
+                    secondary_y=True
+                )
+            if track_y2_sp:
+                plot.add_trace(
+                    go.Scatter(
+                        x=x, 
+                        y=y2_sp, 
+                        mode="lines", 
+                        line={'dash': 'dash', 'color': 'green'},
+                        name="Setpoint",
+                    ),
+                    secondary_y=True
+                )
+        
+        title += " vs Time"
+        plot.update_layout(
+            title=title,
+            xaxis=dict(
+                title="Time (ms)"
+            ),
+            font=dict(
+                family="Courier New, monospace",
+                size=14,
+                color="#7f7f7f"
+            ),
+            showlegend=True,
+            legend=dict(x=1.2, y=1.1),
+            plot_bgcolor="rgb(255, 255, 255)"
+        )
         
         
-    def get_graph(self):
-        """
-        returns the graph object so that it can be saved or manipulated
-        """
-        return self.__graph
+        plot.update_xaxes(
+            tickangle=-45, 
+            showgrid=False, 
+            mirror=True,
+            ticks='outside',
+            showline=True
+
+        )
+        plot.update_yaxes(
+            tickangle=0, 
+            showgrid=False, 
+            zeroline=True, 
+            zerolinewidth=2, 
+            zerolinecolor="black",
+            mirror=True,
+            ticks='outside',
+            showline=True
+
+        )
+        
+        if y2_data:
+            plot.update_yaxes(title_text=y1_title, secondary_y=False, color="blue")
+            plot.update_yaxes(title_text=y2_title, secondary_y=True, color="green")
+        else:
+            plot.update_yaxes(title_text=y1_title)
+            pass
+
+        return plot
 
 
 #unit test

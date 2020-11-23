@@ -25,7 +25,8 @@ Encoder::Encoder( char upper_port, char lower_port, bool reverse )
     
     
     while ( lock.exchange( true ) ); //aquire lock
-    zero_positions.push_back(encoder->get_value());
+    latest_uid = 0;
+    zero_positions[0] = encoder->get_value();
     lock.exchange(false);  //release lock
 }
 
@@ -46,9 +47,8 @@ int Encoder::get_unique_id()
 {
     while ( lock.exchange( true ) ); //aquire lock
     
-    int id = zero_positions.size();
-    zero_positions.push_back(zero_positions.at(0));
-    
+    int id = latest_uid + 1;
+    zero_positions[id] = zero_positions.at(0);
     lock.exchange(false);  //release lock
     
     return id;
@@ -59,7 +59,7 @@ int Encoder::get_unique_id()
 
 double Encoder::get_position(int unique_id)
 {
-    if(unique_id > zero_positions.size() - 1 || unique_id < 0)
+    if(zero_positions.find(unique_id) == zero_positions.end())
     {
         Logger logger;
         log_entry entry;
@@ -95,7 +95,7 @@ double Encoder::get_absolute_position(bool scaled)
 
 int Encoder::reset(int unique_id)
 {
-    if(unique_id > zero_positions.size() - 1 || unique_id < 0)
+    if(zero_positions.find(unique_id) == zero_positions.end())
     {
         Logger logger;
         log_entry entry;
@@ -109,4 +109,19 @@ int Encoder::reset(int unique_id)
     
     zero_positions.at(unique_id) = encoder->get_value();
     return 1;
+}
+
+
+void Encoder::forget_position(int unique_id) {
+    if(zero_positions.find(unique_id) == zero_positions.end())
+    {
+        Logger logger;
+        log_entry entry;
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not remove zero position with unique id " + std::to_string(unique_id);
+        entry.stream = "cerr";
+        
+        logger.add(entry);
+        
+    }
+    zero_positions.erase(unique_id);
 }

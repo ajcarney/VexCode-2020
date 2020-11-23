@@ -39,7 +39,7 @@ void driver_control(void*)
     Controller controllers;
 
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Differential diff(Motors::diff1, Motors::diff2, Sensors::ball_detector, config->filter_color);
+    Differential diff(Motors::diff1, Motors::diff2, Sensors::ball_detector, Sensors::potentiometer, config->filter_color);
 
     int left_analog_y = 0;
     int right_analog_y = 0;
@@ -50,6 +50,8 @@ void driver_control(void*)
     int back_right;
 
     bool auto_filter = true;
+
+    controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
 
     while ( true ) {
         controllers.update_button_history();

@@ -21,13 +21,15 @@ std::atomic<bool> Differential::lock = ATOMIC_VAR_INIT(false);
 Motor* Differential::diff1;
 Motor* Differential::diff2;
 BallDetector* Differential::ball_detector;
+AnalogInSensor* Differential::potentiometer;
 std::string Differential::filter_color;
 
-Differential::Differential(Motor &differential1, Motor &differential2, BallDetector &detector, std::string color)
+Differential::Differential(Motor &differential1, Motor &differential2, BallDetector &detector, AnalogInSensor &pot, std::string color)
 {    
     diff1 = &differential1;
     diff2 = &differential2;
     ball_detector = &detector;
+    potentiometer = &pot;
     filter_color = color;
 
     diff1->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -85,7 +87,7 @@ void Differential::differential_motion_task(void*) {
                 if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
                     diff1->set_voltage(12000); 
                     diff2->set_voltage(-12000);
-                    pros::delay(500);
+                    pros::delay(450);
                     diff1->set_voltage(0); 
                     diff2->set_voltage(0);
                     break;
@@ -104,18 +106,24 @@ void Differential::differential_motion_task(void*) {
             } case e_raise_brake: {
                 diff1->set_voltage(-12000);  // lower brake to reset position
                 diff2->set_voltage(-12000);
-                pros::delay(300);
+                while(potentiometer->get_raw_value() > 1300) {  // reset value of potentiometer
+                    pros::delay(10);
+                }
                 
                 diff1->set_voltage(12000); // raise brake to top position
                 diff2->set_voltage(12000);
-                pros::delay(500);
+                int dt = 0;
+                while(potentiometer->get_raw_value() < 2500 || dt > 500) {  // top value of potentiometer
+                    pros::delay(10);
+                    dt += 10;
+                }
                 
                 int voltage = 12000;  // ramp down voltage to 0 so brake hopefully does not slip down
                 while(voltage >= 0) {
                     diff1->set_voltage(voltage);
                     diff2->set_voltage(voltage);
                     voltage -= 240;
-                    pros::delay(10);
+                    pros::delay(25);
                 }
                 
                 diff1->set_voltage(0);
@@ -124,9 +132,10 @@ void Differential::differential_motion_task(void*) {
             } case e_lower_brake: {
                 diff1->set_voltage(-2000);
                 diff2->set_voltage(-2000);
-                
-                pros::delay(300);
-                
+                while(potentiometer->get_raw_value() > 1600) {  // lowered position of potentiometer
+                    pros::delay(10);
+                }
+
                 diff1->set_voltage(0);
                 diff2->set_voltage(0);
                 break;

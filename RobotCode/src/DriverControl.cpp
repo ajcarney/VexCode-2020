@@ -16,12 +16,11 @@
 
 #include "objects/lcdCode/gui.hpp"
 #include "objects/subsystems/chassis.hpp"
-#include "objects/subsystems/Differential.hpp"
+#include "objects/subsystems/Indexer.hpp"
 #include "objects/controller/controller.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/sensors/Sensors.hpp"
 #include "Configuration.hpp"
-#include "objects/subsystems/Lift.hpp"
 #include "DriverControl.hpp"
 #include "Configuration.hpp"
 
@@ -39,15 +38,10 @@ void driver_control(void*)
     Controller controllers;
 
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Differential diff(Motors::diff1, Motors::diff2, Sensors::ball_detector, Sensors::potentiometer, config->filter_color);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, config->filter_color);
 
     int left_analog_y = 0;
     int right_analog_y = 0;
-
-    int front_left;
-    int front_right;
-    int back_left;
-    int back_right;
 
     bool auto_filter = true;
 
@@ -68,18 +62,23 @@ void driver_control(void*)
             Motors::right_intake.user_move(0);
         }
 
+    // section for indexer motion
         if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define velocity for indexer
-            diff.auto_index();
+            indexer.auto_index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
-            diff.index();
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
-            diff.filter();
+            indexer.index();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+            indexer.filter();
         } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
-            diff.raise_brake();
+            indexer.raise_brake();
         } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-            diff.lower_brake();
+            indexer.lower_brake();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
+            indexer.auto_increment();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
+            indexer.increment();
         } else {
-            diff.stop();
+            indexer.stop();
         }
 
     // section for setting filter color
@@ -93,19 +92,8 @@ void driver_control(void*)
             }
             controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
             std::cout << "filtering " << config->filter_color << "\n";
-            diff.update_filter_color(config->filter_color);
+            indexer.update_filter_color(config->filter_color);
         }
-
-    // section for intaking ball
-        // if(config->filter_color == "none" && controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {
-        //     Motors::main_intake.user_move(127);
-        // } else if(config->filter_color == "none" && controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R2)) {
-        //     Motors::main_intake.user_move(-127);
-        // } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {
-        //     Motors::intake(config->filter_color);
-        // } else {
-        //     Motors::main_intake.user_move(0);
-        // }
 
 
     // section for chassis movement

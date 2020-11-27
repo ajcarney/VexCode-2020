@@ -46,8 +46,8 @@ Configuration::Configuration( )
     back_right_port = 10;
     left_intake_port = 12;
     right_intake_port = 11;
-    diff1_port = 1;
-    diff2_port = 2;
+    upper_indexer_port = 1;
+    lower_indexer_port = 2;
 
     front_right_reversed = 1;
     back_left_reversed = 1;
@@ -55,8 +55,8 @@ Configuration::Configuration( )
     back_right_reversed = 0;
     left_intake_reversed = 0;
     right_intake_reversed = 1;
-    diff1_reversed = 0;
-    diff2_reversed = 0;
+    upper_indexer_reversed = 0;
+    lower_indexer_reversed = 0;
 
     filter_threshold = 2830;
     filter_color = "blue";
@@ -183,8 +183,8 @@ int Configuration::init()
     back_right_port = contents["back_right_port"];
     left_intake_port = contents["left_intake_port"];
     right_intake_port = contents["right_intake_port"];
-    diff1_port = contents["diff1_port"];
-    diff2_port = contents["diff2_port"];
+    upper_indexer_port = contents["upper_indexer_port"];
+    lower_indexer_port = contents["lower_indexer_port"];
 
     front_right_reversed = contents["front_right_reversed"] == 1 ? true : false; //read motor port reversals
     back_left_reversed = contents["back_left_reversed"] == 1 ? true : false;
@@ -192,8 +192,8 @@ int Configuration::init()
     back_right_reversed = contents["back_right_reversed"] == 1 ? true : false;
     left_intake_reversed = contents["left_intake_reversed"] == 1 ? true : false;
     right_intake_reversed = contents["right_intake_reversed"] == 1 ? true : false;
-    diff1_reversed = contents["diff1_reversed"] == 1 ? true : false;
-    diff2_reversed = contents["diff2_reversed"] == 1 ? true : false;
+    upper_indexer_reversed = contents["upper_indexer_reversed"] == 1 ? true : false;
+    lower_indexer_reversed = contents["lower_indexer_reversed"] == 1 ? true : false;
 
     filter_threshold = contents["filter_threshold"];
 
@@ -236,8 +236,8 @@ void Configuration::print_config_options()
     std::cout << "back_right_port: " << back_right_port << "\n";
     std::cout << "left_intake_port: " << left_intake_port << "\n";
     std::cout << "right_intake_port: " << right_intake_port << "\n";
-    std::cout << "diff1_port: " << diff1_port << "\n";
-    std::cout << "diff2_port: " << diff2_port << "\n";
+    std::cout << "upper_indexer_port: " << upper_indexer_port << "\n";
+    std::cout << "lower_indexer_port: " << lower_indexer_port << "\n";
 
     std::cout << "front_right_reversed: " << front_right_reversed << "\n";
     std::cout << "back_left_reversed: " << back_left_reversed << "\n";
@@ -245,8 +245,8 @@ void Configuration::print_config_options()
     std::cout << "back_right_reversed: " << back_right_reversed << "\n";
     std::cout << "left_intake_reversed: " << left_intake_reversed << "\n";
     std::cout << "right_intake_reversed: " << right_intake_reversed << "\n";
-    std::cout << "diff1_reversed: " << diff1_reversed << "\n";
-    std::cout << "diff2_reversed: " << diff2_reversed << "\n";
+    std::cout << "upper_indexer_reversed: " << upper_indexer_reversed << "\n";
+    std::cout << "lower_indexer_reversed: " << lower_indexer_reversed << "\n";
 
     std::cout << "\nfilter threshold: " << filter_threshold << "\n";
 

@@ -15,7 +15,6 @@
 #include "objects/subsystems/chassis.hpp"
 #include "objects/serial/Logger.hpp"
 #include "objects/serial/Server.hpp"
-#include "objects/subsystems/Lift.hpp"
 
 int final_auton_choice;
 AutonomousLCD auton_lcd;
@@ -44,15 +43,16 @@ AutonomousLCD auton_lcd;
 
     DriverControlLCD::auton = final_auton_choice;
 
-    bool calibrated = false;
-    while(!calibrated) {  // block until imu is connected and calibrated
-        std::cout << errno << " " << std::strerror(errno) << "\n";
-        Sensors::imu.reset();  // calibrate imu
-        while(Sensors::imu.is_calibrating()) {
-            pros::delay(10);
-            calibrated = true;
-        }
-    }
+    // bool calibrated = false;
+    // while(!calibrated) {  // block until imu is connected and calibrated
+    //     std::cout << errno << " " << std::strerror(errno) << "\n";
+    //     Sensors::imu.reset();  // calibrate imu
+    //     while(Sensors::imu.is_calibrating()) {
+    //         pros::delay(10);
+    //         calibrated = true;
+    //     }
+    // }
+    // 
     
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
     // std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
@@ -268,14 +268,14 @@ void autonomous() {
     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd(final_auton_choice);
     
-    double prev_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
-    double ref_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
-    int l_id = Sensors::left_encoder.get_unique_id();
-    int r_id = Sensors::right_encoder.get_unique_id();
-    double prev_l = Sensors::left_encoder.get_position(l_id);
-    double prev_r = Sensors::right_encoder.get_position(r_id);
-    pros::delay(1);
-    chassis.straight_drive(-1000, 0, 12000, 10000);
+    // double prev_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
+    // double ref_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
+    // int l_id = Sensors::left_encoder.get_unique_id();
+    // int r_id = Sensors::right_encoder.get_unique_id();
+    // double prev_l = Sensors::left_encoder.get_position(l_id);
+    // double prev_r = Sensors::right_encoder.get_position(r_id);
+    // pros::delay(1);
+    // chassis.straight_drive(-1000, 0, 12000, 10000);
     while(1)
     {
         // double delta_theta = chassis.calc_delta_theta(prev_angle, ref_angle, Sensors::left_encoder.get_position(l_id) - prev_l, Sensors::right_encoder.get_position(r_id) - prev_r);

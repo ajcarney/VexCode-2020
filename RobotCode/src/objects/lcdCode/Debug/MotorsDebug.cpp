@@ -510,7 +510,7 @@ void MotorsDebug::debug()
 
     MotorsDebugTab l_chassis_tab_debug( {&Motors::front_left, &Motors::back_left}, {"Front Left", "Back Left"}, l_chassis_tab );
     MotorsDebugTab r_chassis_tab_debug( {&Motors::front_right, &Motors::back_right}, {"Front Right", "Back Right"}, r_chassis_tab );
-    MotorsDebugTab main_intake_tab_debug( {&Motors::diff1, &Motors::diff2}, {"Diff1", "Diff2"}, main_intake_tab );
+    MotorsDebugTab main_intake_tab_debug( {&Motors::upper_indexer, &Motors::lower_indexer}, {"upper_indexer", "lower_indexer"}, main_intake_tab );
     MotorsDebugTab front_intake_tab_debug( {&Motors::left_intake, &Motors::right_intake}, {"Left Intake", "Right Intake"}, front_intake_tab );
 
     while ( cont )

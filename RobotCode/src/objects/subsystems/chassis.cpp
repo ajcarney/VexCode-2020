@@ -104,6 +104,8 @@ void Chassis::chassis_motion_task(void*) {
         switch(action.command) {
             case e_straight_drive:
                 straight_drive_task(action.args);
+            case e_turn:
+                turn_task(action.args);
                 
         }
         
@@ -112,395 +114,6 @@ void Chassis::chassis_motion_task(void*) {
         send_lock.exchange( false ); //release lock
     }
 }
-
-/**
- * calculates the voltage for the each side of the chassis for a given setpoint
- * runs a separate pid calculation for each side of the chassis
- * performs logging at the end if flag is set 
- */
-std::tuple<int, int> Chassis::calc_pid( int left_encoder_ticks, int right_encoder_ticks, bool log_data /*false*/ )
-{
-    // Configuration* config = Configuration::get_instance();
-    // double kP = config->chassis_pid.kP;
-    // double kI = config->chassis_pid.kI;
-    // double kD = config->chassis_pid.kD;
-    // double I_max = config->chassis_pid.I_max;
-    // 
-    // int left_error =  left_encoder_ticks - std::get<0>(get_average_encoders());
-    // int right_error = right_encoder_ticks - std::get<1>(get_average_encoders());
-    // 
-    // if ( std::abs(right_error) < 5 || std::abs(integral_r) > I_max )
-    // {
-    //     integral_r = 0;  //reset integral if error is too small or greater than max value
-    // }
-    // else if ( setpoint_r != right_encoder_ticks )
-    // {
-    //     integral_r = 0;  //reset integral for new setpoint
-    //     setpoint_r = right_encoder_ticks;
-    // }
-    // else 
-    // {
-    //     int delta_t = pros::millis() - t;
-    //     t = pros::millis();
-    //     integral_r = integral_r + (right_error * delta_t);
-    // }
-    // 
-    // 
-    // if ( std::abs(left_error) < 5 || std::abs(integral_l) > I_max )
-    // {
-    //     integral_l = 0;  //reset integral if error is too small or greater than max value
-    // }
-    // else if ( setpoint_l != left_encoder_ticks )
-    // {
-    //     integral_l = 0;  //reset integral for new setpoint
-    //     setpoint_l = left_encoder_ticks;
-    // }
-    // else 
-    // {
-    //     int delta_t = pros::millis() - t;
-    //     t = pros::millis();
-    //     integral_l = integral_l + (left_error * delta_t);
-    // }
-    // 
-    // 
-    // double derivative_r = right_error - prev_error_r;
-    // prev_error_r = right_error;
-    // double derivative_l = left_error - prev_error_l;
-    // prev_error_r = left_error;
-    // 
-    // 
-    // int right_voltage = (kP * right_error) + (kI * integral_r) + (kD * derivative_r);
-    // int left_voltage = (kP * left_error) + (kI * integral_l) + (kD * derivative_l);
-    // 
-    // if ( log_data )
-    // {
-    //     Logger logger;
-    //     log_entry entry;
-    //     entry.content = (
-    //         "[INFO] " + std::string("CHASSIS_PID ")
-    //         + ", Actual_Vol1: " + std::to_string(front_left_drive->get_actual_voltage())
-    //         + ", Actual_Vol2: " + std::to_string(front_right_drive->get_actual_voltage())
-    //         + ", Actual_Vol3: " + std::to_string(back_left_drive->get_actual_voltage())
-    //         + ", Actual_Vol4: " + std::to_string(back_right_drive->get_actual_voltage())
-    //         + ", Brake: " + std::to_string(front_left_drive->get_brake_mode())
-    //         + ", Gear: " + std::to_string(front_left_drive->get_gearset())
-    //         + ", I_max: " + std::to_string(I_max)
-    //         + ", I: " + std::to_string(integral_r)
-    //         + ", kD: " + std::to_string(kD)
-    //         + ", kI: " + std::to_string(kI)
-    //         + ", kP: " + std::to_string(kP)
-    //         + ", Time: " + std::to_string(pros::millis())
-    //         + ", Enc_Sp: " + std::to_string(setpoint_r)
-    //         + ", L_Enc_Value: " + std::to_string(std::get<0>(get_average_encoders()))
-    //         + ", R_Enc_Value: " + std::to_string(std::get<1>(get_average_encoders()))
-    //         + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
-    //         + ", Actual_Vel2: " + std::to_string(front_right_drive->get_actual_velocity())
-    //         + ", Actual_Vel3: " + std::to_string(back_left_drive->get_actual_velocity())
-    //         + ", Actual_Vel4: " + std::to_string(back_right_drive->get_actual_velocity())
-    //     );
-    //     entry.stream = "clog";
-    //     logger.add(entry);            
-    // }
-    // 
-    // return {left_voltage, right_voltage};
-
-}
-
-
-
-/**
- * sets the setpoint for each side of the chassis
- * calculates voltage using calc_pid and caps it to max voltage
- * will block if that flag is set 
- * returns if the motors are settled regardless of if it is blocking or not
- */
-bool Chassis::drive( int encoder_ticks, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool tare_encoders /*true*/, bool wait_until_settled /*true*/, bool log_data /*false*/ )
-{
-    // int stop = pros::millis() + timeout;
-    // 
-    // if ( tare_encoders )
-    // {
-    //     front_left_drive->tare_encoder();
-    //     front_right_drive->tare_encoder();
-    //     back_left_drive->tare_encoder();
-    //     back_right_drive->tare_encoder();
-    // }
-    // 
-    // front_left_drive->disable_driver_control();
-    // front_right_drive->disable_driver_control();
-    // back_left_drive->disable_driver_control();
-    // back_right_drive->disable_driver_control();
-    // 
-    // bool settled = false;
-    // 
-    // do
-    // {
-    //     std::tuple<int, int> voltages = calc_pid( encoder_ticks, encoder_ticks, log_data );
-    // 
-    //     int left_voltage = std::get<0>(voltages);
-    //     int right_voltage = std::get<1>(voltages);
-    // 
-    //     //cap voltage to max voltage 
-    //     //TODO: make sure this doesn't screw up PID controller
-    //     if ( std::abs(left_voltage) > max_voltage )
-    //     {
-    //         left_voltage = left_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    //     if ( std::abs(right_voltage) > max_voltage )
-    //     {
-    //         right_voltage = right_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    // 
-    //     front_left_drive->set_voltage(left_voltage);
-    //     front_right_drive->set_voltage(right_voltage);
-    //     back_left_drive->set_voltage(left_voltage);
-    //     back_right_drive->set_voltage(right_voltage);
-    // 
-    //     int left_error = encoder_ticks - std::get<0>(get_average_encoders());
-    //     int right_error = encoder_ticks - std::get<1>(get_average_encoders());
-    // 
-    //     //settled is when error is almost zero and voltage is minimal
-    //     if ( ( std::abs(left_error) < 25 ) && ( std::abs(right_error) < 25 ) )
-    //     {
-    //         settled = true;
-    //     }
-    //     else if ( !wait_until_settled )
-    //     {
-    //         settled = true;
-    //     }
-    // 
-    //     if ( wait_until_settled )
-    //     {
-    //         pros::delay(10);
-    //     }
-    // } while ( !settled && pros::millis() < stop );    
-    // 
-    // if ( wait_until_settled )
-    // {
-    //     front_left_drive->set_voltage(0);
-    //     front_right_drive->set_voltage(0);
-    //     back_left_drive->set_voltage(0);
-    //     back_right_drive->set_voltage(0);
-    // }
-    // 
-    // front_left_drive->enable_driver_control();
-    // front_right_drive->enable_driver_control();
-    // back_left_drive->enable_driver_control();
-    // back_right_drive->enable_driver_control();
-    // 
-    // return settled;
-}
-
-
-
-
-/**
- * sets the setpoint for each side of the chassis
- * performs unit conversion to go from degrees to encoder ticks of each side
- * calculates voltage using calc_pid and caps it to max voltage
- * will block if that flag is set 
- * returns if the motors are settled regardless of if it is blocking or not
- */
-bool Chassis::turn_right( int degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool tare_encoders /*true*/, bool wait_until_settled /*true*/, bool log_data /*false*/ )
-{
-    // //convert degrees to num encoder ticks each side has to move
-    // long double circumference = chassis_width * 3.14159265358;               // circumference of turning arc 
-    // long double inches_to_turn = circumference * ( degrees / 360.0 );        // number of inches to turn to complete arc 
-    // long double inches_per_tick = (3.14159265358 * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
-    // int encoder_ticks = inches_to_turn / inches_per_tick;                    // calculate the encoder ticks each side must move
-    // 
-    // int stop = pros::millis() + timeout;
-    // 
-    // bool settled = false;
-    // 
-    // if ( tare_encoders )
-    // {
-    //     front_left_drive->tare_encoder();
-    //     front_right_drive->tare_encoder();
-    //     back_left_drive->tare_encoder();
-    //     back_right_drive->tare_encoder();
-    // }
-    // 
-    // front_left_drive->disable_driver_control();
-    // front_right_drive->disable_driver_control();
-    // back_left_drive->disable_driver_control();
-    // back_right_drive->disable_driver_control();
-    // 
-    // do
-    // {
-    //     std::tuple<int, int> voltages = calc_pid( encoder_ticks, -encoder_ticks, log_data );
-    // 
-    //     int left_voltage = std::get<0>(voltages);
-    //     int right_voltage = std::get<1>(voltages);
-    // 
-    //     //cap voltage to max voltage 
-    //     //TODO: make sure this doesn't screw up PID controller
-    //     if ( std::abs(left_voltage) > max_voltage )
-    //     {
-    //         left_voltage = left_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    //     if ( std::abs(right_voltage) > max_voltage )
-    //     {
-    //         right_voltage = right_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    // 
-    //     front_left_drive->set_voltage(left_voltage);
-    //     front_right_drive->set_voltage(right_voltage);
-    //     back_left_drive->set_voltage(left_voltage);
-    //     back_right_drive->set_voltage(right_voltage);
-    // 
-    //     int left_error = encoder_ticks - std::get<0>(get_average_encoders());
-    //     int right_error = encoder_ticks - std::get<1>(get_average_encoders());
-    //     std::cout << left_error << " " << right_error << "\n";
-    //     //settled is when error is almost zero and voltage is minimal
-    //     if ( ( std::abs(left_error) < 25 ) && ( std::abs(right_error) < 25 ) )
-    //     {
-    //         settled = true;
-    //     }
-    //     else if ( !wait_until_settled )
-    //     {
-    //         settled = true;
-    //     }
-    // 
-    //     if ( wait_until_settled )
-    //     {
-    //         pros::delay(10);
-    //     }
-    // } while ( !settled && pros::millis() < stop );    
-    // 
-    // if ( wait_until_settled )
-    // {
-    //     front_left_drive->move(0);
-    //     front_right_drive->move(0);
-    //     back_left_drive->move(0);
-    //     back_right_drive->move(0);
-    // }
-    // 
-    // front_left_drive->enable_driver_control();
-    // front_right_drive->enable_driver_control();
-    // back_left_drive->enable_driver_control();
-    // back_right_drive->enable_driver_control();
-    // 
-    // 
-    // return settled;
-}
-
-
-
-
-/**
- * sets the setpoint for each side of the chassis
- * performs unit conversion to go from degrees to encoder ticks of each side
- * calculates voltage using calc_pid and caps it to max voltage
- * will block if that flag is set 
- * returns if the motors are settled regardless of if it is blocking or not
- */
-bool Chassis::turn_left( int degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool tare_encoders /*true*/,  bool wait_until_settled /*true*/, bool log_data /*false*/ )
-{
-    // //convert degrees to num encoder ticks each side has to move
-    // long double circumference = chassis_width * 3.14159265358;               // circumference of turning arc 
-    // long double inches_to_turn = circumference * ( degrees / 360.0 );        // number of inches to turn to complete arc 
-    // long double inches_per_tick = (3.14159265358 * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
-    // int encoder_ticks = inches_to_turn / inches_per_tick;                    // calculate the encoder ticks each side must move
-    // 
-    // int stop = pros::millis() + timeout;
-    // 
-    // bool settled = false;
-    // 
-    // if ( tare_encoders )
-    // {
-    //     front_left_drive->tare_encoder();
-    //     front_right_drive->tare_encoder();
-    //     back_left_drive->tare_encoder();
-    //     back_right_drive->tare_encoder();
-    // }
-    // 
-    // front_left_drive->disable_driver_control();
-    // front_right_drive->disable_driver_control();
-    // back_left_drive->disable_driver_control();
-    // back_right_drive->disable_driver_control();
-    // 
-    // do
-    // {
-    //     std::tuple<int, int> voltages = calc_pid( -encoder_ticks, encoder_ticks, log_data );
-    // 
-    //     int left_voltage = std::get<0>(voltages);
-    //     int right_voltage = std::get<1>(voltages);
-    // 
-    //     //cap voltage to max voltage 
-    //     //TODO: make sure this doesn't screw up PID controller
-    //     if ( std::abs(left_voltage) > max_voltage )
-    //     {
-    //         left_voltage = left_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    //     if ( std::abs(right_voltage) > max_voltage )
-    //     {
-    //         right_voltage = right_voltage > 0 ? max_voltage : -max_voltage;
-    //     }
-    // 
-    // 
-    //     front_left_drive->set_voltage(left_voltage);
-    //     front_right_drive->set_voltage(right_voltage);
-    //     back_left_drive->set_voltage(left_voltage);
-    //     back_right_drive->set_voltage(right_voltage);
-    // 
-    //     int left_error = -encoder_ticks - std::get<0>(get_average_encoders());
-    //     int right_error = encoder_ticks - std::get<1>(get_average_encoders());
-    // 
-    //     //settled is when error is almost zero and voltage is minimal
-    //     if ( ( std::abs(left_error) < 10 ) && ( std::abs(right_error) < 10 ) )
-    //     {
-    //         settled = true;
-    //     }
-    //     else if ( !wait_until_settled )
-    //     {
-    //         settled = true;
-    //     }
-    // 
-    //     if ( wait_until_settled )
-    //     {
-    //         pros::delay(10);
-    //     }
-    // } while ( !settled && pros::millis() < stop );    
-    // 
-    // if ( wait_until_settled )
-    // {
-    //     front_left_drive->move(0);
-    //     front_right_drive->move(0);
-    //     back_left_drive->move(0);
-    //     back_right_drive->move(0);
-    // }
-    // 
-    // front_left_drive->enable_driver_control();
-    // front_right_drive->enable_driver_control();
-    // back_left_drive->enable_driver_control();
-    // back_right_drive->enable_driver_control();
-    // 
-    // return settled;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -547,7 +160,7 @@ void Chassis::straight_drive_task(chassis_params args) {
 
     do {
         // pid distance controller
-        double error =  (args.setpoint / 2) - ((std::get<0>(get_average_encoders(l_id, r_id)) + std::get<1>(get_average_encoders(l_id, r_id))) / 2);
+        double error =  (args.setpoint) - ((std::get<0>(get_average_encoders(l_id, r_id)) + std::get<1>(get_average_encoders(l_id, r_id))) / 2);
 
         if ( std::abs(integral) > I_max ) {
             integral = 0;  // reset integral if greater than max allowable value
@@ -611,8 +224,8 @@ void Chassis::straight_drive_task(chassis_params args) {
                 + ", kP: " + std::to_string(kP)
                 + ", Time: " + std::to_string(pros::millis())
                 + ", Position_Sp: " + std::to_string(args.setpoint)
-                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id))
-                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id))                
+                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id)))
+                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id)))                
                 + ", Heading_Sp: " + std::to_string(args.relative_heading)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
                 + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
@@ -634,10 +247,10 @@ void Chassis::straight_drive_task(chassis_params args) {
         prev_r_voltage = right_voltage;
         
         // // settled is when error is almost zero and voltage is minimal
-        // if ( ( std::abs(left_error) < 5 ) && ( std::abs(right_error) < 5 ) && std::abs(left_voltage) < 1000)
-        // {        
-        //     break; // end before timeout 
-        // }
+        if ( ( std::abs(error) < 5 ) && std::abs(left_voltage) < 1000)
+        {        
+            break; // end before timeout 
+        }
 
         pros::delay(10);
     } while ( pros::millis() < timeout ); 
@@ -654,7 +267,7 @@ void Chassis::straight_drive_task(chassis_params args) {
 
 
 
-void Chassis::turn_right_task(chassis_params args) {
+void Chassis::turn_task(chassis_params args) {
     Configuration* config = Configuration::get_instance();
     double kP = config->chassis_pid.kP;
     double kI = config->chassis_pid.kI;
@@ -697,17 +310,16 @@ void Chassis::turn_right_task(chassis_params args) {
 
     do {
         // pid angle controller
-        // p controller heading correction
         double delta_l = std::get<0>(get_average_encoders(l_id, r_id)) - prev_l_encoder;
         double delta_r = std::get<1>(get_average_encoders(l_id, r_id)) - prev_r_encoder;
         double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
         prev_angle = prev_angle + delta_theta;
         relative_angle = relative_angle + delta_theta;
-        double error = args.relative_heading - relative_angle;
-        std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << heading_error << "\n";
+        double error = args.setpoint - relative_angle;
+        std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << error << "\n";
 
         
-        if ( std::abs(error) < 5 || std::abs(integral) > I_max ) {
+        if ( std::abs(integral) > I_max ) {
             integral = 0;  //reset integral if error is too small or greater than max value
         } else {
             int delta_t = pros::millis() - time;
@@ -753,8 +365,8 @@ void Chassis::turn_right_task(chassis_params args) {
                 + ", kP: " + std::to_string(kP)
                 + ", Time: " + std::to_string(pros::millis())
                 + ", Position_Sp: " + std::to_string(0)
-                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id))
-                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id))
+                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id)))
+                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id)))
                 + ", Heading_Sp: " + std::to_string(args.setpoint)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
                 + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
@@ -776,10 +388,10 @@ void Chassis::turn_right_task(chassis_params args) {
         prev_r_voltage = right_voltage;
         
         // // settled is when error is almost zero and voltage is minimal
-        // if ( ( std::abs(left_error) < 5 ) && ( std::abs(right_error) < 5 ) && std::abs(left_voltage) < 1000)
-        // {        
-        //     break; // end before timeout 
-        // }
+        if ( ( std::abs(error) < 1 ) && std::abs(left_voltage) < 1000)
+        {        
+            break; // end before timeout 
+        }
 
         pros::delay(10);
     } while ( pros::millis() < timeout ); 
@@ -794,18 +406,9 @@ void Chassis::turn_right_task(chassis_params args) {
 }
 
 
-void Chassis::turn_right_task(chassis_params args) {
-    
-}
 
 
-
-
-
-
-
-
-int Chassis::straight_drive(int encoder_ticks, int relative_heading /*0*/, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, bool slew /*false*/, bool log_data /*false*/) {
+int Chassis::straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, bool slew /*false*/, bool log_data /*false*/) {
     chassis_params args = {
         encoder_ticks,
         encoder_ticks,
@@ -837,6 +440,69 @@ int Chassis::straight_drive(int encoder_ticks, int relative_heading /*0*/, int m
 }
 
 
+int Chassis::turn_right(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
+    chassis_params args = {
+        degrees,
+        0,
+        0,
+        max_voltage,
+        timeout,
+        slew,
+        0,
+        asynch,
+        log_data
+    };
+    
+    // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
+    int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    
+    chassis_action command = {args, uid, e_turn};
+    while ( send_lock.exchange( true ) ); //aquire lock
+    command_queue.push(command);
+    send_lock.exchange( false ); //release lock
+    
+    if(!asynch) {
+        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
+            pros::delay(10);
+        }
+        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    }
+    
+    return uid;
+}
+
+
+
+int Chassis::turn_left(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
+    chassis_params args = {
+        -degrees,
+        0,
+        0,
+        max_voltage,
+        timeout,
+        slew,
+        0,
+        asynch,
+        log_data
+    };
+    
+    // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
+    int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    
+    chassis_action command = {args, uid, e_turn};
+    while ( send_lock.exchange( true ) ); //aquire lock
+    command_queue.push(command);
+    send_lock.exchange( false ); //release lock
+    
+    if(!asynch) {
+        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
+            pros::delay(10);
+        }
+        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    }
+    
+    return uid;
+}
 
 
 
@@ -863,11 +529,13 @@ void Chassis::move( int voltage )
 std::tuple<double, double> Chassis::get_average_encoders(int l_uid, int r_uid)
 {
     // use a weighted average to merge all encoders on the robot for a hopefully more accurate reading
-    double left_encoder_val = (.1 * front_left_drive->get_encoder_position() * gear_ratio) + (.3 * back_left_drive->get_encoder_position() * gear_ratio) + (.6 * left_encoder->get_position(l_uid));
-    double right_encoder_val = (.1 * front_right_drive->get_encoder_position() * gear_ratio) + (.3 * back_right_drive->get_encoder_position() * gear_ratio) + (.6 * right_encoder->get_position(r_uid));
+    double left_encoder_val = (.1 * front_left_drive->get_encoder_position() * gear_ratio) + (.35 * back_left_drive->get_encoder_position() * gear_ratio) + (.55 * left_encoder->get_position(l_uid));
+    double right_encoder_val = (.1 * front_right_drive->get_encoder_position() * gear_ratio) + (.35 * back_right_drive->get_encoder_position() * gear_ratio) + (.55 * right_encoder->get_position(r_uid));
         
     return {left_encoder_val, right_encoder_val};
 }
+
+
 
 
 double Chassis::calc_delta_theta(double prev_angle, double delta_l, double delta_r) {
@@ -881,13 +549,13 @@ double Chassis::calc_delta_theta(double prev_angle, double delta_l, double delta
     
     std::cout << delta_imu << " | " << imu_reading << "\n";
 
-    long double circumference = width * 3.14159265358;               // circumference of turning arc 
+    long double circumference = width * 3.14159265358;                       // circumference of turning arc 
     long double inches_per_tick = (3.14159265358 * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
     long double inches_turned = inches_per_tick * (delta_l - delta_r);
     double delta_encoder_degrees = (360 * inches_turned) / circumference;
     
-    double delta_theta = (1 * delta_imu) + (0 * delta_encoder_degrees);
-    double theta = (1 * imu_reading) + (0 * (delta_encoder_degrees + prev_angle));
+    double delta_theta = (.6 * delta_imu) + (.4 * delta_encoder_degrees);
+    double theta = (.6 * imu_reading) + (.4 * (delta_encoder_degrees + prev_angle));
 
     return delta_theta;
 }

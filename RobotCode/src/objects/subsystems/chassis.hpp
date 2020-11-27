@@ -21,11 +21,13 @@
 
 
 typedef enum {
-    e_straight_drive
+    e_straight_drive,
+    e_turn
 } chassis_commands;
 
 typedef struct {
     double setpoint;
+    double setpoint2;
     int relative_heading=0;
     int max_voltage=12000;
     int timeout=INT32_MAX;
@@ -68,8 +70,7 @@ class Chassis
         static int num_instances;
         
         static void straight_drive_task(chassis_params args);  // functions called by thread for asynchronous movement
-        static void turn_right_task(chassis_params args);
-        static void turn_right_task(chassis_params args);
+        static void turn_task(chassis_params args);
         
         /**
          * @param: int left_encoder_ticks -> the setpoint in encoder ticks for the left side of the drive
@@ -94,63 +95,11 @@ class Chassis
         Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
         ~Chassis();
 
-        /**
-         * @param: int encoder_ticks -> the number of encoder ticks to travel
-         * @param: int max_voltage -> the max voltage allowed by the motor 
-         * @param: int timeout -> the max amount of time the chassis will be allowed to run for
-         * @param: bool tare_encoders -> tare the encoders before starting movement, use if function is blocking
-         * @param: bool wait_until_settled -> if true, functions blocks until setpoint is reached
-         * @param: bool log_data -> if true, data is logged, useful for graphing and debugging
-         * @return: bool -> if the motor is settled or not
-         *
-         * runs a pid controller for each side of the drive so that it will hit 
-         * setpoint at the same time
-         * can be used as a blocking or non blocking function so that other commands
-         * can be run at the same time as this command
-         */
-        bool drive( int encoder_ticks, int max_voltage=12000, int timeout=INT32_MAX, bool tare_encoders=true, bool wait_until_settled=true, bool log_data=false );
+
+        int straight_drive(double encoder_ticks, int relative_heading=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
+        int turn_right(double degrees, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
+        int turn_left(double degrees, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
         
-        
-        /**
-         * @param: int degrees -> the number of degrees to turn
-         * @param: int max_voltage -> the max voltage allowed by the motor 
-         * @param: int timeout -> the max amount of time the chassis will be allowed to run for
-         * @param: bool tare_encoders -> tare the encoders before starting movement, use if function is blocking
-         * @param: bool wait_until_settled -> if true, functions blocks until setpoint is reached
-         * @param: bool log_data -> if true, data is logged, useful for graphing and debugging
-         * @return: bool -> if the motor is settled or not
-         *
-         * runs a pid controller for each side of the drive so that it will hit 
-         * setpoint at the same time
-         * setpoint is calculated by taking into account degrees, chassis width, and wheel size
-         * unit conversion is performed to go from degrees to encoder ticks for each side
-         * can be used as a blocking or non blocking function so that other commands
-         * can be run at the same time as this command
-         */
-        bool turn_right( int degrees, int max_voltage=12000, int timeout=INT32_MAX, bool tare_encoders=true, bool wait_until_settled=true, bool log_data=false );
-        
-        
-        /**
-         * @param: int degrees -> the number of degrees to turn
-         * @param: int max_voltage -> the max voltage allowed by the motor 
-         * @param: int timeout -> the max amount of time the chassis will be allowed to run for
-         * @param: bool tare_encoders -> tare the encoders before starting movement, use if function is blocking
-         * @param: bool wait_until_settled -> if true, functions blocks until setpoint is reached
-         * @param: bool log_data -> if true, data is logged, useful for graphing and debugging
-         * @return: bool -> if the motor is settled or not
-         *
-         * runs a pid controller for each side of the drive so that it will hit 
-         * setpoint at the same time
-         * setpoint is calculated by taking into account degrees, chassis width, and wheel size
-         * unit conversion is performed to go from degrees to encoder ticks for each side
-         * can be used as a blocking or non blocking function so that other commands
-         * can be run at the same time as this command
-         */
-        bool turn_left( int degrees, int max_voltage=12000, int timeout=INT32_MAX, bool tare_encoders=true, bool wait_until_settled=true, bool log_data=false );
-        
-        
-        
-        int straight_drive(int encoder_ticks, int relative_heading=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to
@@ -159,8 +108,6 @@ class Chassis
          * sets voltage of chassis
          */
         void move( int voltage );
-        
-        
         
         
         /**

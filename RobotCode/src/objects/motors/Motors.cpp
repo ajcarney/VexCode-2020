@@ -18,8 +18,8 @@ namespace Motors
     Motor back_left {Configuration::get_instance()->back_left_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->back_left_reversed};
     Motor left_intake {Configuration::get_instance()->left_intake_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->left_intake_reversed};
     Motor right_intake {Configuration::get_instance()->right_intake_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->right_intake_reversed};
-    Motor diff1 {Configuration::get_instance()->diff1_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->diff1_reversed};
-    Motor diff2 {Configuration::get_instance()->diff2_port, pros::E_MOTOR_GEARSET_36, Configuration::get_instance()->diff2_reversed};
+    Motor upper_indexer {Configuration::get_instance()->upper_indexer_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->upper_indexer_reversed};
+    Motor lower_indexer {Configuration::get_instance()->lower_indexer_port, pros::E_MOTOR_GEARSET_36, Configuration::get_instance()->lower_indexer_reversed};
 
     std::array<Motor*, 8> motor_array = {
         &front_right,
@@ -28,8 +28,8 @@ namespace Motors
         &back_left,
         &left_intake,
         &right_intake,
-        &diff1,
-        &diff2,        
+        &upper_indexer,
+        &lower_indexer,        
     };
     
     std::array<std::string, 8> motor_names_array = {
@@ -50,8 +50,8 @@ namespace Motors
         Motors::back_left.enable_driver_control();
         Motors::left_intake.enable_driver_control();
         Motors::right_intake.enable_driver_control();
-        Motors::diff1.enable_driver_control();
-        Motors::diff2.enable_driver_control();
+        Motors::upper_indexer.enable_driver_control();
+        Motors::lower_indexer.enable_driver_control();
     }
     
     void disable_driver_control() {
@@ -61,8 +61,8 @@ namespace Motors
         Motors::back_left.disable_driver_control();
         Motors::left_intake.disable_driver_control();
         Motors::right_intake.disable_driver_control();
-        Motors::diff1.disable_driver_control();
-        Motors::diff2.disable_driver_control();
+        Motors::upper_indexer.disable_driver_control();
+        Motors::lower_indexer.disable_driver_control();
     }
     
     void set_brake_mode(pros::motor_brake_mode_e_t new_brakemode) {
@@ -72,8 +72,8 @@ namespace Motors
         Motors::back_left.set_brake_mode(new_brakemode);
         Motors::left_intake.set_brake_mode(new_brakemode);
         Motors::right_intake.set_brake_mode(new_brakemode);
-        Motors::diff1.set_brake_mode(new_brakemode);    
-        Motors::diff2.set_brake_mode(new_brakemode);        
+        Motors::upper_indexer.set_brake_mode(new_brakemode);    
+        Motors::lower_indexer.set_brake_mode(new_brakemode);        
     }
     
     void stop_all_motors() {
@@ -83,8 +83,8 @@ namespace Motors
         Motors::back_left.move(0);
         Motors::left_intake.move(0);
         Motors::right_intake.move(0);
-        Motors::diff1.move(0);  
-        Motors::diff2.move(0);         
+        Motors::upper_indexer.move(0);  
+        Motors::lower_indexer.move(0);         
     }
     
     void set_log_level(int log_level) {
@@ -94,8 +94,8 @@ namespace Motors
         Motors::back_left.set_log_level(log_level);
         Motors::left_intake.set_log_level(log_level);
         Motors::right_intake.set_log_level(log_level);
-        Motors::diff1.set_log_level(log_level);
-        Motors::diff2.set_log_level(log_level);
+        Motors::upper_indexer.set_log_level(log_level);
+        Motors::lower_indexer.set_log_level(log_level);
     }
     
     void register_motors() {
@@ -106,8 +106,8 @@ namespace Motors
         motor_thread->register_motor(Motors::back_left);
         motor_thread->register_motor(Motors::left_intake);
         motor_thread->register_motor(Motors::right_intake);
-        motor_thread->register_motor(Motors::diff1);
-        motor_thread->register_motor(Motors::diff2);
+        motor_thread->register_motor(Motors::upper_indexer);
+        motor_thread->register_motor(Motors::lower_indexer);
     }
     
     void unregister_motors() {
@@ -118,8 +118,8 @@ namespace Motors
         motor_thread->unregister_motor(Motors::back_left);
         motor_thread->unregister_motor(Motors::left_intake);
         motor_thread->unregister_motor(Motors::right_intake);
-        motor_thread->unregister_motor(Motors::diff1);
-        motor_thread->unregister_motor(Motors::diff2);
+        motor_thread->unregister_motor(Motors::upper_indexer);
+        motor_thread->unregister_motor(Motors::lower_indexer);
     }
     
     
@@ -128,15 +128,15 @@ namespace Motors
             while(pros::c::task_notify_take(true, TIMEOUT_MAX)) {
                 pros::delay(10);
             }
-            Motors::diff1.disable_driver_control();
-            Motors::diff2.disable_driver_control();
+            Motors::upper_indexer.disable_driver_control();
+            Motors::lower_indexer.disable_driver_control();
             int start = pros::millis();
             while(pros::millis() - start < 300) {
-                Motors::diff1.move(-127);  // use filter mode of intake for 300 milliseconds
-                Motors::diff2.move(127);
+                Motors::upper_indexer.move(-127);  // use filter mode of intake for 300 milliseconds
+                Motors::lower_indexer.move(127);
             }
-            Motors::diff1.enable_driver_control();
-            Motors::diff2.enable_driver_control();
+            Motors::upper_indexer.enable_driver_control();
+            Motors::lower_indexer.enable_driver_control();
         }
     }
     

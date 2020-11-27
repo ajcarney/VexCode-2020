@@ -19,14 +19,14 @@
 #include "../lib/json.hpp"
 
 
-#define RIGHT_ENC_TOP_PORT       'C'
-#define RIGHT_ENC_BOTTOM_PORT    'D'
 #define LEFT_ENC_TOP_PORT        'A'
 #define LEFT_ENC_BOTTOM_PORT     'B'
-#define STRAFE_ENC_TOP_PORT      'G'
-#define STRAFE_ENC_BOTTOM_PORT   'H'
-#define POTENTIOMETER_PORT       'G'
-#define DETECTOR1_PORT           'E'
+#define RIGHT_ENC_TOP_PORT       'C'
+#define RIGHT_ENC_BOTTOM_PORT    'D'
+#define POTENTIOMETER_PORT       'E'
+#define DETECTOR_TOP_PORT        'F'
+#define DETECTOR_MIDDLE_PORT     'G'
+#define DETECTOR_BOTTOM_PORT     'H'
 
 #define VISIONSENSOR_PORT        5
 #define IMU_PORT                 15
@@ -83,8 +83,8 @@ class Configuration
         int back_right_port;
         int left_intake_port;
         int right_intake_port;
-        int diff1_port;
-        int diff2_port;
+        int upper_indexer_port;
+        int lower_indexer_port;
 
         bool front_right_reversed;
         bool back_left_reversed;
@@ -92,8 +92,8 @@ class Configuration
         bool back_right_reversed;
         bool left_intake_reversed;
         bool right_intake_reversed;
-        bool diff1_reversed;
-        bool diff2_reversed;
+        bool upper_indexer_reversed;
+        bool lower_indexer_reversed;
 
         std::vector<int> lift_setpoints;
         std::vector<int> tilter_setpoints;

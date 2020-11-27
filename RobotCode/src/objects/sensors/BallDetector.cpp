@@ -12,8 +12,10 @@
 
 
 
-BallDetector::BallDetector(char line_sensor_port, char vision_port, int detector_threshold) {
-    ball_detector.set_port(line_sensor_port);
+BallDetector::BallDetector(char line_sensor_port_top_port, char ball_detector_filter_port, char line_sensor_port_bottom_port, char vision_port, int detector_threshold) {
+    ball_detector_top.set_port(line_sensor_port_top_port);
+    ball_detector_filter.set_port(ball_detector_filter_port);
+    ball_detector_bottom.set_port(line_sensor_port_bottom_port);
     vision_sensor = new pros::Vision(vision_port);
 
     threshold = detector_threshold;
@@ -39,8 +41,8 @@ int BallDetector::set_threshold(int new_threshold) {
 }
 
 
-int BallDetector::check_for_ball() {
-    if(ball_detector.get_raw_value() < threshold) {  // ball is detected
+int BallDetector::check_filter_level() {
+    if(ball_detector_filter.get_raw_value() < threshold) {  // ball is detected
         time_since_last_ball = 0;  // ball detected so there is no time since last ball
 
         pros::vision_object_s_t red = vision_sensor->get_by_sig(0, 1);
@@ -66,6 +68,29 @@ int BallDetector::check_for_ball() {
 }
 
 
-std::tuple<int, int> BallDetector::debug() {
-    return std::make_tuple(ball_detector.get_raw_value(), check_for_ball());
+std::vector<bool> BallDetector::locate_balls() {
+    std::vector<bool> locations;
+    if(ball_detector_top.get_raw_value() < threshold) {
+        locations.push_back(true);
+    } else {
+        locations.push_back(false);
+    }
+    
+    if(ball_detector_filter.get_raw_value() < threshold) {
+        locations.push_back(true);
+    } else {
+        locations.push_back(false);
+    }
+    
+    if(ball_detector_bottom.get_raw_value() < threshold) {
+        locations.push_back(true);
+    } else {
+        locations.push_back(false);
+    }
+    
+    return locations;
+}
+
+std::tuple<int, int> BallDetector::debug_color() {
+    return std::make_tuple(ball_detector_filter.get_raw_value(), check_filter_level());
 }

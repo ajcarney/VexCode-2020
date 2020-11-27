@@ -67,8 +67,8 @@ Wiring::Wiring()
             "back left       (200 RPM) - " + std::to_string(config->back_right_port) + "\n"
             "left intake     (600 RPM) - " + std::to_string(config->left_intake_port) + "\n"
             "right intake    (600 RPM) - " + std::to_string(config->right_intake_port) + "\n"
-            "diff1           (600 RPM) - " + std::to_string(config->diff1_port) + "\n"
-            "diff2           (600 RPM) - " + std::to_string(config->diff2_port) + "\n"
+            "upper_indexer   (600 RPM) - " + std::to_string(config->upper_indexer_port) + "\n"
+            "lower_indexer   (600 RPM) - " + std::to_string(config->lower_indexer_port) + "\n"
     );
 
     lv_label_set_text(motor_info, motors_text.c_str());
@@ -85,9 +85,10 @@ Wiring::Wiring()
         "right enc bottom  - " + RIGHT_ENC_BOTTOM_PORT + "\n" +
         "left enc top      - " + LEFT_ENC_TOP_PORT + "\n" +
         "left enc bottom   - " + LEFT_ENC_BOTTOM_PORT + "\n" +
-        "strafe enc top    - " + STRAFE_ENC_TOP_PORT + "\n" +
-        "strafe enc bottom - " + STRAFE_ENC_BOTTOM_PORT + "\n" +
         "potentiometer     - " + POTENTIOMETER_PORT + "\n" +
+        "top detector      - " + DETECTOR_TOP_PORT + "\n" +
+        "middle detector   - " + DETECTOR_MIDDLE_PORT + "\n" +
+        "bottom detector   - " + DETECTOR_BOTTOM_PORT + "\n" +
         "vision sensor     - " + std::to_string(VISIONSENSOR_PORT) + "\n"
     );
 

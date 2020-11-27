@@ -16,7 +16,6 @@
 #include "Autons.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/subsystems/chassis.hpp"
-#include "objects/subsystems/Lift.hpp"
 
 
 Autons::Autons( )

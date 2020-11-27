@@ -26,8 +26,8 @@ namespace Motors
     extern Motor back_left;
     extern Motor left_intake;
     extern Motor right_intake;
-    extern Motor diff1;
-    extern Motor diff2;
+    extern Motor upper_indexer;
+    extern Motor lower_indexer;
     
     extern std::array<Motor*, 8> motor_array;
     extern std::array<std::string, 8> motor_names_array;

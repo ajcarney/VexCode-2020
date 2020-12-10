@@ -19,16 +19,14 @@
 #include "DriverControlLCD.hpp"
 
 
-int DriverControlLCD::auton = 0;
 bool DriverControlLCD::log_data = false;
 bool DriverControlLCD::open_debugger = false;
 std::string DriverControlLCD::toggle_logging_text = "Start Logging";
 LV_IMG_DECLARE(logo);
 
 
-DriverControlLCD::DriverControlLCD(int auton_number)
+DriverControlLCD::DriverControlLCD()
 {
-    auton = auton_number;
     log_data = false;
     
     screen = lv_obj_create(NULL, NULL);
@@ -152,20 +150,7 @@ lv_res_t DriverControlLCD::btn_run_auton_action(lv_obj_t *btn)
     
     Motors::disable_driver_control();
     
-    switch(auton)
-    {
-        case 1:
-           break;
-
-        case 2:
-            auton_obj.one_pt(OptionsScreen::cnfg);
-            break;
-
-        case 3:
-            auton_obj.skills(OptionsScreen::cnfg);
-            break;
-
-    }
+    auton_obj.run_autonomous();
 
     Motors::enable_driver_control();
     

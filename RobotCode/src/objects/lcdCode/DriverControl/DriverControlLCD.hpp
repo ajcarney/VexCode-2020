@@ -86,11 +86,9 @@ class DriverControlLCD : private Styles
 
 
     public:
-        DriverControlLCD(int auton_number);
+        DriverControlLCD();
         ~DriverControlLCD();
 
-
-        static int auton;
 
         /**
          * @return: None

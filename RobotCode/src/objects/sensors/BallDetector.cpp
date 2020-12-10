@@ -38,6 +38,7 @@ BallDetector::~BallDetector() {
 
 int BallDetector::set_threshold(int new_threshold) {
     threshold = new_threshold;
+    return 1;
 }
 
 

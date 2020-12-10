@@ -92,3 +92,9 @@ void AutonomousLCD::update_labels(int auton_number)
     lv_label_set_text(auton_label, autons.AUTONOMOUS_NAMES.at(auton_number));
     lv_label_set_text(description_label, autons.AUTONOMOUS_DESCRIPTIONS.at(auton_number));
 }
+
+
+void AutonomousLCD::log_to_lcd(std::string msg) {
+    lv_scr_load(screen);
+    lv_label_set_text(description_label, msg.c_str());
+}

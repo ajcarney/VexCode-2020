@@ -89,7 +89,6 @@ class Chassis
         static double gear_ratio;
         
         static void chassis_motion_task(void*);
-        
 
     public:
         Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
@@ -157,21 +156,7 @@ class Chassis
         void disable_slew( );
 
 
-
-// Soon to be deprecated functions
-        /**
-         * @param: int revolutions -> how the setpoint in encoder ticks for the robot position
-         * @param: int voltage -> voltage of how fast the robot will move
-         * @return: None
-         *
-         * @see: Motors.hpp
-         *
-         * allows the robot to move straight towards a setpoint
-         */
-        void scaled_drive(float left, float right, float distance, bool pid = true, float timeout=INT32_MAX /*INT32_MAX*/); //drive functions
 };
-
-
 
 
 #endif

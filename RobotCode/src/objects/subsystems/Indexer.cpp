@@ -42,7 +42,7 @@ Indexer::Indexer(Motor &upper, Motor &lower, BallDetector &detector, AnalogInSen
     lower_indexer->disable_slew();
     
     if(num_instances == 0 || thread == NULL) {
-        thread = new pros::Task( indexer_motion_task, (void*)NULL, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "differential_thread");
+        thread = new pros::Task( indexer_motion_task, (void*)NULL, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "indexer_thread");
     }
     
     num_instances += 1;

@@ -48,6 +48,9 @@ class AutonomousLCD : private Styles
          * function to be used to update the gui to keep data relevant
          */
         void update_labels(int auton_number);
+        
+        
+        void log_to_lcd(std::string msg);
 
 
 };

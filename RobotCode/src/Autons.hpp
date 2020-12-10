@@ -38,7 +38,7 @@ typedef struct
 class Autons
 {
     private:
-        
+        static int selected_number;
 
     public:
         Autons();
@@ -68,6 +68,9 @@ class Autons
             {4, "none"}
         };
 
+        void set_autonomous_number(int n);
+        int get_autonomous_number();
+
 
         /**
          * @return: None
@@ -75,7 +78,7 @@ class Autons
          * @see: Motors.hpp
          * @see: Chassis.hpp
          *
-         * function for deploying the tray
+         * get robot ready for auton
          */
         void deploy();
 
@@ -87,7 +90,7 @@ class Autons
          *
          * drives forward
          */
-        void one_pt( autonConfig cnfg );
+        void one_pt();
 
         /**
          * @param: autonConfig cnfg -> the configuration to use for the auton
@@ -97,8 +100,10 @@ class Autons
          *
          * runs skills
          */
-        void skills( autonConfig cnfg );
+        void skills();
 
+        void setup_odometry();
+        void run_autonomous();
 };
 
 

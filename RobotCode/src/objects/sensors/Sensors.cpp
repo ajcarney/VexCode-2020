@@ -18,8 +18,9 @@ namespace Sensors
 {
     Encoder right_encoder{RIGHT_ENC_TOP_PORT, RIGHT_ENC_BOTTOM_PORT, true};
     Encoder left_encoder{LEFT_ENC_TOP_PORT, LEFT_ENC_BOTTOM_PORT, true};
-    AnalogInSensor potentiometer{POTENTIOMETER_PORT};
+    Encoder strafe_encoder{STRAFE_ENC_TOP_PORT, STRAFE_ENC_BOTTOM_PORT, false};
     
+    AnalogInSensor potentiometer{POTENTIOMETER_PORT};
     BallDetector ball_detector{DETECTOR_TOP_PORT, DETECTOR_MIDDLE_PORT, DETECTOR_BOTTOM_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
     pros::Imu imu{IMU_PORT};
 

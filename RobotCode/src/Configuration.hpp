@@ -23,13 +23,16 @@
 #define LEFT_ENC_BOTTOM_PORT     'B'
 #define RIGHT_ENC_TOP_PORT       'C'
 #define RIGHT_ENC_BOTTOM_PORT    'D'
-#define POTENTIOMETER_PORT       'E'
-#define DETECTOR_TOP_PORT        'F'
-#define DETECTOR_MIDDLE_PORT     'G'
-#define DETECTOR_BOTTOM_PORT     'H'
+#define STRAFE_ENC_TOP_PORT      'E'
+#define STRAFE_ENC_BOTTOM_PORT   'F'
+#define DETECTOR_MIDDLE_PORT     'H'
+#define POTENTIOMETER_PORT       'G'
+
+#define DETECTOR_BOTTOM_PORT     'Z'  // no port available but still wanted in code
+#define DETECTOR_TOP_PORT        'Z'  // no port available but still wanted in code
 
 #define VISIONSENSOR_PORT        5
-#define IMU_PORT                 15
+#define IMU_PORT                 16
 
 
 typedef struct

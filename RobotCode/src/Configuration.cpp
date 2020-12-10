@@ -40,14 +40,14 @@ Configuration::Configuration( )
     chassis_pid.I_max = INT32_MAX;
 
     //536C motor config
-    front_right_port = 9;
-    back_left_port = 7;
-    front_left_port = 8;
-    back_right_port = 10;
-    left_intake_port = 12;
-    right_intake_port = 11;
-    upper_indexer_port = 1;
-    lower_indexer_port = 2;
+    front_right_port = 12;
+    back_left_port = 15;
+    front_left_port = 16;
+    back_right_port = 13;
+    left_intake_port = 8;
+    right_intake_port = 7;
+    upper_indexer_port = 9;
+    lower_indexer_port = 17;
 
     front_right_reversed = 1;
     back_left_reversed = 1;

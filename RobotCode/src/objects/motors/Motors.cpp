@@ -7,6 +7,8 @@
  * contains definition of global struct
  */
  
+#include "okapi/api.hpp"
+
 #include "Motors.hpp"
 #include "MotorThread.hpp"
 
@@ -20,6 +22,9 @@ namespace Motors
     Motor right_intake {Configuration::get_instance()->right_intake_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->right_intake_reversed};
     Motor upper_indexer {Configuration::get_instance()->upper_indexer_port, pros::E_MOTOR_GEARSET_18, Configuration::get_instance()->upper_indexer_reversed};
     Motor lower_indexer {Configuration::get_instance()->lower_indexer_port, pros::E_MOTOR_GEARSET_36, Configuration::get_instance()->lower_indexer_reversed};
+
+    std::shared_ptr<okapi::OdomChassisController> odom_chassis;
+    std::shared_ptr<okapi::AsyncMotionProfileController> profile_controller;
 
     std::array<Motor*, 8> motor_array = {
         &front_right,

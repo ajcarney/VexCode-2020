@@ -15,6 +15,7 @@
 
 
 #include "../serial/Logger.hpp"
+#include "../position_tracking/PositionTracker.hpp"
 #include "chassis.hpp"
 
 
@@ -103,10 +104,56 @@ void Chassis::chassis_motion_task(void*) {
         // execute command
         switch(action.command) {
             case e_straight_drive:
-                straight_drive_task(action.args);
+                t_straight_drive(action.args);
+                break;
             case e_turn:
-                turn_task(action.args);
+                t_turn(action.args);
+                break;
+            case e_drive_to_point: {
+                PositionTracker* tracker = PositionTracker::get_instance();
+                std::vector<waypoint> waypoints;  // calculate waypoints based on starting position
+
+                long double dx = action.args.setpoint1 - tracker->get_position().x_pos;
+                long double dy = action.args.setpoint2 - tracker->get_position().y_pos;
+                // convert end coordinates to polar and then calculate waypoints
+                long double delta_radius_polar = std::sqrt((std::pow(dx, 2) + std::pow(dy, 2)));
+                long double delta_theta_polar = std::atan2(dx, dy);
                 
+                for(int i=action.args.recalculations + 1; i > 0; i--) {  // calculate additional waypoints, start with last (endpoint) and go down
+                    long double radius = (i * delta_radius_polar) / (action.args.recalculations + 1);
+                    waypoint recalc_point;
+                    recalc_point.dx = radius * std::cos(delta_theta_polar);  // convert back to cartesian coordinates
+                    recalc_point.dy = radius * std::sin(delta_theta_polar);
+                    recalc_point.radius = radius;
+                    recalc_point.dtheta = delta_theta_polar;
+                    waypoints.insert(waypoints.begin(), recalc_point);
+                }
+                
+                if(action.args.log_data) {
+                    Logger logger;
+                    log_entry entry;
+                    std::string msg = (
+                        "[INFO] " + std::string("CHASSIS_ODOM")
+                        + ", Time: " + std::to_string(pros::millis())
+                    );
+                    int i = 0;
+                    for(waypoint point : waypoints) {  // add waypoints to debug message
+                        msg += ", waypoint " + std::to_string(i) + ": " + point.get_string();
+                    }
+                    entry.content = msg;
+                    entry.stream = "clog";
+                    logger.add(entry);  
+                }
+                
+                int start = pros::millis();
+                for(waypoint point : waypoints) {  // move to each generated waypoint
+                    if(pros::millis() - start > action.args.timeout) {  // end early if past the timeout point
+                        break;
+                    }
+                    t_move_to_waypoint(action.args, point);
+                }
+                break;
+            }
         }
         
         while ( send_lock.exchange( true ) ); //aquire lock
@@ -118,12 +165,19 @@ void Chassis::chassis_motion_task(void*) {
 
 
 
-void Chassis::straight_drive_task(chassis_params args) {
+void Chassis::t_straight_drive(chassis_params args) {
+    PositionTracker* tracker = PositionTracker::get_instance();
     Configuration* config = Configuration::get_instance();
-    double kP = config->chassis_pid.kP;
-    double kI = config->chassis_pid.kI;
-    double kD = config->chassis_pid.kD;
-    double I_max = config->chassis_pid.I_max;
+    
+    double kP_l = 38;
+    double kI_l = .0125;
+    double kD_l = 4;
+    double I_max_l = INT32_MAX;
+    
+    double kP_r = kP_l;
+    double kI_r = kI_l;
+    double kD_r = kD_l;
+    double I_max_r = I_max_l;
     
     front_left_drive->tare_encoder();
     front_right_drive->tare_encoder();
@@ -143,58 +197,71 @@ void Chassis::straight_drive_task(chassis_params args) {
     back_left_drive->move(0);
     back_right_drive->move(0);
     
-    double integral = 0;
-    double prev_error = 0;
+    double integral_l = 0;
+    double integral_r = 0;
+    double prev_error_l = 0;
+    double prev_error_r = 0;
     double prev_l_voltage = 0;
     double prev_r_voltage = 0;
     
-    double prev_l_encoder = std::get<0>(get_average_encoders(l_id, r_id));
-    double prev_r_encoder = std::get<1>(get_average_encoders(l_id, r_id));
-    double prev_angle = imu->get_heading();
+    double prev_l_encoder = std::get<0>(Sensors::get_average_encoders(l_id, r_id));
+    double prev_r_encoder = std::get<1>(Sensors::get_average_encoders(l_id, r_id));
+    // double prev_angle = imu->get_heading();
+    // double prev_angle = 0;
     double relative_angle = 0;
     
     int timeout = pros::millis() + args.timeout;
     bool settled = false;
+    bool use_integral_l = true;
+    bool use_integral_r = true;
     
     int time = pros::millis();
 
     do {
         // pid distance controller
-        double error =  (args.setpoint) - ((std::get<0>(get_average_encoders(l_id, r_id)) + std::get<1>(get_average_encoders(l_id, r_id))) / 2);
+        double error_l = args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id));
+        double error_r = args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
 
-        if ( std::abs(integral) > I_max ) {
-            integral = 0;  // reset integral if greater than max allowable value
+        if ( std::abs(integral_l) > I_max_l || !use_integral_l) {
+            integral_l = 0;  // reset integral if greater than max allowable value
+            use_integral_l = false;
         } else {
-            int delta_t = pros::millis() - time;
-            integral = integral + (error * delta_t);
+            int dt = pros::millis() - time;
+            integral_l = integral_l + (error_l * dt);
+        }
+        
+        if ( std::abs(integral_r) > I_max_l || !use_integral_r) {
+            integral_r = 0;  // reset integral if greater than max allowable value
+            use_integral_r = false;
+        } else {
+            int dt = pros::millis() - time;
+            integral_r = integral_r + (error_r * dt);
         }
         
         time = pros::millis();
         
+        double derivative_l = error_l - prev_error_l;
+        double derivative_r = error_r - prev_error_r;
+        prev_error_l = error_l;
+        prev_error_r = error_r;
         
-        double derivative = error - prev_error;
-        prev_error = error;
-        
-        
-        int right_voltage = (kP * error) + (kI * integral) + (kD * derivative);
-        int left_voltage = (kP * error) + (kI * integral) + (kD * derivative);
+        int left_voltage = (kP_l * error_l) + (kI_l * integral_l) + (kD_l * derivative_l);
+        int right_voltage = (kP_r * error_r) + (kI_r * integral_r) + (kD_r * derivative_r);
 
         
-        
         // p controller heading correction
-        double delta_l = std::get<0>(get_average_encoders(l_id, r_id)) - prev_l_encoder;
-        double delta_r = std::get<1>(get_average_encoders(l_id, r_id)) - prev_r_encoder;
-        double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
-        prev_angle = prev_angle + delta_theta;
+        // double delta_l = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - prev_l_encoder;
+        // double delta_r = std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - prev_r_encoder;
+        // double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
+        // prev_angle = prev_angle + delta_theta;
+        double delta_theta = tracker->to_degrees(tracker->get_delta_theta_rad());
         relative_angle = relative_angle + delta_theta;
-        double heading_error = args.relative_heading - relative_angle;
-        std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << heading_error << "\n";
+        double heading_error = args.setpoint2 - relative_angle;
+        // std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << heading_error << "\n";
         if(args.correct_heading) {
-            left_voltage += 100 * heading_error;  
-            right_voltage -= 100 * heading_error;
+            left_voltage += 0 * heading_error;  
+            right_voltage -= 0 * heading_error;
         }
-        
-        
         
         // cap voltage to max voltage with regard to velocity
         if ( std::abs(left_voltage) > args.max_voltage ) {
@@ -204,12 +271,12 @@ void Chassis::straight_drive_task(chassis_params args) {
             right_voltage = right_voltage > 0 ? args.max_voltage : -args.max_voltage;
         }
 
-        if ( args.log_data )
-        {
+        if ( args.log_data ) {
             Logger logger;
             log_entry entry;
             entry.content = (
-                "[INFO] " + std::string("CHASSIS_PID ")
+                "[INFO] " + std::string("CHASSIS_PID")
+                + ", Time: " + std::to_string(pros::millis())
                 + ", Actual_Vol1: " + std::to_string(front_left_drive->get_actual_voltage())
                 + ", Actual_Vol2: " + std::to_string(front_right_drive->get_actual_voltage())
                 + ", Actual_Vol3: " + std::to_string(back_left_drive->get_actual_voltage())
@@ -217,16 +284,15 @@ void Chassis::straight_drive_task(chassis_params args) {
                 + ", Slew: " + std::to_string(args.motor_slew)
                 + ", Brake: " + std::to_string(front_left_drive->get_brake_mode())
                 + ", Gear: " + std::to_string(front_left_drive->get_gearset())
-                + ", I_max: " + std::to_string(I_max)
-                + ", I: " + std::to_string(integral)
-                + ", kD: " + std::to_string(kD)
-                + ", kI: " + std::to_string(kI)
-                + ", kP: " + std::to_string(kP)
-                + ", Time: " + std::to_string(pros::millis())
-                + ", Position_Sp: " + std::to_string(args.setpoint)
-                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id)))
-                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id)))                
-                + ", Heading_Sp: " + std::to_string(args.relative_heading)
+                + ", I_max: " + std::to_string(I_max_l)
+                + ", I: " + std::to_string(integral_l)
+                + ", kD: " + std::to_string(kD_l)
+                + ", kI: " + std::to_string(kI_l)
+                + ", kP: " + std::to_string(kP_l)
+                + ", Position_Sp: " + std::to_string(args.setpoint1)
+                + ", position_l: " + std::to_string(std::get<0>(Sensors::get_average_encoders(l_id, r_id)))
+                + ", position_r: " + std::to_string(std::get<1>(Sensors::get_average_encoders(l_id, r_id)))                
+                + ", Heading_Sp: " + std::to_string(args.setpoint2)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
                 + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
                 + ", Actual_Vel2: " + std::to_string(front_right_drive->get_actual_velocity())
@@ -246,9 +312,8 @@ void Chassis::straight_drive_task(chassis_params args) {
         prev_l_voltage = left_voltage;
         prev_r_voltage = right_voltage;
         
-        // // settled is when error is almost zero and voltage is minimal
-        if ( ( std::abs(error) < 5 ) && std::abs(left_voltage) < 1000)
-        {        
+        // // settled is when error is almost zero and voltage is minimal for both sides
+        if ( (std::abs(error_l) < 5) && (std::abs(error_r) < 5) && std::abs(left_voltage) < 1000 && std::abs(right_voltage) < 1000) {        
             break; // end before timeout 
         }
 
@@ -267,12 +332,14 @@ void Chassis::straight_drive_task(chassis_params args) {
 
 
 
-void Chassis::turn_task(chassis_params args) {
+void Chassis::t_turn(chassis_params args) {
+    PositionTracker* tracker = PositionTracker::get_instance();
     Configuration* config = Configuration::get_instance();
-    double kP = config->chassis_pid.kP;
-    double kI = config->chassis_pid.kI;
-    double kD = config->chassis_pid.kD;
-    double I_max = config->chassis_pid.I_max;
+    
+    double kP = 10;
+    double kI = 0;
+    double kD = 0;
+    double I_max = INT32_MAX;
     
     front_left_drive->tare_encoder();
     front_right_drive->tare_encoder();
@@ -297,33 +364,37 @@ void Chassis::turn_task(chassis_params args) {
     double prev_l_voltage = 0;
     double prev_r_voltage = 0;
     
-    double prev_l_encoder = std::get<0>(get_average_encoders(l_id, r_id));
-    double prev_r_encoder = std::get<1>(get_average_encoders(l_id, r_id));
-    double intitial_angle = imu->get_heading();
-    double prev_angle = imu->get_heading();
+    double prev_l_encoder = std::get<0>(Sensors::get_average_encoders(l_id, r_id));
+    double prev_r_encoder = std::get<1>(Sensors::get_average_encoders(l_id, r_id));
+    // double intitial_angle = imu->get_heading();
+    // double prev_angle = imu->get_heading();
+    // double prev_angle = 0;
     double relative_angle = 0;
-    
-    int timeout = pros::millis() + args.timeout;
+
+    int timeout = pros::millis() + 5000;
     bool settled = false;
+    bool use_integral = true;
     
     int time = pros::millis();
 
     do {
         // pid angle controller
-        double delta_l = std::get<0>(get_average_encoders(l_id, r_id)) - prev_l_encoder;
-        double delta_r = std::get<1>(get_average_encoders(l_id, r_id)) - prev_r_encoder;
-        double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
-        prev_angle = prev_angle + delta_theta;
+        // double delta_l = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - prev_l_encoder;
+        // double delta_r = std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - prev_r_encoder;
+        // double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
+        // prev_angle = prev_angle + delta_theta;
+        double delta_theta = tracker->to_degrees(tracker->get_delta_theta_rad());
         relative_angle = relative_angle + delta_theta;
-        double error = args.setpoint - relative_angle;
-        std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << error << "\n";
+        double error = args.setpoint1 - relative_angle;
+        // std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << error << "\n";
 
         
-        if ( std::abs(integral) > I_max ) {
+        if ( std::abs(integral) > I_max || !use_integral) {
             integral = 0;  //reset integral if error is too small or greater than max value
+            use_integral = false;
         } else {
-            int delta_t = pros::millis() - time;
-            integral = integral + (error * delta_t);
+            int dt = pros::millis() - time;
+            integral = integral + (error * dt);
         }
         time = pros::millis();
         
@@ -331,10 +402,15 @@ void Chassis::turn_task(chassis_params args) {
         double derivative = error - prev_error;
         prev_error = error;
         
-        
-        int right_voltage = (kP * error) + (kI * integral) + (kD * derivative);
-        int left_voltage = (kP * error) + (kI * integral) + (kD * derivative);
-
+        int right_voltage;
+        int left_voltage;
+        if(args.setpoint1 > 0) {  // turn right
+            right_voltage = -1 * ((kP * error) + (kI * integral) + (kD * derivative));
+            left_voltage = (kP * error) + (kI * integral) + (kD * derivative);
+        } else {  // turn left
+            right_voltage = (kP * error) + (kI * integral) + (kD * derivative);
+            left_voltage = -1 * ((kP * error) + (kI * integral) + (kD * derivative));
+        }
         
         
         // cap voltage to max voltage with regard to velocity
@@ -345,12 +421,12 @@ void Chassis::turn_task(chassis_params args) {
             right_voltage = right_voltage > 0 ? args.max_voltage : -args.max_voltage;
         }
 
-        if ( args.log_data )
-        {
+        if ( args.log_data ) {
             Logger logger;
             log_entry entry;
             entry.content = (
-                "[INFO] " + std::string("CHASSIS_PID ")
+                "[INFO] " + std::string("CHASSIS_PID")
+                + ", Time: " + std::to_string(pros::millis())
                 + ", Actual_Vol1: " + std::to_string(front_left_drive->get_actual_voltage())
                 + ", Actual_Vol2: " + std::to_string(front_right_drive->get_actual_voltage())
                 + ", Actual_Vol3: " + std::to_string(back_left_drive->get_actual_voltage())
@@ -363,11 +439,10 @@ void Chassis::turn_task(chassis_params args) {
                 + ", kD: " + std::to_string(kD)
                 + ", kI: " + std::to_string(kI)
                 + ", kP: " + std::to_string(kP)
-                + ", Time: " + std::to_string(pros::millis())
                 + ", Position_Sp: " + std::to_string(0)
-                + ", position_l: " + std::to_string(std::get<0>(get_average_encoders(l_id, r_id)))
-                + ", position_r: " + std::to_string(std::get<1>(get_average_encoders(l_id, r_id)))
-                + ", Heading_Sp: " + std::to_string(args.setpoint)
+                + ", position_l: " + std::to_string(std::get<0>(Sensors::get_average_encoders(l_id, r_id)))
+                + ", position_r: " + std::to_string(std::get<1>(Sensors::get_average_encoders(l_id, r_id)))
+                + ", Heading_Sp: " + std::to_string(args.setpoint1)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
                 + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
                 + ", Actual_Vel2: " + std::to_string(front_right_drive->get_actual_velocity())
@@ -388,8 +463,7 @@ void Chassis::turn_task(chassis_params args) {
         prev_r_voltage = right_voltage;
         
         // // settled is when error is almost zero and voltage is minimal
-        if ( ( std::abs(error) < 1 ) && std::abs(left_voltage) < 1000)
-        {        
+        if ( ( std::abs(error) < 1 ) && std::abs(left_voltage) < 1000) {        
             break; // end before timeout 
         }
 
@@ -407,19 +481,76 @@ void Chassis::turn_task(chassis_params args) {
 
 
 
+void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
+    PositionTracker* tracker = PositionTracker::get_instance();
+    
+    // delta theta is bounded by [-pi, pi], re map it to [0,pi]
+    if(point.dtheta < -M_PI) {
+        point.dtheta += M_PI;
+    }
+    
+    // current angle is bounded by [-pi, pi] re map it to [0, pi]
+    long double current_angle = tracker->get_heading_rad();
+    if(current_angle < -M_PI) {
+        current_angle += M_PI;
+    }
+    
+    long double to_turn = current_angle - point.dtheta;  // change in robot angle
+    
+    if(to_turn > (M_PI / 2)) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+        to_turn = -M_PI + to_turn;  // give negative value to turn left to point
+    }
+    
+    to_turn = tracker->to_degrees(to_turn);
+    long double to_drive = tracker->to_encoder_ticks(point.radius, wheel_diameter);
+    
+    chassis_params turn_args;
+    turn_args.setpoint1 = to_turn;
+    turn_args.max_voltage = args.max_voltage;
+    turn_args.timeout = 15000; // TODO: add time estimation
+    turn_args.motor_slew = args.motor_slew;
+    turn_args.log_data = args.log_data;
+    
+    chassis_params drive_straight_args;
+    drive_straight_args.setpoint1 = to_drive;
+    drive_straight_args.setpoint2 = 0;
+    drive_straight_args.max_voltage = args.max_voltage;
+    drive_straight_args.timeout = 15000;
+    drive_straight_args.motor_slew = args.motor_slew;
+    drive_straight_args.correct_heading = true;
+    drive_straight_args.log_data = args.log_data;
+    
+    if(args.log_data) {
+        Logger logger;
+        log_entry entry;
+        entry.content = (
+            "[INFO] " + std::string("CHASSIS_ODOM")
+            + ", Time: " + std::to_string(pros::millis())
+            + ", Waypoint: " + point.get_string()
+            + ", ToTurn: " + std::to_string(to_turn)
+            + ", ToDrive: " + std::to_string(to_drive)
+        );
+        entry.stream = "clog";
+        logger.add(entry);  
+    }
+    
+    // perform movement
+    t_turn(turn_args);
+    pros::delay(100);  // add delay for extra settling
+    t_straight_drive(drive_straight_args);
+}
+
+
 
 int Chassis::straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, bool slew /*false*/, bool log_data /*false*/) {
-    chassis_params args = {
-        encoder_ticks,
-        encoder_ticks,
-        relative_heading,
-        max_voltage,
-        timeout,
-        slew,
-        correct_heading,
-        asynch,
-        log_data
-    };
+    chassis_params args;
+    args.setpoint1 = encoder_ticks;
+    args.setpoint2 = relative_heading;
+    args.max_voltage = max_voltage;
+    args.timeout = timeout;
+    args.motor_slew = slew;
+    args.correct_heading = correct_heading;
+    args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
     int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + max_voltage + front_left_drive->get_actual_voltage();
@@ -441,17 +572,12 @@ int Chassis::straight_drive(double encoder_ticks, int relative_heading /*0*/, in
 
 
 int Chassis::turn_right(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
-    chassis_params args = {
-        degrees,
-        0,
-        0,
-        max_voltage,
-        timeout,
-        slew,
-        0,
-        asynch,
-        log_data
-    };
+    chassis_params args;
+    args.setpoint1 = degrees;
+    args.max_voltage = max_voltage;
+    args.timeout = timeout;
+    args.motor_slew = slew;
+    args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
     int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
@@ -474,18 +600,13 @@ int Chassis::turn_right(double degrees, int max_voltage /*12000*/, int timeout /
 
 
 int Chassis::turn_left(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
-    chassis_params args = {
-        -degrees,
-        0,
-        0,
-        max_voltage,
-        timeout,
-        slew,
-        0,
-        asynch,
-        log_data
-    };
-    
+    chassis_params args;
+    args.setpoint1 = -degrees;
+    args.max_voltage = max_voltage;
+    args.timeout = timeout;
+    args.motor_slew = slew;
+    args.log_data = log_data;
+
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
     int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
     
@@ -521,41 +642,25 @@ void Chassis::move( int voltage )
 
 
 
-/**
- * takes the average of each side of the drive encoders
- * hopefully to reduce error of encoders
- * returns tuple of encoder values
- */
-std::tuple<double, double> Chassis::get_average_encoders(int l_uid, int r_uid)
-{
-    // use a weighted average to merge all encoders on the robot for a hopefully more accurate reading
-    double left_encoder_val = (.1 * front_left_drive->get_encoder_position() * gear_ratio) + (.35 * back_left_drive->get_encoder_position() * gear_ratio) + (.55 * left_encoder->get_position(l_uid));
-    double right_encoder_val = (.1 * front_right_drive->get_encoder_position() * gear_ratio) + (.35 * back_right_drive->get_encoder_position() * gear_ratio) + (.55 * right_encoder->get_position(r_uid));
-        
-    return {left_encoder_val, right_encoder_val};
-}
-
-
-
-
 double Chassis::calc_delta_theta(double prev_angle, double delta_l, double delta_r) {
-    double imu_reading = std::fmod(imu->get_heading() + 360.0, 360); // scale imu to 0, 360
-    double delta_imu = (imu_reading - prev_angle);
-    if(delta_imu > 180) {  // find least distance between angles
-        delta_imu = 360 - delta_imu;
-    } else if (delta_imu < -180) {
-        delta_imu = 360 + delta_imu;
-    }
+    // double imu_reading = std::fmod(imu->get_heading() + 360.0, 360); // scale imu to 0, 360
+    // double delta_imu = (imu_reading - prev_angle);
+    // if(delta_imu > 180) {  // find least distance between angles
+    //     delta_imu = 360 - delta_imu;
+    // } else if (delta_imu < -180) {
+    //     delta_imu = 360 + delta_imu;
+    // }
     
-    std::cout << delta_imu << " | " << imu_reading << "\n";
+    // std::cout << delta_imu << " | " << imu_reading << "\n";
 
-    long double circumference = width * 3.14159265358;                       // circumference of turning arc 
-    long double inches_per_tick = (3.14159265358 * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
+    long double circumference = width * M_PI;                       // circumference of turning arc 
+    long double inches_per_tick = (M_PI * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
     long double inches_turned = inches_per_tick * (delta_l - delta_r);
     double delta_encoder_degrees = (360 * inches_turned) / circumference;
     
-    double delta_theta = (.6 * delta_imu) + (.4 * delta_encoder_degrees);
-    double theta = (.6 * imu_reading) + (.4 * (delta_encoder_degrees + prev_angle));
+    // double delta_theta = (.6 * delta_imu) + (.4 * delta_encoder_degrees);
+    double delta_theta = delta_encoder_degrees;
+    // double theta = (.6 * imu_reading) + (.4 * (delta_encoder_degrees + prev_angle));
 
     return delta_theta;
 }

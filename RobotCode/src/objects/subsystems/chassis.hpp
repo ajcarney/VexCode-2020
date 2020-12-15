@@ -22,18 +22,35 @@
 
 typedef enum {
     e_straight_drive,
-    e_turn
+    e_turn,
+    e_drive_to_point
 } chassis_commands;
 
 typedef struct {
-    double setpoint;
-    double setpoint2;
-    int relative_heading=0;
+    long double dx;
+    long double dy;
+    long double radius;
+    long double dtheta;
+    std::string get_string() {
+        std::string str = (
+            "{dx: " + std::to_string(this->dx)
+            + " dy: " + std::to_string(this->dy) 
+            + " radius: " + std::to_string(this->radius)
+            + " dtheta: " + std::to_string(this->dtheta)
+            + "}"
+        );
+        return str;
+    }
+} waypoint;
+
+typedef struct {
+    double setpoint1=0;
+    double setpoint2=0;
     int max_voltage=12000;
     int timeout=INT32_MAX;
+    int recalculations=0;
     bool motor_slew=false;
     bool correct_heading=true;
-    bool asynch=false;
     bool log_data=false;
 } chassis_params;
 
@@ -69,21 +86,10 @@ class Chassis
         static std::atomic<bool> receive_lock;
         static int num_instances;
         
-        static void straight_drive_task(chassis_params args);  // functions called by thread for asynchronous movement
-        static void turn_task(chassis_params args);
+        static void t_straight_drive(chassis_params args);  // functions called by thread for asynchronous movement
+        static void t_turn(chassis_params args);
+        static void t_move_to_waypoint(chassis_params args, waypoint point);
         
-        /**
-         * @param: int left_encoder_ticks -> the setpoint in encoder ticks for the left side of the drive
-         * @param: int right_encoder_ticks -> the setpoint in encoder ticks for the right side of the drive
-         * @param: bool log_data -> log data to the logger queue or not
-         * @return: std::tuple<int, int> -> the left and right voltages to set motor to 
-         *
-         * uses PID algorithm to calculate the voltage to set the motor to in order
-         * to reach the setpoint
-         * runs a separate pid loop for each motor with the hopes of it driving straighter
-         */
-        std::tuple<int, int> calc_pid( int left_encoder_ticks, int right_encoder_ticks, bool log_data=false );
-                
         static double wheel_diameter;
         static double width;
         static double gear_ratio;
@@ -108,14 +114,6 @@ class Chassis
          */
         void move( int voltage );
         
-        
-        /**
-         * @return: std::tuple<int, int> -> a tuple containing encoder values for each side of chassis
-         *
-         * takes average of front and back encoders
-         * first value is the left side, second value is the right side
-         */
-        static std::tuple<double, double> get_average_encoders(int l_uid, int r_uid);
         
         static double calc_delta_theta(double prev_angle, double delta_l, double delta_r);
         

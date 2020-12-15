@@ -102,7 +102,6 @@ class Autons
          */
         void skills();
 
-        void setup_odometry();
         void run_autonomous();
 };
 

@@ -13,7 +13,6 @@
 #include <array>
 
 #include "main.h"
-#include "okapi/api.hpp"
 
 #include "../../Configuration.hpp"
 #include "Motor.hpp"
@@ -30,8 +29,7 @@ namespace Motors
     extern Motor upper_indexer;
     extern Motor lower_indexer;
     
-    extern std::shared_ptr<okapi::OdomChassisController> odom_chassis;
-    extern std::shared_ptr<okapi::AsyncMotionProfileController> profile_controller;
+    extern double chassis_gear_ratio;
     
     extern std::array<Motor*, 8> motor_array;
     extern std::array<std::string, 8> motor_names_array;

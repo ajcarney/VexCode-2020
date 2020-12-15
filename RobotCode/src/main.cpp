@@ -1,23 +1,21 @@
 #include <csignal>
 
 #include "main.h"
-#include "okapi/api.hpp"
 
 #include "Autons.hpp"
-#include "DriverControl.hpp"
 #include "Configuration.hpp"
+#include "DriverControl.hpp"
 #include "objects/controller/controller.hpp"
-#include "objects/lcdCode/gui.hpp"
-#include "objects/lcdCode/DriverControl/DriverControlLCD.hpp"
 #include "objects/lcdCode/DriverControl/AutonomousLCD.hpp"
+#include "objects/lcdCode/DriverControl/DriverControlLCD.hpp"
+#include "objects/lcdCode/gui.hpp"
 #include "objects/lcdCode/TemporaryScreen.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/motors/MotorThread.hpp"
-#include "objects/subsystems/chassis.hpp"
+#include "objects/position_tracking/PositionTracker.hpp"
 #include "objects/serial/Logger.hpp"
 #include "objects/serial/Server.hpp"
-
-using namespace okapi::literals;
+#include "objects/subsystems/chassis.hpp"
 
 int final_auton_choice;
 AutonomousLCD auton_lcd;
@@ -32,15 +30,6 @@ AutonomousLCD auton_lcd;
  {
     pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
 
-    okapi::Logger::setDefaultLogger(  // start okapi logging
-        std::make_shared<okapi::Logger>(
-            okapi::TimeUtilFactory::createDefault().getTimer(), // It needs a Timer
-            "/ser/serr", // Output to the PROS terminal on error line
-            okapi::Logger::LogLevel::debug // Set to show debug messages
-        )
-    );
-
-
     Motors::register_motors();
     MotorThread::get_instance()->start_thread();
 
@@ -54,16 +43,16 @@ AutonomousLCD auton_lcd;
     config->filter_color = auton.AUTONOMOUS_COLORS.at(final_auton_choice);
     auton.set_autonomous_number(final_auton_choice);
 
-    // bool calibrated = false;
-    // while(!calibrated) {  // block until imu is connected and calibrated
-    //     std::cout << errno << " " << std::strerror(errno) << "\n";
-    //     Sensors::imu.reset();  // calibrate imu
-    //     while(Sensors::imu.is_calibrating()) {
-    //         pros::delay(10);
-    //         calibrated = true;
-    //     }
-    // }
-    // 
+    bool calibrated = false;
+    while(!calibrated) {  // block until imu is connected and calibrated
+        std::cout << errno << " " << std::strerror(errno) << "\n";
+        Sensors::imu.reset();  // calibrate imu
+        while(Sensors::imu.is_calibrating()) {
+            pros::delay(10);
+            calibrated = true;
+        }
+    }
+    
     
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
     // std::cout << OptionsScreen::cnfg.gyro_turn << '\n';
@@ -98,7 +87,6 @@ void disabled() {}
  */
 void competition_initialize() {    
     Autons auton;
-    auton.setup_odometry();
     auton_lcd.update_labels(auton.get_autonomous_number());
 }
 
@@ -123,17 +111,60 @@ void autonomous() {
 
  void log_thread_fn( void* )
  {
+     // TODO: add back imu functionality when imu is mounted
      Logger logger;
-     pros::ADIDigitalIn limit_switch('A');
+     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
+     
+     Configuration* config = Configuration::get_instance();
+     double kP = config->chassis_pid.kP;
+     double kI = config->chassis_pid.kI;
+     double kD = config->chassis_pid.kD;
+     double I_max = config->chassis_pid.I_max;
+     
+     int l_id = Sensors::left_encoder.get_unique_id();
+     int r_id = Sensors::right_encoder.get_unique_id();
+     // double prev_l_encoder = std::get<0>(chassis.get_average_encoders(l_id, r_id));
+     // double prev_r_encoder = std::get<1>(chassis.get_average_encoders(l_id, r_id));
+     // double intitial_angle = Sensors::imu.get_heading();
+     // double prev_angle = Sensors::imu.get_heading();
+     // double relative_angle = 0;
+     // 
      while ( 1 )
      {
-        pros::delay(2000);
-        std::cout << (limit_switch.get_value()) << "\n";
-        if ( limit_switch.get_value() )
-        {
-            std::cout << "dumping" << "\n";
-            logger.dump();
-        }
+         // double delta_l = std::get<0>(chassis.get_average_encoders(l_id, r_id)) - prev_l_encoder;
+         // double delta_r = std::get<1>(chassis.get_average_encoders(l_id, r_id)) - prev_r_encoder;
+         // double delta_theta = chassis.calc_delta_theta(prev_angle, delta_l, delta_r);
+         // prev_angle = prev_angle + delta_theta;
+         // relative_angle = relative_angle + delta_theta;
+         // 
+
+         std::string msg = (
+             "[INFO] " + std::string("CHASSIS_PID ")
+             + ", Actual_Vol1: " + std::to_string(Motors::front_left.get_actual_voltage())
+             + ", Actual_Vol2: " + std::to_string(Motors::front_right.get_actual_voltage())
+             + ", Actual_Vol3: " + std::to_string(Motors::back_left.get_actual_voltage())
+             + ", Actual_Vol4: " + std::to_string(Motors::back_right.get_actual_voltage())
+             + ", Slew: " + std::to_string(0)
+             + ", Brake: " + std::to_string(Motors::front_left.get_brake_mode())
+             + ", Gear: " + std::to_string(Motors::front_left.get_gearset())
+             + ", I_max: " + std::to_string(I_max)
+             + ", I: " + std::to_string(0)
+             + ", kD: " + std::to_string(kD)
+             + ", kI: " + std::to_string(kI)
+             + ", kP: " + std::to_string(kP)
+             + ", Time: " + std::to_string(pros::millis())
+             + ", Position_Sp: " + std::to_string(1269.32)
+             + ", position_l: " + std::to_string(Sensors::left_encoder.get_position(l_id))
+             + ", position_r: " + std::to_string(Sensors::right_encoder.get_position(r_id))                
+             + ", Heading_Sp: " + std::to_string(0)
+             + ", Relative_Heading: " + std::to_string(0)
+             + ", Actual_Vel1: " + std::to_string(Motors::front_left.get_actual_velocity())
+             + ", Actual_Vel2: " + std::to_string(Motors::front_right.get_actual_velocity())
+             + ", Actual_Vel3: " + std::to_string(Motors::back_left.get_actual_velocity())
+             + ", Actual_Vel4: " + std::to_string(Motors::back_right.get_actual_velocity())
+         );
+         // std::cout << msg << "\n";
+         pros::delay(10);
      }
  }
 
@@ -174,6 +205,8 @@ void autonomous() {
      // }
     // Logger logger;
     // pros::ADIDigitalIn limit_switch('A');
+    
+    
     // pros::Task write_task (log_thread_fn,
     //                       (void*)NULL,
     //                       TASK_PRIORITY_DEFAULT,
@@ -240,6 +273,19 @@ void autonomous() {
 
     lv_scr_load(tempScreen::temp_screen);
 
+
+    Controller controllers;
+    while(1) {
+        Motors::left_intake.user_move(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+        Motors::right_intake.user_move(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+        std::cout << Motors::left_intake.get_torque() << " " << Motors::left_intake.get_efficiency() << " " << Motors::left_intake.get_actual_voltage() << "\n";
+        std::cout << Motors::right_intake.get_torque() << " " << Motors::right_intake.get_efficiency() << " " << Motors::right_intake.get_actual_voltage() << "\n";
+        std::cout << "\n";
+        pros::delay(10);
+    }
+
+
+
     pros::Task driver_control_task (driver_control,
                                     (void*)NULL,
                                     TASK_PRIORITY_DEFAULT,
@@ -264,14 +310,22 @@ void autonomous() {
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
     
+    PositionTracker* tracker = PositionTracker::get_instance();
+    tracker->start_thread();
     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd;
     
+    chassis.straight_drive(1500);
     
+    lcd.update_labels();
     Autons autons;
-    autons.setup_odometry();
-    autons.skills();
+    // autons.setup_odometry();
     
+    // gather data from position tracker
+    // tracker->start_logging();
+    // while(1) {  
+    //     pros::delay(10);
+    // }
     
     // double prev_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
     // double ref_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
@@ -285,7 +339,7 @@ void autonomous() {
     while(1)
     {
         // print encoder values
-        std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
+        // std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
         // double delta_theta = chassis.calc_delta_theta(prev_angle, ref_angle, Sensors::left_encoder.get_position(l_id) - prev_l, Sensors::right_encoder.get_position(r_id) - prev_r);
         // prev_angle = prev_angle + delta_theta;
         // prev_l = Sensors::left_encoder.get_position(l_id);

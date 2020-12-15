@@ -14,7 +14,7 @@ import graph
 #     file = input("enter file to parse: ")
 # else:
 #     file = sys.argv[1]
-file = "./data.txt"
+file = "./log.txt"
 
 # parser.gen_sample_data()    
 p = data_parser.Parser()
@@ -32,7 +32,7 @@ g = graph.DebugGraph(
         "slew":p.get_data()["slew_rate"]
     }
 )  
-y1 = st.sidebar.selectbox("Y1 data", ["velocity", "voltage", "heading", "position"], 1)
+y1 = st.sidebar.selectbox("Y1 data", ["velocity", "voltage", "heading", "position", "acceleration"], 1)
 track_y1 = st.sidebar.checkbox("Graph Y1 setpoint")
 y2 = st.sidebar.selectbox("Y2 data", ["velocity", "voltage", "heading", "position", "None"], 4)
 track_y2 = st.sidebar.checkbox("Graph Y2 setpoint")

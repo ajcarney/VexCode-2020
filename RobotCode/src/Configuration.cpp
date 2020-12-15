@@ -34,9 +34,9 @@ Configuration::Configuration( )
     lift_pid.kD = 0;
     lift_pid.I_max = INT32_MAX;
 
-    chassis_pid.kP = 38;
-    chassis_pid.kI = .00125;
-    chassis_pid.kD = 4;
+    chassis_pid.kP = .0035;
+    chassis_pid.kI = 0;
+    chassis_pid.kD = 0;
     chassis_pid.I_max = INT32_MAX;
 
     //536C motor config

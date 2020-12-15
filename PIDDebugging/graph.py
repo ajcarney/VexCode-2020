@@ -7,7 +7,8 @@ Created on Sun Dec 29 12:38:16 2019
 """
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+import numpy as np
+import math
 
 class DebugGraph:
     """
@@ -36,6 +37,13 @@ class DebugGraph:
         self.constants_text += "Gearset: " + str(parameters.get("gearset")) + "\n"
         self.constants_text += "Slew Rate (mV/ms): " + str(parameters.get("slew")) + "\n"
   
+    def __to_in_per_sec2(self, degrees_per_ms2, wheel_diameter=3.25):
+        circumference = math.pi * wheel_diameter
+        revolutions_per_ms2 = degrees_per_ms2 / 360
+        linear_distance = revolutions_per_ms2 * circumference
+        in_per_sec2 = linear_distance * 1000  # convert ms to sec
+        return in_per_sec2
+    
     def make_graph(self, y1, y2=None, track_y1_sp=True, track_y2_sp=True):
         """
         returns a graph object with given axis parameters
@@ -71,6 +79,20 @@ class DebugGraph:
             y1_sp = []
             name1 = ["Integral Value"]
             title += "Integral"
+        elif y1 == "acceleration":
+            vel_data_l = np.diff(self.position_l_data) / np.diff(x)
+            vel_data_r = np.diff(self.position_r_data) / np.diff(x)
+            accel_data_l = []
+            accel_data_r = []
+            for l, r in zip(np.diff(vel_data_l) / np.diff(x[:-1]), np.diff(vel_data_r) / np.diff(x[:-1])):
+                accel_data_l.append(self.__to_in_per_sec2(l))
+                accel_data_r.append(self.__to_in_per_sec2(r))
+            y1_data = [accel_data_l, accel_data_r]
+            x = x[:-2]
+            y1_title = "Acceleration"
+            y1_sp = []
+            name1 = ["Acceleration of Right Sensor", "Acceleration of Left Sensor"]
+            title += "Acceleration"
         else:
             y1_data = []
             y1_sp = []

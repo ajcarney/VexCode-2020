@@ -114,7 +114,7 @@ void Indexer::indexer_motion_task(void*) {
                     lower_indexer->set_voltage(12000);
                 } else if(locations.at(0) && locations.at(1) && !locations.at(0)) { // move ball into first position
                     upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(6000);
+                    lower_indexer->set_voltage(3000);
                 } else { // all positions are full so stop
                     upper_indexer->set_voltage(0); 
                     lower_indexer->set_voltage(0);

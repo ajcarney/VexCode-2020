@@ -19,10 +19,10 @@
 #include "../lib/json.hpp"
 
 
-#define LEFT_ENC_TOP_PORT        'A'
-#define LEFT_ENC_BOTTOM_PORT     'B'
-#define RIGHT_ENC_TOP_PORT       'C'
-#define RIGHT_ENC_BOTTOM_PORT    'D'
+#define LEFT_ENC_TOP_PORT        'C'
+#define LEFT_ENC_BOTTOM_PORT     'D'
+#define RIGHT_ENC_TOP_PORT       'A'
+#define RIGHT_ENC_BOTTOM_PORT    'B'
 #define STRAFE_ENC_TOP_PORT      'E'
 #define STRAFE_ENC_BOTTOM_PORT   'F'
 #define DETECTOR_MIDDLE_PORT     'H'

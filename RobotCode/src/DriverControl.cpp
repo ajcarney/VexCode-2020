@@ -17,6 +17,7 @@
 #include "objects/lcdCode/gui.hpp"
 #include "objects/subsystems/chassis.hpp"
 #include "objects/subsystems/Indexer.hpp"
+#include "objects/subsystems/intakes.hpp"
 #include "objects/controller/controller.hpp"
 #include "objects/motors/Motors.hpp"
 #include "objects/sensors/Sensors.hpp"
@@ -39,11 +40,14 @@ void driver_control(void*)
 
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
     Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, config->filter_color);
-
+    Intakes intakes(Motors::left_intake, Motors::right_intake);
+    
     int left_analog_y = 0;
     int right_analog_y = 0;
 
     bool auto_filter = true;
+    bool brake_is_down = false;
+    bool hold_intakes_out= false;
 
     controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
 
@@ -52,27 +56,32 @@ void driver_control(void*)
 
     // section for front roller intake movement
         if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {  // define velocity for main intake
-            Motors::left_intake.user_move(127);
-            Motors::right_intake.user_move(127);
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R2)) {
-            Motors::left_intake.user_move(-127);
-            Motors::right_intake.user_move(-127);
-        } else {
-            Motors::left_intake.user_move(0);
-            Motors::right_intake.user_move(0);
+            intakes.intake();
+        } else if(hold_intakes_out){  // rest state is outward with motor power
+            intakes.hold_outward();
+        } else {  // rest state is no motor power
+            intakes.stop();
+        }
+        
+        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_R2)) {
+            hold_intakes_out = !hold_intakes_out;
         }
 
     // section for indexer motion
-        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define velocity for indexer
+        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define movement for indexer subsystem
             indexer.auto_index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
             indexer.index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.filter();
-        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
-            indexer.raise_brake();
         } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-            indexer.lower_brake();
+            if(brake_is_down) {
+                indexer.raise_brake();
+                brake_is_down = false;
+            } else {
+                indexer.lower_brake();
+                brake_is_down = true;
+            }
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
             indexer.auto_increment();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {

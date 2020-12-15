@@ -73,17 +73,16 @@ class Parser:
             data = line.split(",")
         except IndexError:  #ensures that line is an actual data line
             return 0
-
         try:
-            voltage1 = [ item.strip().split("Actual_Vol1:")[1].split(": ")[1] for item in data if "Actual_Vol1:" in item ]
-            voltage2 = [ item.strip().split("Actual_Vol2:")[1].split(": ")[1] for item in data if "Actual_Vol2:" in item ]
-            voltage3 = [ item.strip().split("Actual_Vol3:")[1].split(": ")[1] for item in data if "Actual_Vol3:" in item ]
-            voltage4 = [ item.strip().split("Actual_Vol4:")[1].split(": ")[1] for item in data if "Actual_Vol4:" in item ]
+            voltage1 = [ item.strip().split("Actual_Vol1")[1].split(": ")[1] for item in data if "Actual_Vol1:" in item ]
+            voltage2 = [ item.strip().split("Actual_Vol2")[1].split(": ")[1] for item in data if "Actual_Vol2:" in item ]
+            voltage3 = [ item.strip().split("Actual_Vol3")[1].split(": ")[1] for item in data if "Actual_Vol3:" in item ]
+            voltage4 = [ item.strip().split("Actual_Vol4")[1].split(": ")[1] for item in data if "Actual_Vol4:" in item ]
             
-            velocity1 = [ item.strip().split("Actual_Vel1:")[1].split(": ")[1] for item in data if "Actual_Vel1:" in item ]
-            velocity2 = [ item.strip().split("Actual_Vel2:")[1].split(": ")[1] for item in data if "Actual_Vel2:" in item ]
-            velocity3 = [ item.strip().split("Actual_Vel3:")[1].split(": ")[1] for item in data if "Actual_Vel3:" in item ]
-            velocity4 = [ item.strip().split("Actual_Vel4:")[1].split(": ")[1] for item in data if "Actual_Vel4:" in item ] 
+            velocity1 = [ item.strip().split("Actual_Vel1")[1].split(": ")[1] for item in data if "Actual_Vel1:" in item ]
+            velocity2 = [ item.strip().split("Actual_Vel2")[1].split(": ")[1] for item in data if "Actual_Vel2:" in item ]
+            velocity3 = [ item.strip().split("Actual_Vel3")[1].split(": ")[1] for item in data if "Actual_Vel3:" in item ]
+            velocity4 = [ item.strip().split("Actual_Vel4")[1].split(": ")[1] for item in data if "Actual_Vel4:" in item ] 
             
             time = [ item.strip().split("Time:")[1] for item in data if "Time:" in item ]
             integral = [ item.strip().split("I:")[1] for item in data if "I:" in item ]
@@ -145,7 +144,7 @@ class Parser:
                         self.__velocity_data["back_right"].append(data.get("velocity4"))
                         self.__velocity_data["back_left"].append(data.get("velocity3"))
                         self.__velocity_data["front_right"].append(data.get("velocity2"))
-                        self.__velocity_data["front_left"].append(data.get("velocity"))
+                        self.__velocity_data["front_left"].append(data.get("velocity1"))
                         
                         self.__time_data.append(data.get("time"))
                         self.__integral_data.append(data.get("integral"))
@@ -154,7 +153,7 @@ class Parser:
                         self.__heading_data.append(data.get("relative_heading"))
                         self.__position_sp.append(data.get("position_sp"))
                         self.__position_r_data.append(data.get("position_r_data"))
-                        self.__position_r_data.append(data.get("position_l_data"))
+                        self.__position_l_data.append(data.get("position_l_data"))
         
                         first_line = line.split("[INFO]")[1]
                         data = first_line.split(",")
@@ -186,7 +185,7 @@ class Parser:
                     self.__velocity_data["back_right"].append(data.get("velocity4"))
                     self.__velocity_data["back_left"].append(data.get("velocity3"))
                     self.__velocity_data["front_right"].append(data.get("velocity2"))
-                    self.__velocity_data["front_left"].append(data.get("velocity"))
+                    self.__velocity_data["front_left"].append(data.get("velocity1"))
                     
                     self.__time_data.append(data.get("time"))
                     self.__integral_data.append(data.get("integral"))
@@ -194,9 +193,9 @@ class Parser:
                     self.__heading_sp_data.append(data.get("heading_sp"))
                     self.__heading_data.append(data.get("relative_heading"))
                     self.__position_sp.append(data.get("position_sp"))
-                    self.__position_data.append(data.get("position_data"))
-
-
+                    self.__position_r_data.append(data.get("position_r_data"))
+                    self.__position_l_data.append(data.get("position_l_data"))
+    
 
     def print_data(self):
         """
@@ -237,9 +236,9 @@ class Parser:
         for item in self.__position_sp:
             print(item)
             
-        print("\Position Data:", len(self.__position_data), "data points")
-        for item in self.__position_data:
-            print(item)
+        # print("\Position Data:", len(self.__position_data), "data points")
+        # for item in self.__position_data:
+        #     print(item)
             
             
         print("\nPID constants:")

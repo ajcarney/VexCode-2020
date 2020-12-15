@@ -29,6 +29,7 @@ namespace Sensors
     extern pros::Imu imu;
     
     void log_data();
+    std::tuple<double, double> get_average_encoders(int l_id, int r_id);
 }
 
 

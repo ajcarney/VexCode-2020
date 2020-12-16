@@ -227,6 +227,7 @@ void Chassis::t_straight_drive(chassis_params args) {
             use_integral_l = false;
         } else {
             int dt = pros::millis() - time;
+            time = pros::millis();
             integral_l = integral_l + (error_l * dt);
         }
         
@@ -235,6 +236,7 @@ void Chassis::t_straight_drive(chassis_params args) {
             use_integral_r = false;
         } else {
             int dt = pros::millis() - time;
+            time = pros::millis();
             integral_r = integral_r + (error_r * dt);
         }
         

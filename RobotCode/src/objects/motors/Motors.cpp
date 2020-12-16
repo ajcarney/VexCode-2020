@@ -41,8 +41,8 @@ namespace Motors
         "Back Right",
         "Left Intake",
         "Right Intake",
-        "Differential 1",
-        "Differential 2"    
+        "Upper Indexer",
+        "Lower Indexer"    
     };
 
     void enable_driver_control() {
@@ -122,29 +122,6 @@ namespace Motors
         motor_thread->unregister_motor(Motors::right_intake);
         motor_thread->unregister_motor(Motors::upper_indexer);
         motor_thread->unregister_motor(Motors::lower_indexer);
-    }
-    
-    
-    void __filter_ball(void*) {
-        while(1) {
-            while(pros::c::task_notify_take(true, TIMEOUT_MAX)) {
-                pros::delay(10);
-            }
-            Motors::upper_indexer.disable_driver_control();
-            Motors::lower_indexer.disable_driver_control();
-            int start = pros::millis();
-            while(pros::millis() - start < 300) {
-                Motors::upper_indexer.move(-127);  // use filter mode of intake for 300 milliseconds
-                Motors::lower_indexer.move(127);
-            }
-            Motors::upper_indexer.enable_driver_control();
-            Motors::lower_indexer.enable_driver_control();
-        }
-    }
-    
-    
-    void intake() {
-
     }
     
 };

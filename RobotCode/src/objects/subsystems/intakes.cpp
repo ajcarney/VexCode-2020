@@ -53,6 +53,20 @@ Intakes::~Intakes() {
 
 
 void Intakes::intake_motion_task(void*) {
+    l_intake->tare_encoder();
+    r_intake->tare_encoder();
+    l_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    r_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    
+    int abs_position_l = 0;  // the absolute postions are calculated based on the change in encoder value
+    int abs_position_r = 0;  // and capped to max and min values
+    int prev_encoder_l = l_intake->get_encoder_position();
+    int prev_encoder_r = r_intake->get_encoder_position();
+    int integral_l = 0;
+    int integral_r = 0;
+    int dt = 0;
+    int time = pros::millis();
+    
     while(1) {
         if(command_queue.empty()) {  // delay unitl there is a command in the queue
             pros::delay(10);
@@ -65,44 +79,65 @@ void Intakes::intake_motion_task(void*) {
         command_queue.pop();
         lock.exchange( false ); //release lock
         
+        if(command != e_hold_outward) {  // reset integral if no longer holding outwards
+            integral_l = 0;
+            integral_r = 0;
+        }
+        
+        dt = pros::millis() - time;  // calculate change in time since last command
+        time = pros::millis();
+        
+        int d_enc_l = l_intake->get_encoder_position() - prev_encoder_l;
+        int d_enc_r = r_intake->get_encoder_position() - prev_encoder_r;
+        abs_position_l += d_enc_l;
+        abs_position_r += d_enc_r;
+        
+        // cap encoder values. This can be done because mechanical stops stop the motion of
+        // the intakes
+        if(abs_position_l < -200) {  // set this to the encoder value at the outer-most reading
+            abs_position_l = -200;
+        } else if (abs_position_l > 0) {  // innermost value of the encoder
+            abs_position_l = 0;
+        }
+        
+        if(abs_position_r < -200) {  // set this to the encoder value at the outer-most reading
+            abs_position_r = -200;
+        } else if (abs_position_r > 0) {  // innermost value of the encoder
+            abs_position_r = 0;
+        }
+        
         // execute command
-        int secure = false;
-        while(command_queue.empty()) {  // continue with the current command until a new one is given
-            int integral_l = 0;
-            int integral_r = 0;
-            int time = pros::millis();
-            switch(command) {
-                case e_intake: {
-                    l_intake->set_voltage(12000);
-                    r_intake->set_voltage(12000);
-                } case e_stop_movement: {
+        switch(command) {
+            case e_intake: {
+                l_intake->set_voltage(12000);
+                r_intake->set_voltage(12000);
+                break;
+            } case e_stop_movement: {
+                l_intake->set_voltage(0);
+                r_intake->set_voltage(0);    
+                break;
+            } case e_secure: {
+                l_intake->set_voltage(12000);
+                r_intake->set_voltage(12000);
+                if ((l_intake->get_torque() + r_intake->get_torque()) / 2 > 1) { // wait a little bit and then say ball is secure
+                    pros::delay(300);
                     l_intake->set_voltage(0);
-                    r_intake->set_voltage(0);    
-                } case e_secure: {
-                    l_intake->set_voltage(12000);
-                    r_intake->set_voltage(12000);
-                    if ((l_intake->get_torque() + r_intake->get_torque()) / 2 > 1) { // wait a little bit and then say ball is secure
-                        pros::delay(300);
-                        l_intake->set_voltage(0);
-                        r_intake->set_voltage(0);
-                    }
-                    break;
-                } case e_hold_outward: {  // PI controller to hold outwards
-                    double l_error = 2.0 - l_intake->get_torque();  // set first number to torque threshold
-                    double r_error = 2.0 - r_intake->get_torque();  // set first number to torque threshold
-                    
-                    int dt = pros::millis() - time;
-                    integral_l = integral_l + (l_error * dt);
-                    integral_r = integral_r + (r_error * dt);
-                    
-                    int voltage_l = (50 * l_error) + (10 * integral_l);  // set first number to kP
-                    int voltage_r = (50 * r_error) + (10 * integral_r);  // set first number to kP
-                    l_intake->set_voltage(voltage_l);
-                    r_intake->set_voltage(voltage_r);
-                    break;
+                    r_intake->set_voltage(0);
                 }
+                break;
+            } case e_hold_outward: {  // PI controller to hold outwards
+                double l_error = -200 - l_intake->get_torque();  // set first number to encoder setpoint
+                double r_error = -200 - r_intake->get_torque();  // set first number to encoder setpoint
+                
+                integral_l = integral_l + (l_error * dt);
+                integral_r = integral_r + (r_error * dt);
+                
+                int voltage_l = (50 * l_error) + (10 * integral_l);  // set first number to kP, second number to kI
+                int voltage_r = (50 * r_error) + (10 * integral_r);  // set first number to kP, second number to kI
+                l_intake->set_voltage(voltage_l);
+                r_intake->set_voltage(voltage_r);
+                break;
             }
-            pros::delay(10);
         }
         
     }

@@ -41,9 +41,6 @@ namespace Motors
     void set_log_level(int log_level);
     void register_motors();
     void unregister_motors();
-    
-    void intake();
-    void __filter_ball(void*);
 };
 
 

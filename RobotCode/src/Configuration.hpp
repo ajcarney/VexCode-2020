@@ -32,7 +32,7 @@
 #define DETECTOR_TOP_PORT        'Z'  // no port available but still wanted in code
 
 #define VISIONSENSOR_PORT        5
-#define IMU_PORT                 16
+#define IMU_PORT                 10
 
 
 typedef struct

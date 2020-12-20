@@ -197,7 +197,7 @@ void DriverControlLCD::update_labels()
     lv_scr_load(screen);
     
     Logger logger;
-    PositionTracker* pos_tracker = PositionTracker::get_instance();
+    // PositionTracker* pos_tracker = PositionTracker::get_instance();
     
     // update toggle logging label text
     if(log_data)
@@ -205,7 +205,7 @@ void DriverControlLCD::update_labels()
         lv_label_set_text(btn_toggle_logging_label, "Stop Logging");
         Motors::set_log_level(1);
     
-        pos_tracker->start_logging();
+        // pos_tracker->start_logging();
     
         Sensors::log_data();
     }
@@ -214,7 +214,7 @@ void DriverControlLCD::update_labels()
         lv_label_set_text(btn_toggle_logging_label, "Start Logging");
         Motors::set_log_level(0);
     
-        pos_tracker->stop_logging();
+        // pos_tracker->stop_logging();
     }
     
     if(open_debugger)

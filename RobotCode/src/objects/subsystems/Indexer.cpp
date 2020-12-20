@@ -35,8 +35,8 @@ Indexer::Indexer(Motor &upper, Motor &lower, BallDetector &detector, AnalogInSen
     upper_indexer->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     lower_indexer->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     
-    upper_indexer->disable_velocity_pid();
-    lower_indexer->disable_velocity_pid();
+    upper_indexer->set_motor_mode(e_voltage);
+    lower_indexer->set_motor_mode(e_voltage);
     
     upper_indexer->disable_slew();
     lower_indexer->disable_slew();
@@ -159,7 +159,7 @@ void Indexer::indexer_motion_task(void*) {
                 lower_indexer->set_voltage(-12000);
 
                 int dt = 0;
-                while(potentiometer->get_raw_value() < 2500 && dt < 1000) {  // top value of potentiometer
+                while(potentiometer->get_raw_value() < 3950 && dt < 3000) {  // top value of potentiometer
                     pros::delay(10);
                     dt += 10;
                 }
@@ -167,14 +167,27 @@ void Indexer::indexer_motion_task(void*) {
                 lower_indexer->set_voltage(0);
                 break;
             } case e_lower_brake: {
-                lower_indexer->set_voltage(-10000);
+                lower_indexer->set_voltage(-12000);
                 
                 int dt = 0;
-                while(potentiometer->get_raw_value() > 1600 && dt < 1000) {  // lowered position of potentiometer
+                while(potentiometer->get_raw_value() > 3470 && dt < 3000) {  // lowered position of potentiometer
                     pros::delay(10);
                     dt += 10;
                 }
                 lower_indexer->set_voltage(0);
+                break;
+            } case e_fix_ball: {
+                upper_indexer->set_voltage(-12000);
+                pros::delay(500);
+                upper_indexer->set_voltage(12000);
+                pros::delay(500);
+                upper_indexer->set_voltage(0);
+                break;
+            } case e_run_upper: {
+                upper_indexer->set_voltage(12000);
+                break;
+            } case e_run_lower: {
+                lower_indexer->set_voltage(12000);
                 break;
             } case e_stop: {
                 lower_indexer->set_voltage(0);
@@ -225,6 +238,28 @@ void Indexer::raise_brake() {
     command_queue.push(e_raise_brake);
     lock.exchange( false ); //release lock    
 }
+
+
+void Indexer::run_upper_roller() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_run_upper);
+    lock.exchange( false ); //release lock   
+}
+
+
+void Indexer::run_lower_roller() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_run_lower);
+    lock.exchange( false ); //release lock   
+}
+
+
+void Indexer::fix_ball() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_fix_ball);
+    lock.exchange( false ); //release lock   
+}
+
 
 void Indexer::stop() {
     while ( lock.exchange( true ) ); //aquire lock

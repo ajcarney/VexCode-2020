@@ -29,7 +29,6 @@ Motor::Motor( int port, pros::motor_gearset_e_t gearset, bool reversed )
     
     motor = new pros::Motor(port, gearset, reversed, pros::E_MOTOR_ENCODER_DEGREES);
         
-    velocity_pid_enabled = false; //default motor velocity pid controller to false
     prev_velocity = 0;
     
     log_level = 0;
@@ -37,8 +36,9 @@ Motor::Motor( int port, pros::motor_gearset_e_t gearset, bool reversed )
     slew_enabled = false;  // default slew rate to false
     slew_rate = 30;  //approx. 5% voltage per 20ms == 400ms to reach full voltage
     
-    prev_target_voltage = 0;
-    target_voltage = 0;
+    prev_voltage_setpoint = 0;
+    voltage_setpoint = 0;
+    velocity_setpoint = 0;
     
     Configuration *configuration = Configuration::get_instance();
     internal_motor_pid.kP = configuration->internal_motor_pid.kP;
@@ -63,7 +63,6 @@ Motor::Motor(int port, pros::motor_gearset_e_t gearset, bool reversed, pid pid_c
     
     motor = new pros::Motor(port, gearset, reversed, pros::E_MOTOR_ENCODER_DEGREES);
         
-    velocity_pid_enabled = false; //default motor velocity pid controller
     prev_velocity = 0;
     
     log_level = 0; 
@@ -71,8 +70,9 @@ Motor::Motor(int port, pros::motor_gearset_e_t gearset, bool reversed, pid pid_c
     slew_enabled = false;
     slew_rate = 30;  //approx. 5% voltage per 20ms == 400ms to reach full voltage
     
-    prev_target_voltage = 0;
-    target_voltage = 0;
+    prev_voltage_setpoint = 0;
+    voltage_setpoint = 0;
+    velocity_setpoint = 0;
     
     internal_motor_pid.kP = pid_consts.kP;
     internal_motor_pid.kI = pid_consts.kI;
@@ -92,39 +92,38 @@ Motor::~Motor( )
 
 
 
-
-/**
- * calculates the rate that the motor would be set to with a target the previous
- * voltage, and how much time has passed
- * returns rate in mv/ms
- */
-int Motor::calc_target_rate( int target, int previous, int delta_t)
-{
-    int delta_v = target - previous;
-    int rate;
-    if ( delta_t == 0 && delta_v == 0 )
+int Motor::to_voltage(int velocity) {
+    pros::motor_gearset_e_t gearset = motor->get_gearing();
+    
+    int prev_max;
+    int prev_min;
+    
+    if ( gearset == pros::E_MOTOR_GEARSET_36 )  //100 RPM Motor
     {
-        rate = 0;
+        prev_max = 120;
+        prev_min = -120;
     }
-    else if ( delta_t == 0 && delta_v != 0 )
+    if ( gearset == pros::E_MOTOR_GEARSET_06 ) //600 RPM Motor
     {
-        rate = INT32_MAX;  //essentially undefined but still represented as integer
+        prev_max = 720;
+        prev_min = -720;
     }
-    else
+    else //default to 200 RPM motor because that is most commonly used
     {
-        rate = delta_v / delta_t;
+        prev_max = 240;
+        prev_min = -240;
     }
     
-    return rate;
+    int new_max = 12000;
+    int new_min = -12000;
+    
+    int voltage = (((velocity - prev_min) * (new_max - new_min)) / (prev_max - prev_min)) + new_min;
+    
+    return voltage;
 }
 
 
-/**
- * calculates the probable velocity from a given voltage by scaling to 
- * a new range
- */
-int Motor::calc_target_velocity( int voltage )
-{
+int Motor::to_velocity(int voltage) {
     int prev_max = 12000;
     int prev_min = -12000;
     
@@ -157,6 +156,32 @@ int Motor::calc_target_velocity( int voltage )
 
 
 /**
+ * calculates the rate that the motor would be set to with a target the previous
+ * voltage, and how much time has passed
+ * returns rate in mv/ms
+ */
+int Motor::calc_target_rate( int target, int previous, int delta_t)
+{
+    int delta_v = target - previous;
+    int rate;
+    if ( delta_t == 0 && delta_v == 0 )
+    {
+        rate = 0;
+    }
+    else if ( delta_t == 0 && delta_v != 0 )
+    {
+        rate = INT32_MAX;  //essentially undefined but still represented as integer
+    }
+    else
+    {
+        rate = delta_v / delta_t;
+    }
+    
+    return rate;
+}
+
+
+/**
  * returns the target voltage set to the motor after performing PID and slew rate
  * calculations on it
  */
@@ -168,12 +193,12 @@ int Motor::get_target_voltage( int delta_t )
     double I_max = internal_motor_pid.I_max;
     
     int voltage;
-    int calculated_target_voltage = target_voltage;
+    int calculated_target_voltage = voltage_setpoint;
 
     //velocity pid is enabled when the target voltage does not change
-    if ( velocity_pid_enabled && target_voltage == prev_target_voltage )
+    if ( mode == e_custom_velocity_pid && voltage_setpoint == prev_voltage_setpoint )
     {
-        int error =  calc_target_velocity(target_voltage) - get_actual_velocity();
+        int error =  to_velocity(voltage_setpoint) - get_actual_velocity();
         if ( std::abs(integral) > I_max )
         {
             integral = 0;
@@ -202,7 +227,7 @@ int Motor::get_target_voltage( int delta_t )
         
         voltage = get_actual_voltage() + (polarity * max_delta_v);
     }
-    else if ( target_voltage == 0 )
+    else if ( voltage_setpoint == 0 )
     {
         voltage = 0;
     }
@@ -211,7 +236,7 @@ int Motor::get_target_voltage( int delta_t )
         voltage = calculated_target_voltage;
     }
 
-    prev_target_voltage = target_voltage;
+    prev_voltage_setpoint = voltage_setpoint;
     
     
     return voltage;
@@ -593,8 +618,9 @@ int Motor::move( int voltage )
     int new_min = -12000;
     
     int scaled_voltage = (((voltage - prev_min) * (new_max - new_min)) / (prev_max - prev_min)) + new_min;
-    set_voltage(scaled_voltage); //dont aquire lock because it will be acquired in this function
-
+    set_voltage_setpoint(scaled_voltage); //dont aquire lock because it will be acquired in this function
+    set_velocity_setpoint(to_velocity(scaled_voltage));
+    
     return 1;
 }
 
@@ -614,35 +640,18 @@ int Motor::user_move( int voltage ) {
  */  
 int Motor::move_velocity( int velocity )
 {
-    pros::motor_gearset_e_t gearset = motor->get_gearing();
-    
-    int prev_max;
-    int prev_min;
-    
-    if ( gearset == pros::E_MOTOR_GEARSET_36 )  //100 RPM Motor
-    {
-        prev_max = 120;
-        prev_min = -120;
-    }
-    if ( gearset == pros::E_MOTOR_GEARSET_06 ) //600 RPM Motor
-    {
-        prev_max = 720;
-        prev_min = -720;
-    }
-    else //default to 200 RPM motor because that is most commonly used
-    {
-        prev_max = 240;
-        prev_min = -240;
-    }
-
-    int new_max = 12000;
-    int new_min = -12000;
-    
-    int voltage = (((velocity - prev_min) * (new_max - new_min)) / (prev_max - prev_min)) + new_min;
-        
-    set_voltage(voltage); //dont aquire lock because it will be acquired in this function
+    set_velocity_setpoint(velocity);
+    set_voltage_setpoint(to_voltage(velocity));
     
     return 1;    
+}
+
+
+int Motor::set_voltage(int voltage) {
+    set_voltage_setpoint(voltage);
+    set_velocity_setpoint(to_velocity(voltage));
+    
+    return 1;
 }
 
 
@@ -650,14 +659,23 @@ int Motor::move_velocity( int velocity )
  * aquires lock and sets new voltage setpoint for the motor
  * exception safe to always release lock
  */      
-int Motor::set_voltage( int voltage )
+int Motor::set_voltage_setpoint( int voltage )
 {
     while ( lock.exchange( true ) );
-    target_voltage = voltage;
-    if ( target_voltage != prev_target_voltage )  //reset integral for new setpoint
+    voltage_setpoint = voltage;
+    if ( voltage_setpoint != prev_voltage_setpoint )  //reset integral for new setpoint
     {
         integral = 0;
     }
+    lock.exchange(false);     
+    
+    return 1; 
+}
+
+
+int Motor::set_velocity_setpoint(int new_velocity) {
+    while ( lock.exchange( true ) );
+    velocity_setpoint = new_velocity;
     lock.exchange(false);     
     
     return 1; 
@@ -671,24 +689,12 @@ int Motor::set_voltage( int voltage )
 /**
  * aquires lock and sets flag for using velocity PID
  */      
-void Motor::enable_velocity_pid( )
+void Motor::set_motor_mode(motor_mode new_mode)
 {
     while ( lock.exchange( true ) );
-    velocity_pid_enabled = true;
+    mode = new_mode;
     lock.exchange(false);        
 }
-
-
-/**
- * aquires lock and clears flag for using velocity PID
- */      
-void Motor::disable_velocity_pid( )
-{
-    while ( lock.exchange( true ) );
-    velocity_pid_enabled = false;
-    lock.exchange(false);      
-}
-
 
         
             
@@ -781,8 +787,20 @@ int Motor::driver_control_allowed()
  */      
 int Motor::run( int delta_t )
 {
-    int voltage = get_target_voltage( delta_t );
-    motor->move_voltage(voltage);
+    switch(mode) {
+        case e_builtin_velocity_pid: {
+            motor->move_velocity(velocity_setpoint);
+            break;
+        } case e_voltage: {
+            motor->move_voltage(voltage_setpoint);
+            break;
+        } case e_custom_velocity_pid: {
+            int voltage = get_target_voltage( delta_t );
+            motor->move_voltage(voltage);
+            break;
+        }
+    }
+
     
     
     std::string log_msg; 
@@ -805,7 +823,7 @@ int Motor::run( int delta_t )
                 + ", kP: " + std::to_string(internal_motor_pid.kP)
                 + ", Slew: " + std::to_string(get_slew_rate())
                 + ", Time: " + std::to_string(pros::millis())
-                + ", Vel_Sp: " + std::to_string(calc_target_velocity(target_voltage))
+                + ", Vel_Sp: " + std::to_string(to_velocity(voltage_setpoint))
                 + ", Vel: " + std::to_string(get_actual_velocity())
             );
             break;
@@ -815,7 +833,7 @@ int Motor::run( int delta_t )
                 "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
-                + ", Calc_Target_Vol: " + std::to_string(voltage)
+                // + ", Calc_Target_Vol: " + std::to_string(voltage)
                 + ", Gear: " + std::to_string(get_gearset())
                 + ", I_max: " + std::to_string(internal_motor_pid.I_max)
                 + ", I: " + std::to_string(integral)
@@ -823,9 +841,9 @@ int Motor::run( int delta_t )
                 + ", kI: " + std::to_string(internal_motor_pid.kI)
                 + ", kP: " + std::to_string(internal_motor_pid.kP)
                 + ", Slew: " + std::to_string(get_slew_rate())
-                + ", Target_Vol: " + std::to_string(target_voltage)
+                + ", Target_Vol: " + std::to_string(voltage_setpoint)
                 + ", Time: " + std::to_string(pros::millis())
-                + ", Vel_Sp: " + std::to_string(calc_target_velocity(target_voltage))
+                + ", Vel_Sp: " + std::to_string(to_velocity(voltage_setpoint))
                 + ", Vel: " + std::to_string(get_actual_velocity())
             );
             break;
@@ -835,7 +853,7 @@ int Motor::run( int delta_t )
                 "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
-                + ", Calc_Target_Vol: " + std::to_string(voltage)
+                // + ", Calc_Target_Vol: " + std::to_string(voltage)
                 + ", Gear: " + std::to_string(get_gearset())
                 + ", I_max: " + std::to_string(internal_motor_pid.I_max)
                 + ", I: " + std::to_string(integral)
@@ -844,9 +862,9 @@ int Motor::run( int delta_t )
                 + ", kI: " + std::to_string(internal_motor_pid.kI)
                 + ", kP: " + std::to_string(internal_motor_pid.kP)
                 + ", Slew: " + std::to_string(get_slew_rate())
-                + ", Target_Vol: " + std::to_string(target_voltage)
+                + ", Target_Vol: " + std::to_string(voltage_setpoint)
                 + ", Time: " + std::to_string(pros::millis())
-                + ", Vel_Sp: " + std::to_string(calc_target_velocity(target_voltage))
+                + ", Vel_Sp: " + std::to_string(to_velocity(voltage_setpoint))
                 + ", Vel: " + std::to_string(get_actual_velocity())
             );
             break;
@@ -856,7 +874,7 @@ int Motor::run( int delta_t )
                 "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
-                + ", Calc_Target_Vol: " + std::to_string(voltage)
+                // + ", Calc_Target_Vol: " + std::to_string(voltage)
                 + ", Dir: " + std::to_string(get_direction())
                 + ", Gear: " + std::to_string(get_gearset())
                 + ", I_max: " + std::to_string(internal_motor_pid.I_max)
@@ -867,9 +885,9 @@ int Motor::run( int delta_t )
                 + ", kP: " + std::to_string(internal_motor_pid.kP)
                 + ", Reversed: " + std::to_string(is_reversed())
                 + ", Slew: " + std::to_string(get_slew_rate())
-                + ", Target_Vol: " + std::to_string(target_voltage)
+                + ", Target_Vol: " + std::to_string(voltage_setpoint)
                 + ", Time: " + std::to_string(pros::millis())
-                + ", Vel_Sp: " + std::to_string(calc_target_velocity(target_voltage))
+                + ", Vel_Sp: " + std::to_string(to_velocity(voltage_setpoint))
                 + ", Vel: " + std::to_string(get_actual_velocity())
             );
             break; 
@@ -879,7 +897,7 @@ int Motor::run( int delta_t )
                 "[INFO]," + std::string(" Motor ") + std::to_string(motor_port)
                 + ", Actual_Vol: " + std::to_string(get_actual_voltage())
                 + ", Brake: " + std::to_string(get_brake_mode())
-                + ", Calc_Target_Vol: " + std::to_string(voltage)
+                // + ", Calc_Target_Vol: " + std::to_string(voltage)
                 + ", Current: " + std::to_string(get_current_draw())
                 + ", Dir: " + std::to_string(get_direction())
                 + ", Gear: " + std::to_string(get_gearset())
@@ -891,11 +909,11 @@ int Motor::run( int delta_t )
                 + ", kP: " + std::to_string(internal_motor_pid.kP)
                 + ", Reversed: " + std::to_string(is_reversed())
                 + ", Slew: " + std::to_string(get_slew_rate())
-                + ", Target_Vol: " + std::to_string(target_voltage)
+                + ", Target_Vol: " + std::to_string(voltage_setpoint)
                 + ", Temp: " + std::to_string(get_temperature())
                 + ", Time: " + std::to_string(pros::millis())
                 + ", Torque: " + std::to_string(get_torque())
-                + ", Vel_Sp: " + std::to_string(calc_target_velocity(target_voltage))
+                + ", Vel_Sp: " + std::to_string(to_velocity(voltage_setpoint))
                 + ", Vel: " + std::to_string(get_actual_velocity())
             );
             break;

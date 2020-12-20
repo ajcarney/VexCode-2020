@@ -28,8 +28,8 @@ Intakes::Intakes(Motor &left, Motor &right)
     l_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     r_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     
-    l_intake->disable_velocity_pid();
-    r_intake->disable_velocity_pid();
+    l_intake->set_motor_mode(e_voltage);
+    r_intake->set_motor_mode(e_voltage);
     
     l_intake->disable_slew();
     r_intake->disable_slew();
@@ -89,23 +89,21 @@ void Intakes::intake_motion_task(void*) {
         
         int d_enc_l = l_intake->get_encoder_position() - prev_encoder_l;
         int d_enc_r = r_intake->get_encoder_position() - prev_encoder_r;
+        prev_encoder_l = l_intake->get_encoder_position();
+        prev_encoder_r = r_intake->get_encoder_position();
         abs_position_l += d_enc_l;
         abs_position_r += d_enc_r;
         
         // cap encoder values. This can be done because mechanical stops stop the motion of
         // the intakes
-        if(abs_position_l < -200) {  // set this to the encoder value at the outer-most reading
-            abs_position_l = -200;
-        } else if (abs_position_l > 0) {  // innermost value of the encoder
+        if (abs_position_l > 0) {  // innermost value of the encoder
             abs_position_l = 0;
         }
         
-        if(abs_position_r < -200) {  // set this to the encoder value at the outer-most reading
-            abs_position_r = -200;
-        } else if (abs_position_r > 0) {  // innermost value of the encoder
+        if (abs_position_r > 0) {  // innermost value of the encoder
             abs_position_r = 0;
         }
-        
+        // std::cout << abs_position_l << " " << l_intake->get_actual_voltage() << "\n";
         // execute command
         switch(command) {
             case e_intake: {
@@ -126,16 +124,16 @@ void Intakes::intake_motion_task(void*) {
                 }
                 break;
             } case e_hold_outward: {  // PI controller to hold outwards
-                double l_error = -200 - l_intake->get_torque();  // set first number to encoder setpoint
-                double r_error = -200 - r_intake->get_torque();  // set first number to encoder setpoint
+                double l_error = -37 - abs_position_l;  // set first number to encoder setpoint
+                double r_error = -37 - abs_position_r;  // set first number to encoder setpoint
                 
                 integral_l = integral_l + (l_error * dt);
                 integral_r = integral_r + (r_error * dt);
                 
-                int voltage_l = (50 * l_error) + (10 * integral_l);  // set first number to kP, second number to kI
-                int voltage_r = (50 * r_error) + (10 * integral_r);  // set first number to kP, second number to kI
-                l_intake->set_voltage(voltage_l);
-                r_intake->set_voltage(voltage_r);
+                int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
+                int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
+                l_intake->set_voltage(-6000);
+                r_intake->set_voltage(-6000);
                 break;
             }
         }

@@ -310,13 +310,19 @@ void autonomous() {
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
     
-    PositionTracker* tracker = PositionTracker::get_instance();
-    tracker->start_thread();
+    // PositionTracker* tracker = PositionTracker::get_instance();
+    // tracker->start_thread();
+    // tracker->start_logging();
+    PositionTracking::set_position({0, 0, 0});
+    PositionTracking::start_thread();
+    PositionTracking::start_logging();
+    std::cout << pros::Task::get_count() << "\n";
     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd;
-    
-    // chassis.straight_drive(1500);
-    
+    lcd.update_labels();
+    chassis.generate_profiles();
+    chassis.profiled_straight_drive(1000);
+    // tracker->stop_logging();
     lcd.update_labels();
     Autons autons;
     // autons.setup_odometry();

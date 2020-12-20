@@ -526,7 +526,7 @@ int InternalMotorDebug::run_unit_test()
     //motor.disable_velocity_pid();
     motor.disable_driver_control();
     motor.set_pid( pid_constants );
-    motor.enable_velocity_pid();
+    motor.set_motor_mode(e_custom_velocity_pid);
     motor.set_log_level(1);
     std::cout << motor.get_pid().kP << "\n";
     

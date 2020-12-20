@@ -20,20 +20,45 @@
 #include "../sensors/Sensors.hpp"
 
 
+class Profile {
+    private:
+        std::vector<double> acceleration_profile;
+        std::vector<double> deceleration_profile;
+        int ticks_to_accelerate;
+        int ticks_to_decelerate;
+        
+    public:
+        Profile();
+        ~Profile();
+        
+        void generate_profile(const std::function<double(double)>& acceleration_equation, const std::function<double(double)>& deceleration_equation, int ticks_accel, int ticks_decel, int max_velocity, int min_velocity);
+        bool is_generated();
+        double get_target_velocity(int current_enc_value, int max_enc_value, int max_velocity);
+};
+
+
+
 typedef enum {
-    e_straight_drive,
+    e_pid_straight_drive,
+    e_profiled_straight_drive,
     e_turn,
-    e_drive_to_point
+    e_drive_to_point,
+    e_turn_to_point,
+    e_turn_to_angle
 } chassis_commands;
 
 typedef struct {
+    long double x;
+    long double y;
     long double dx;
     long double dy;
     long double radius;
     long double dtheta;
     std::string get_string() {
         std::string str = (
-            "{dx: " + std::to_string(this->dx)
+            + "{x: " + std::to_string(this->x)
+            + " y: " + std::to_string(this->y)
+            + " dx: " + std::to_string(this->dx)
             + " dy: " + std::to_string(this->dy) 
             + " radius: " + std::to_string(this->radius)
             + " dtheta: " + std::to_string(this->dtheta)
@@ -47,11 +72,14 @@ typedef struct {
     double setpoint1=0;
     double setpoint2=0;
     int max_voltage=12000;
+    int max_velocity=200;
     int timeout=INT32_MAX;
     int recalculations=0;
+    int explicit_direction=0;
     bool motor_slew=false;
     bool correct_heading=true;
     bool log_data=false;
+    Profile profile;
 } chassis_params;
 
 typedef struct {
@@ -86,7 +114,8 @@ class Chassis
         static std::atomic<bool> receive_lock;
         static int num_instances;
         
-        static void t_straight_drive(chassis_params args);  // functions called by thread for asynchronous movement
+        static void t_pid_straight_drive(chassis_params args);  // functions called by thread for asynchronous movement
+        static void t_profiled_straight_drive(chassis_params args);
         static void t_turn(chassis_params args);
         static void t_move_to_waypoint(chassis_params args, waypoint point);
         
@@ -95,16 +124,23 @@ class Chassis
         static double gear_ratio;
         
         static void chassis_motion_task(void*);
+        
+        // profiles for straight driving
+        static Profile profile_1;
 
     public:
         Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
         ~Chassis();
 
+        void generate_profiles();
 
-        int straight_drive(double encoder_ticks, int relative_heading=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
+        int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
+        int profiled_straight_drive(double encoder_ticks, int max_velocity=200, int profile=0, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, bool slew=false, bool log_data=true);
         int turn_right(double degrees, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
         int turn_left(double degrees, int max_voltage=12000, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
-        
+        int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=0, int max_voltage=12000, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
+        int turn_to_point(double x, double y, int max_voltage=12000, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
+        int turn_to_angle(double theta, int max_voltage=12000, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to

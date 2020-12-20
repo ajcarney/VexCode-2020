@@ -18,6 +18,11 @@
 #include "../../Configuration.hpp"
 
 
+typedef enum {
+    e_builtin_velocity_pid,
+    e_voltage,
+    e_custom_velocity_pid
+} motor_mode;
 
 /**
  * @see: pros::Motor
@@ -46,8 +51,28 @@ class Motor
         double integral;
         double prev_error;
         
-        int prev_target_voltage;
-        int target_voltage;
+        motor_mode mode = e_voltage;
+        int voltage_setpoint;
+        int prev_voltage_setpoint;
+        int velocity_setpoint;
+        
+        
+        int to_voltage(int velocity);
+        int to_velocity(int voltage);
+        
+        /**
+         * @param: int voltage -> the voltage to set the motor to
+         * @return: int -> if setting motor voltage was successful or not
+         *
+         * @see: pros::Motor
+         *
+         * sets voltage of motor on interval [-12000,12000]
+         */       
+        int set_voltage_setpoint( int voltage );
+    
+    
+        int set_velocity_setpoint(int new_velocity);
+        
         
         /**
          * @param int target -> the new voltage that could be requested
@@ -55,7 +80,7 @@ class Motor
          * @param in delta_t -> the time that has elapsed
          * @return: int -> the rate of the voltage set based on time elapsed and previous voltage
          *
-         * @see: set_voltage()
+         * @see: set_voltage_setpoint()
          *
          * calculates the rate of change of the voltage (mv/ms) that the new
          * voltage is trying to reach
@@ -360,17 +385,7 @@ class Motor
          */        
         int move_velocity( int velocity );
         
-        /**
-         * @param: int voltage -> the voltage to set the motor to
-         * @return: int -> if setting motor voltage was successful or not
-         *
-         * @see: pros::Motor
-         *
-         * sets voltage of motor on interval [-12000,12000]
-         */       
-        int set_voltage( int voltage );
-    
-    
+        int set_voltage(int voltage);
     
     
     //slew rate control functions  
@@ -413,20 +428,10 @@ class Motor
          *
          * @see: pros::Motor
          *
-         * sets velocity PID to be used to calculate the actual voltage to 
-         * set the motor voltage to instead of just the target
+         * sets new mode for the motor to follow
          */      
-        void enable_velocity_pid( );
-        
-        /**
-         * @return: None
-         *
-         * @see: pros::Motor
-         *
-         * sets velocity PID to not be used to calculate the actual voltage to 
-         * set the motor voltage to instead of just the target
-         */      
-        void disable_velocity_pid( );
+        void set_motor_mode(motor_mode new_mode);
+
 
 
     //driver control lock setting and clearing functions

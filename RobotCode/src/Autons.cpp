@@ -70,9 +70,9 @@ void Autons::one_pt() {
  * straight drive moving
  */
 void Autons::skills() {
-    PositionTracker* tracker = PositionTracker::get_instance();
-    tracker->start_thread();
-    tracker->start_logging();
+    // PositionTracker* tracker = PositionTracker::get_instance();
+    // tracker->start_thread();
+    // tracker->start_logging();
 
     Configuration* config = Configuration::get_instance();
     config->filter_color = "blue";

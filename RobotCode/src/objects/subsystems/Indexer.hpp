@@ -29,6 +29,9 @@ typedef enum e_indexer_command {
     e_auto_increment,
     e_raise_brake,
     e_lower_brake,
+    e_fix_ball,
+    e_run_upper,
+    e_run_lower,
     e_stop
 } indexer_command;
 
@@ -68,6 +71,11 @@ class Indexer
         
         void lower_brake();
         void raise_brake();
+        
+        void run_upper_roller();
+        void run_lower_roller();
+        
+        void fix_ball();
         
         void stop();
 

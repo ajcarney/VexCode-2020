@@ -74,7 +74,7 @@ void driver_control(void*)
             indexer.index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.filter();
-        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
             if(brake_is_down) {
                 indexer.raise_brake();
                 brake_is_down = false;
@@ -86,6 +86,8 @@ void driver_control(void*)
             indexer.auto_increment();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
             indexer.increment();
+        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            indexer.fix_ball();
         } else {
             indexer.stop();
         }

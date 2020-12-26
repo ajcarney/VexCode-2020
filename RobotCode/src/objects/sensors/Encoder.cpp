@@ -95,7 +95,7 @@ double Encoder::get_absolute_position(bool scaled)
 
 int Encoder::reset(int unique_id)
 {
-    if(zero_positions.find(unique_id) == zero_positions.end())
+    if(zero_positions.find(unique_id) == zero_positions.end() || unique_id == 0)
     {
         Logger logger;
         log_entry entry;
@@ -113,7 +113,7 @@ int Encoder::reset(int unique_id)
 
 
 void Encoder::forget_position(int unique_id) {
-    if(zero_positions.find(unique_id) == zero_positions.end())
+    if(zero_positions.find(unique_id) == zero_positions.end() || unique_id == 0)
     {
         Logger logger;
         log_entry entry;

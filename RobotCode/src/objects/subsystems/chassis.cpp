@@ -10,9 +10,10 @@
  */
  
 #include <cmath>
+#include <algorithm>
+#include <deque>
 
 #include "main.h"
-
 
 #include "../serial/Logger.hpp"
 #include "../position_tracking/PositionTracker.hpp"
@@ -60,7 +61,7 @@ double Profile::get_target_velocity(int current_enc_value, int max_enc_value, in
     if(current_enc_value < 0) {
         current_enc_value = 0;
     }
-    std::cout << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
+    // std::cout << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
     if(max_enc_value > (ticks_to_accelerate + ticks_to_decelerate)) {
         if(current_enc_value < ticks_to_accelerate) {                         // acceleration segment
             norm_velocity = acceleration_profile.at(current_enc_value);
@@ -85,7 +86,7 @@ double Profile::get_target_velocity(int current_enc_value, int max_enc_value, in
     }
     
     double target_velocity = norm_velocity * max_velocity;
-    std::cout << target_velocity << " " << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
+    // std::cout << target_velocity << " " << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
 
     return target_velocity;
 }
@@ -167,12 +168,14 @@ void Chassis::generate_profiles() {
     if(!profile_1.is_generated()) {
         profile_1.generate_profile(
             [](double n) -> double { return 183335300 + ((16.29262 - 183335300) / (1 + std::pow((n / 5807375), 1.381135))); },
-            [](double n) -> double { return -14.87879 + ((199.9947 - -14.87879) / (1 + std::pow((n / 216.5658), 1.756448))); },  // 700 endpoint
+            [](double n) -> double { return 201.3993 - (0.07738232 * n) - (0.0001796556 * std::pow(n, 2)); },
+            // [](double n) -> double { return (201.3993 - (0.0967279 * n) - (0.0002807118 * std::pow(n, 2))); },
+            // [](double n) -> double { return -14.87879 + ((199.9947 - -14.87879) / (1 + std::pow((n / 216.5658), 1.756448))); },  // 700 endpoint
             // [](double n) -> double { return -718.7411 + ((200.0491 - -718.7411) / (1 + std::pow((n / 3436.08), 0.8049193))); },  // 700 endpoint
             // [](double n) -> double { return -39.01548 + ((195.369 - -39.01548) / (1 + std::pow((n / 978.0565), 2.266577))); },  // 1700 endpoint
             // [](double n) -> double { return (-0.2 * n + 1000); },  // 1000 endpoint
             250,
-            700,
+            820,
             200,
             0
         );
@@ -205,33 +208,41 @@ void Chassis::chassis_motion_task(void*) {
                 t_turn(action.args);
                 break;
             case e_drive_to_point: {
-                // PositionTracker* tracker = PositionTracker::get_instance();
+                PositionTracker* tracker = PositionTracker::get_instance();
                 std::vector<waypoint> waypoints;  // calculate waypoints based on starting position
 
-                long double dx = action.args.setpoint1 - PositionTracking::get_position().x_pos;
-                long double dy = action.args.setpoint2 - PositionTracking::get_position().y_pos;
+                long double dx = action.args.setpoint1 - tracker->get_position().x_pos;
+                long double dy = action.args.setpoint2 - tracker->get_position().y_pos;
+                std::cout << tracker->get_position().x_pos << " " << tracker->get_position().y_pos << "\n";
                 // convert end coordinates to polar and then calculate waypoints
                 long double delta_radius_polar = std::sqrt((std::pow(dx, 2) + std::pow(dy, 2)));
-                long double delta_theta_polar = std::atan2(dx, dy);
+                long double delta_theta_polar = std::atan2(dy, dx);
                 
                 for(int i=action.args.recalculations + 1; i > 0; i--) {  // calculate additional waypoints, start with last endpoint and go down
                     long double radius = (i * delta_radius_polar) / (action.args.recalculations + 1);
                     waypoint recalc_point;
-                    recalc_point.x = action.args.setpoint1 + (radius * std::cos(delta_theta_polar));  // intital x + dx
-                    recalc_point.y = action.args.setpoint2 + (radius * std::sin(delta_theta_polar));  // initial y + dy
+                    recalc_point.x = tracker->get_position().x_pos + (radius * std::cos(delta_theta_polar));  // intital x + dx
+                    recalc_point.y = tracker->get_position().y_pos + (radius * std::sin(delta_theta_polar));  // initial y + dy
+                    std::cout << radius << " " << delta_theta_polar << " " << (radius * std::cos(delta_theta_polar)) << " " << (radius * std::sin(delta_theta_polar)) << "\n";
                     recalc_point.dx = radius * std::cos(delta_theta_polar);
                     recalc_point.dy = radius * std::sin(delta_theta_polar);
                     recalc_point.radius = radius;
                     recalc_point.dtheta = delta_theta_polar;
                     waypoints.insert(waypoints.begin(), recalc_point);
                 }
-                
+                std::cout << "\n\n\n\n\n";
                 if(action.args.log_data) {
                     Logger logger;
                     log_entry entry;
                     std::string msg = (
                         "[INFO] " + std::string("CHASSIS_ODOM")
                         + ", Time: " + std::to_string(pros::millis())
+                        + ", dx: " + std::to_string(dx)
+                        + ", dy: " + std::to_string(dy)
+                        + ", delta_theta_polar: " + std::to_string(delta_theta_polar)
+                        + ", current x: " + std::to_string(tracker->get_position().x_pos)
+                        + ", current y: " + std::to_string(tracker->get_position().y_pos)
+                        + ", current theta: " + std::to_string(tracker->to_degrees(tracker->get_position().theta))
                     );
                     int i = 0;
                     for(waypoint point : waypoints) {  // add waypoints to debug message
@@ -251,38 +262,40 @@ void Chassis::chassis_motion_task(void*) {
                 }
                 break;
             } case e_turn_to_point: {
-                // PositionTracker* tracker = PositionTracker::get_instance();
+                PositionTracker* tracker = PositionTracker::get_instance();
 
-                long double dx = action.args.setpoint1 - PositionTracking::get_position().x_pos;
-                long double dy = action.args.setpoint2 - PositionTracking::get_position().y_pos;
+                long double dx = action.args.setpoint1 - tracker->get_position().x_pos;
+                long double dy = action.args.setpoint2 - tracker->get_position().y_pos;
                 
                 // convert end coordinates to polar to find the change in angle
-                long double dtheta = std::atan2(dx, dy);
-                
-                // delta theta is bounded by [-pi, pi], re map it to [0,pi]
-                if(dtheta < -M_PI) {
-                    dtheta += M_PI;
+                // long double dtheta = std::fmod((-M_PI / 2) + std::atan2(dy, dx), (2 * M_PI));
+                long double dtheta = std::atan2(dy, dx);
+                if(dtheta < 0) {
+                    dtheta += 2 * M_PI;
                 }
-                
+
                 // current angle is bounded by [-pi, pi] re map it to [0, pi]
-                long double current_angle = PositionTracking::get_heading_rad();
-                if(current_angle < -M_PI) {
-                    current_angle += M_PI;
+                long double current_angle = tracker->get_heading_rad();
+                if(current_angle < 0) {
+                    current_angle += 2 * M_PI;
                 }
+                current_angle = (-current_angle) + (M_PI / 2);
                 
                 // calculate how much the robot needs to turn to be at the angle
                 long double to_turn = current_angle - dtheta;  // change in robot angle
                 
-                if(to_turn > (M_PI / 2)) {  // find minimal angle change and direction of change [-PI/2, PI/2]
-                    to_turn = -M_PI + to_turn;  // give negative value to turn left to point
+                if(to_turn > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+                    to_turn = (-2 * M_PI) + to_turn;  // give negative value to turn left to point
+                } else if(to_turn < -M_PI) {
+                    to_turn = (2 * M_PI) + to_turn;  // give positive value to turn left to point
                 }
                 
-                to_turn = PositionTracking::to_degrees(to_turn);
+                to_turn = tracker->to_degrees(to_turn);
                 
                 // set up turn
                 chassis_params turn_args;
                 turn_args.setpoint1 = to_turn;
-                turn_args.max_voltage = action.args.max_voltage;
+                turn_args.max_velocity = action.args.max_velocity;
                 turn_args.timeout = action.args.timeout; // TODO: add time estimation
                 turn_args.motor_slew = action.args.motor_slew;
                 turn_args.log_data = action.args.log_data;
@@ -305,27 +318,30 @@ void Chassis::chassis_motion_task(void*) {
                 
                 break;
             } case e_turn_to_angle: {
-                // PositionTracker* tracker = PositionTracker::get_instance();
+                PositionTracker* tracker = PositionTracker::get_instance();
                                 
                 // current angle is bounded by [-pi, pi] re map it to [0, pi]
-                long double current_angle = PositionTracking::get_heading_rad();
+                long double current_angle = tracker->get_heading_rad();
                 if(current_angle < -M_PI) {
                     current_angle += M_PI;
                 }
                 
                 // calculate how much the robot needs to turn to be at the angle
-                long double to_turn = current_angle - action.args.setpoint1;  // change in robot angle
+                long double to_turn = action.args.setpoint1 - current_angle;  // change in robot angle
                 
-                if(to_turn > (M_PI / 2)) {  // find minimal angle change and direction of change [-PI/2, PI/2]
-                    to_turn = -M_PI + to_turn;  // give negative value to turn left to point
+                if(to_turn > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+                    to_turn = (-2 * M_PI) + to_turn;  // give negative value to turn left to point
+                } else if(to_turn < -M_PI) {
+                    to_turn = (2 * M_PI) + to_turn;  // give positive value to turn left to point
                 }
+                to_turn = tracker->to_degrees(to_turn);
                 
-                to_turn = PositionTracking::to_degrees(to_turn);
+                std::cout << current_angle << " " << to_turn << "\n";
                 
                 // set up turn
                 chassis_params turn_args;
                 turn_args.setpoint1 = to_turn;
-                turn_args.max_voltage = action.args.max_voltage;
+                turn_args.max_velocity = action.args.max_velocity;
                 turn_args.timeout = action.args.timeout; // TODO: add time estimation
                 turn_args.motor_slew = action.args.motor_slew;
                 turn_args.log_data = action.args.log_data;
@@ -337,6 +353,8 @@ void Chassis::chassis_motion_task(void*) {
                         "[INFO] " + std::string("CHASSIS_ODOM")
                         + ", Time: " + std::to_string(pros::millis())
                         + ", turning: " + std::to_string(to_turn)
+                        + ", Current re-bounded angle: " + std::to_string(tracker->to_degrees(current_angle))
+                        + ", Current angle: " + std::to_string(tracker->to_degrees(tracker->get_heading_rad()))
                     );
                     entry.content = msg;
                     entry.stream = "clog";
@@ -360,18 +378,33 @@ void Chassis::chassis_motion_task(void*) {
 
 
 void Chassis::t_pid_straight_drive(chassis_params args) {
-    // PositionTracker* tracker = PositionTracker::get_instance();
+    PositionTracker* tracker = PositionTracker::get_instance();
     Configuration* config = Configuration::get_instance();
     
-    double kP_l = 45;
-    double kI_l = 0.00140;
-    double kD_l = 26;
+    double kP_l = .77;
+    double kI_l = 0.000002;
+    double kD_l = 7;
     double I_max_l = INT32_MAX;
     
-    double kP_r = 33;
-    double kI_r = 0.00105;
-    double kD_r = 33;
-    double I_max_r = INT32_MAX;
+    double kP_r = kP_l;
+    double kI_r = kI_l;
+    double kD_r = kD_l;
+    double I_max_r = I_max_l;
+    
+    front_left_drive->disable_driver_control();
+    front_right_drive->disable_driver_control();
+    back_left_drive->disable_driver_control();
+    back_right_drive->disable_driver_control();
+    
+    front_left_drive->set_motor_mode(e_builtin_velocity_pid);
+    front_right_drive->set_motor_mode(e_builtin_velocity_pid);
+    back_left_drive->set_motor_mode(e_builtin_velocity_pid);
+    back_right_drive->set_motor_mode(e_builtin_velocity_pid);
+    
+    front_left_drive->move_velocity(0);
+    front_right_drive->move_velocity(0);
+    back_left_drive->move_velocity(0);
+    back_right_drive->move_velocity(0);
     
     front_left_drive->tare_encoder();
     front_right_drive->tare_encoder();
@@ -380,33 +413,29 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     
     int r_id = right_encoder->get_unique_id();
     int l_id = left_encoder->get_unique_id();
-    
-    front_left_drive->disable_driver_control();
-    front_right_drive->disable_driver_control();
-    back_left_drive->disable_driver_control();
-    back_right_drive->disable_driver_control();
-    
-    front_left_drive->move(0);
-    front_right_drive->move(0);
-    back_left_drive->move(0);
-    back_right_drive->move(0);
+    right_encoder->reset(r_id);
+    left_encoder->reset(l_id);
     
     double integral_l = 0;
     double integral_r = 0;
     double prev_error_l = 0;
     double prev_error_r = 0;
-    double prev_l_voltage = 0;
-    double prev_r_voltage = 0;
+    double prev_velocity_l = 0;
+    double prev_velocity_r = 0;
     
     double prev_l_encoder = std::get<0>(Sensors::get_average_encoders(l_id, r_id));
     double prev_r_encoder = std::get<1>(Sensors::get_average_encoders(l_id, r_id));
 
     long double relative_angle = 0;
+    long double abs_angle = tracker->to_degrees(tracker->get_heading_rad());
+    long double prev_abs_angle = abs_angle;
     long double integral_heading = 0;
     double prev_heading_error = 0;
     
-    int timeout = pros::millis() + args.timeout;
     bool settled = false;
+    std::vector<double> previous_l_velocities;
+    std::vector<double> previous_r_velocities;
+    int velocity_history = 15;
     bool use_integral_l = true;
     bool use_integral_r = true;
     
@@ -439,39 +468,73 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         prev_error_l = error_l;
         prev_error_r = error_r;
         
-        int left_voltage = (kP_l * error_l) + (kI_l * integral_l) + (kD_l * derivative_l);
-        int right_voltage = (kP_r * error_r) + (kI_r * integral_r) + (kD_r * derivative_r);
+        double left_velocity = (kP_l * error_l) + (kI_l * integral_l) + (kD_l * derivative_l);
+        double right_velocity = (kP_r * error_r) + (kI_r * integral_r) + (kD_r * derivative_r);
 
+        
+        // slew rate code
+        double delta_velocity_l = left_velocity - prev_velocity_l;
+        double delta_velocity_r = right_velocity - prev_velocity_r;
+        double slew_rate = .1;
+        if(std::abs(delta_velocity_l) > (dt * slew_rate) && (std::signbit(delta_velocity_l) == std::signbit(left_velocity)) ) {  // ignore deceleration
+            int sign = std::abs(delta_velocity_l) / delta_velocity_l;
+            std::cout << "l over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            left_velocity = prev_velocity_l + (sign * dt * slew_rate);
+        }
+        
+        if(std::abs(delta_velocity_r) > (dt * slew_rate) && (std::signbit(delta_velocity_r) == std::signbit(right_velocity))) {
+            int sign = std::abs(delta_velocity_r) / delta_velocity_r;
+            std::cout << "r over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            right_velocity = prev_velocity_r + (sign * dt * slew_rate);
+        }
+        
+        
+        
         
         // p controller heading correction
         // double delta_l = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - prev_l_encoder;
         // double delta_r = std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - prev_r_encoder;
         // double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
         // prev_angle = prev_angle + delta_theta;
-        double delta_theta = PositionTracking::to_degrees(PositionTracking::get_delta_theta_rad());
-        relative_angle = relative_angle + delta_theta;
+        abs_angle = tracker->get_heading_rad();
+        abs_angle = std::atan2(std::sin(abs_angle), std::cos(abs_angle));
+        long double delta_theta;
+        // account for angle wrap around
+        // ie. new = -1, prev = -359   == bad delta
+        if(prev_abs_angle > 0 && abs_angle < 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
+            delta_theta = tracker->to_degrees((2*M_PI) + abs_angle) - prev_abs_angle;
+        } else if(prev_abs_angle < 0 && abs_angle > 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
+            delta_theta = tracker->to_degrees(abs_angle - (2*M_PI)) - prev_abs_angle;
+        } else {
+            delta_theta = tracker->to_degrees(abs_angle) - prev_abs_angle;
+        }
+        // long double delta_theta = abs_angle - prev_abs_angle;
+        // long double delta_theta = tracker->to_degrees(tracker->get_delta_theta_rad());
+        relative_angle += delta_theta;
+        prev_abs_angle = tracker->to_degrees(abs_angle);
+        
+        
         double heading_error = args.setpoint2 - relative_angle;
         integral_heading = integral_heading + (heading_error * dt);
-        double d_error = heading_error - prev_heading_error;
+        double d_heading_error = heading_error - prev_heading_error;
         prev_heading_error = heading_error;
         // std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << heading_error << "\n";
+        int velocity_correction = (.05 * heading_error) + (0 * integral_heading) + (0 * d_heading_error);
         if(args.correct_heading && heading_error > 0.00001) {  // veering right
-            // int voltage = (1400 * heading_error) + (1.011 * integral_heading) + (95 * d_error);
-            int voltage = 3300;
-            left_voltage -= voltage;  
-            right_voltage += voltage;
+            // int velocity_correction = 5;
+            right_velocity -= velocity_correction;  
         } else if ( args.correct_heading && heading_error < -0.00001) {  // veering left
-            int voltage = 3300;
-            left_voltage += voltage;  
-            right_voltage -= voltage;
+            // int velocity_correction = 5;
+            left_velocity -= velocity_correction;
         }
         
+        
         // cap voltage to max voltage with regard to velocity
-        if ( std::abs(left_voltage) > args.max_voltage ) {
-            left_voltage = left_voltage > 0 ? args.max_voltage : -args.max_voltage;
+        if ( std::abs(left_velocity) > args.max_velocity ) {
+            left_velocity = left_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
-        if ( std::abs(right_voltage) > args.max_voltage ) {
-            right_voltage = right_voltage > 0 ? args.max_voltage : -args.max_voltage;
+        if ( std::abs(right_velocity) > args.max_velocity ) {
+            right_velocity = right_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
         
         time = pros::millis();
@@ -508,22 +571,52 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
             logger.add(entry);            
         }
 
+        prev_velocity_l = left_velocity;
+        prev_velocity_r = right_velocity;
         
-        front_left_drive->set_voltage(left_voltage);
-        front_right_drive->set_voltage(right_voltage);
-        back_left_drive->set_voltage(left_voltage);
-        back_right_drive->set_voltage(right_voltage);
-        
-        prev_l_voltage = left_voltage;
-        prev_r_voltage = right_voltage;
-        
-        // // settled is when error is almost zero and voltage is minimal for both sides
-        if ( (std::abs(error_l) < 5) && (std::abs(error_r) < 5) && std::abs(left_voltage) < 2000 && std::abs(right_voltage) < 2000) {        
-            //break; // end before timeout 
+        previous_l_velocities.push_back(left_velocity);
+        previous_r_velocities.push_back(right_velocity);
+        if(previous_l_velocities.size() > velocity_history) {
+            previous_l_velocities.erase(previous_l_velocities.begin());
         }
+        
+        if(previous_r_velocities.size() > velocity_history) {
+            previous_r_velocities.erase(previous_r_velocities.begin());
+        }
+        
+        // settled is when error is almost zero and velocity is minimal
+        double l_difference = *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second - *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).first;
+        double r_difference = *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).second - *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).first;
+        std::cout << "difference: " << *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second << " " << previous_l_velocities.size() << "\n";
+        if (
+            std::abs(l_difference) < 2 
+            && previous_l_velocities.size() == velocity_history 
+            && std::abs(r_difference) < 2 
+            && previous_r_velocities.size() == velocity_history
+            && left_velocity < 2
+            && right_velocity < 2
+        ) {  // velocity change has been minimal, so stop   
+            front_left_drive->set_motor_mode(e_voltage);
+            front_right_drive->set_motor_mode(e_voltage);
+            back_left_drive->set_motor_mode(e_voltage);
+            back_right_drive->set_motor_mode(e_voltage);
+            
+            front_left_drive->set_voltage(0);
+            front_right_drive->set_voltage(0);
+            back_left_drive->set_voltage(0);
+            back_right_drive->set_voltage(0);
+            std::cout << "ending\n";
+            break; // end before timeout 
+        }
+        
+        
+        front_left_drive->move_velocity(left_velocity);
+        front_right_drive->move_velocity(right_velocity);
+        back_left_drive->move_velocity(left_velocity);
+        back_right_drive->move_velocity(right_velocity);
 
         pros::delay(10);
-    } while ( pros::millis() < args.timeout ); 
+    } while ( pros::millis() < time + args.timeout ); 
     
     front_left_drive->set_voltage(0);
     front_right_drive->set_voltage(0);
@@ -543,18 +636,13 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
 
 
 void Chassis::t_profiled_straight_drive(chassis_params args) {
-    // PositionTracker* tracker = PositionTracker::get_instance();
+    PositionTracker* tracker = PositionTracker::get_instance();
     Configuration* config = Configuration::get_instance();
-    
-    front_left_drive->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    front_right_drive->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    back_left_drive->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    back_right_drive->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    
-    double kP = 0;
-    double kI = 0;
+
+    double kP = .2;
+    double kI = .001;
     double kD = 0;
-    double I_max = INT32_MAX;
+    double I_max = 2000;
     
     front_left_drive->disable_driver_control();
     front_right_drive->disable_driver_control();
@@ -566,10 +654,10 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     back_left_drive->set_motor_mode(e_builtin_velocity_pid);
     back_right_drive->set_motor_mode(e_builtin_velocity_pid);
     
-    front_left_drive->move(0);
-    front_right_drive->move(0);
-    back_left_drive->move(0);
-    back_right_drive->move(0);
+    front_left_drive->move_velocity(0);
+    front_right_drive->move_velocity(0);
+    back_left_drive->move_velocity(0);
+    back_right_drive->move_velocity(0);
     
     front_left_drive->tare_encoder();
     front_right_drive->tare_encoder();
@@ -578,59 +666,89 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     
     int r_id = right_encoder->get_unique_id();
     int l_id = left_encoder->get_unique_id();
+    right_encoder->reset(r_id);
+    left_encoder->reset(l_id);
     
     long double relative_angle = 0;
-    long double abs_angle = PositionTracking::to_degrees(PositionTracking::get_heading_rad());
+    long double abs_angle = tracker->to_degrees(tracker->get_heading_rad());
     long double prev_abs_angle = abs_angle;
     long double integral = 0;
+    long double prev_integral = 0;
     double prev_error = 0;
     bool use_integral = true;
     int time = pros::millis();
+    bool settled = false;
     
     do {
-        double velocity_l = args.profile.get_target_velocity(std::get<0>(Sensors::get_average_encoders(l_id, r_id)), args.setpoint1, args.max_velocity);
-        double velocity_r = args.profile.get_target_velocity(std::get<1>(Sensors::get_average_encoders(l_id, r_id)), args.setpoint1, args.max_velocity);
+        double velocity_l = args.profile.get_target_velocity(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))), std::abs(args.setpoint1), args.max_velocity);
+        double velocity_r = args.profile.get_target_velocity(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))), std::abs(args.setpoint1), args.max_velocity);
         
-        if(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - args.setpoint1) < 2) {
-            velocity_l = 0;
+        double velocity;
+        if(velocity_l > velocity_r) {
+            velocity_r = velocity_r;
+            velocity_l = velocity_r;
+        } else {
+            velocity_r = velocity_l;
+            velocity_l = velocity_l;
         }
         
-        if(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - args.setpoint1) < 2) {
-            velocity_r = 0;
-        }
+        double error_l = std::abs(args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id)));
+        double error_r = std::abs(args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
         
+        if(args.setpoint1 < 0) {
+            velocity_l = -velocity_l;
+            velocity_r = -velocity_r;
+            velocity = -velocity;
+        }
+
         int dt = pros::millis() - time;
         
-        abs_angle = PositionTracking::to_degrees(PositionTracking::get_heading_rad());
+        abs_angle = tracker->to_degrees(tracker->get_heading_rad());
         long double delta_theta = abs_angle - prev_abs_angle;
-        relative_angle = relative_angle + delta_theta;
+        relative_angle += delta_theta;
         prev_abs_angle = abs_angle;
         
-        long double error = args.setpoint2 - relative_angle;
+        // long double error = args.setpoint2 - relative_angle;
+        long double error = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
         std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
-        if ( std::abs(integral) > I_max || !use_integral) {
-            integral = 0;  // reset integral if greater than max allowable value
-            use_integral = false;
+        // cap velocity to max velocity with regard to velocity
+        if ( std::abs(integral) > I_max ) {
+            integral = integral > 0 ? I_max : -I_max;
+        }else if(std::abs(error) < .000001) {  // 
+            integral = 0;
         } else {
             integral = integral + (error * dt);
         }
+        
+        if(std::signbit(integral) != std::signbit(prev_integral)) {
+            std::cout << "halving " << integral << " " << prev_integral;
+            integral = .5 * integral;
+        }
+        prev_integral = integral;
         
         double derivative = error - prev_error;
         prev_error = error;
         
         time = pros::millis();
         
+        // std::cout << error << " " << relative_angle << "\n";
         
-        int velocity_correction = (kP * error) + (kI * integral) + (kD * derivative);
-        if(args.correct_heading && error > 0.000001) {  // veering right
-            velocity_l -= velocity_correction;  
-            velocity_r += velocity_correction;
-        } else if ( args.correct_heading && error < -0.000001) {  // veering left
-            velocity_l += velocity_correction;  
+        // int velocity_correction = (kP * error) + (kI * integral) + (kD * derivative);
+        double velocity_correction = std::abs(kI * integral);
+        std::cout << "integral: " << integral << " " << velocity_correction << "\n";
+        if(args.correct_heading  && error > 0.000001) {  // veering off course, so correct
             velocity_r -= velocity_correction;
+        } else if(args.correct_heading && error < -0.000001) {
+            velocity_l -= velocity_correction;  
         }
         
-        
+
+        if(error_l < 5 || error_r < 5) {  // shut off motors when one side reaches the setpoint
+            velocity_l = 0;
+            velocity_r = 0;
+            settled = true;
+        }
+
         // cap velocity to max velocity with regard to velocity
         if ( std::abs(velocity_l) > args.max_velocity ) {
             velocity_l = velocity_l > 0 ? args.max_velocity : -args.max_velocity;
@@ -639,8 +757,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
             velocity_r = velocity_r > 0 ? args.max_velocity : -args.max_velocity;
         }
                 
-        std::cout << velocity_l << " " << velocity_r << "\n";    
-        
+        std::cout << "velocity: " << velocity_l << " " << velocity_r << "\n";    
+        std::cout << "error: " << error_r << " " << error_l << " " << error << "\n";
         front_left_drive->move_velocity(velocity_l);
         front_right_drive->move_velocity(velocity_r);
         back_left_drive->move_velocity(velocity_l);
@@ -669,16 +787,24 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
                 + ", position_r: " + std::to_string(std::get<1>(Sensors::get_average_encoders(l_id, r_id)))                
                 + ", Heading_Sp: " + std::to_string(args.setpoint2)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
-                + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
-                + ", Actual_Vel2: " + std::to_string(front_right_drive->get_actual_velocity())
+                + ", Actual_Vel1: " + std::to_string(velocity_l)
+                + ", Actual_Vel2: " + std::to_string(velocity_r)
                 + ", Actual_Vel3: " + std::to_string(back_left_drive->get_actual_velocity())
                 + ", Actual_Vel4: " + std::to_string(back_right_drive->get_actual_velocity())
+                + ", Correction: " + std::to_string(velocity_correction)
             );
             entry.stream = "clog";
             logger.add(entry);            
         }
-        pros::delay(10);
-    } while ( pros::millis() < 12000 ); 
+        
+        // std::cout << error_l << " " << error_r << " " << velocity_l << " " << velocity_r << " " << error << "\n";
+        // // settled is when error is almost zero and velocity is 0
+        if (settled) {        
+            break; // end before timeout 
+        }
+        
+        pros::delay(5);
+    } while (pros::millis() < time + args.timeout); 
     
     front_left_drive->set_motor_mode(e_voltage);
     front_right_drive->set_motor_mode(e_voltage);
@@ -708,13 +834,29 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
 
 
 void Chassis::t_turn(chassis_params args) {
-    // PositionTracker* tracker = PositionTracker::get_instance();
+    PositionTracker* tracker = PositionTracker::get_instance();
     Configuration* config = Configuration::get_instance();
     
-    double kP = 10;
-    double kI = 0;
-    double kD = 0;
+    double kP = 4;
+    // double kI = 0.0000120;
+    double kI = 0.00000;
+    double kD = 54;
     double I_max = INT32_MAX;
+    
+    front_left_drive->disable_driver_control();
+    front_right_drive->disable_driver_control();
+    back_left_drive->disable_driver_control();
+    back_right_drive->disable_driver_control();
+    
+    front_left_drive->set_motor_mode(e_builtin_velocity_pid);
+    front_right_drive->set_motor_mode(e_builtin_velocity_pid);
+    back_left_drive->set_motor_mode(e_builtin_velocity_pid);
+    back_right_drive->set_motor_mode(e_builtin_velocity_pid);
+    
+    front_left_drive->move_velocity(0);
+    front_right_drive->move_velocity(0);
+    back_left_drive->move_velocity(0);
+    back_right_drive->move_velocity(0);
     
     front_left_drive->tare_encoder();
     front_right_drive->tare_encoder();
@@ -723,78 +865,109 @@ void Chassis::t_turn(chassis_params args) {
     
     int r_id = right_encoder->get_unique_id();
     int l_id = left_encoder->get_unique_id();
+    right_encoder->reset(r_id);
+    left_encoder->reset(l_id);
     
-    front_left_drive->disable_driver_control();
-    front_right_drive->disable_driver_control();
-    back_left_drive->disable_driver_control();
-    back_right_drive->disable_driver_control();
-    
-    front_left_drive->move(0);
-    front_right_drive->move(0);
-    back_left_drive->move(0);
-    back_right_drive->move(0);
-    
-    double integral = 0;
+    long double relative_angle = 0;
+    long double abs_angle = tracker->to_degrees(tracker->get_heading_rad());
+    long double prev_abs_angle = abs_angle;
+    long double integral = 0;
     double prev_error = 0;
-    double prev_l_voltage = 0;
-    double prev_r_voltage = 0;
-    
-    double prev_l_encoder = std::get<0>(Sensors::get_average_encoders(l_id, r_id));
-    double prev_r_encoder = std::get<1>(Sensors::get_average_encoders(l_id, r_id));
-    // double intitial_angle = imu->get_heading();
-    // double prev_angle = imu->get_heading();
-    // double prev_angle = 0;
-    double relative_angle = 0;
-
-    int timeout = pros::millis() + 5000;
-    bool settled = false;
     bool use_integral = true;
-    
     int time = pros::millis();
-
+    
+    double prev_velocity_l = 0;
+    double prev_velocity_r = 0;
+        
+    std::vector<double> previous_l_velocities;
+    std::vector<double> previous_r_velocities;
+    int velocity_history = 15;
+    
     do {
-        // pid angle controller
-        // double delta_l = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - prev_l_encoder;
-        // double delta_r = std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - prev_r_encoder;
-        // double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
-        // prev_angle = prev_angle + delta_theta;
-        double delta_theta = PositionTracking::to_degrees(PositionTracking::get_delta_theta_rad());
-        relative_angle = relative_angle + delta_theta;
-        double error = args.setpoint1 - relative_angle;
-        // std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << error << "\n";
-
+        int dt = pros::millis() - time;
+        
+        abs_angle = tracker->get_heading_rad();
+        abs_angle = std::atan2(std::sin(abs_angle), std::cos(abs_angle));
+        long double delta_theta;
+        // account for angle wrap around
+        // ie. new = -1, prev = -359   == bad delta
+        if(prev_abs_angle > 0 && abs_angle < 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
+            delta_theta = tracker->to_degrees((2*M_PI) + abs_angle) - prev_abs_angle;
+        } else if(prev_abs_angle < 0 && abs_angle > 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
+            delta_theta = tracker->to_degrees(abs_angle - (2*M_PI)) - prev_abs_angle;
+        } else {
+            delta_theta = tracker->to_degrees(abs_angle) - prev_abs_angle;
+        }
+        // long double delta_theta = abs_angle - prev_abs_angle;
+        // long double delta_theta = tracker->to_degrees(tracker->get_delta_theta_rad());
+        relative_angle += delta_theta;
+        prev_abs_angle = tracker->to_degrees(abs_angle);
+        
+        long double error = args.setpoint1 - relative_angle;
         
         if ( std::abs(integral) > I_max || !use_integral) {
-            integral = 0;  //reset integral if error is too small or greater than max value
+            integral = 0;  // reset integral if greater than max allowable value
             use_integral = false;
         } else {
-            int dt = pros::millis() - time;
             integral = integral + (error * dt);
         }
-        time = pros::millis();
-        
         
         double derivative = error - prev_error;
         prev_error = error;
         
-        int right_voltage;
-        int left_voltage;
-        if(args.setpoint1 > 0) {  // turn right
-            right_voltage = -1 * ((kP * error) + (kI * integral) + (kD * derivative));
-            left_voltage = (kP * error) + (kI * integral) + (kD * derivative);
-        } else {  // turn left
-            right_voltage = (kP * error) + (kI * integral) + (kD * derivative);
-            left_voltage = -1 * ((kP * error) + (kI * integral) + (kD * derivative));
+        time = pros::millis();
+        
+        // std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
+        // std::cout << error << " " << relative_angle << "\n";
+        
+        double abs_velocity = (kP * error) + (kI * integral) + (kD * derivative);
+        double l_velocity = abs_velocity;  
+        double r_velocity = -abs_velocity;
+        
+        // slew rate code
+        double delta_velocity_l = l_velocity - prev_velocity_l;
+        double delta_velocity_r = r_velocity - prev_velocity_r;
+        double slew_rate = .1;
+        if(std::abs(delta_velocity_l) > (dt * slew_rate) && (std::signbit(delta_velocity_l) == std::signbit(l_velocity)) ) {  // ignore deceleration
+            int sign = std::abs(delta_velocity_l) / delta_velocity_l;
+            std::cout << "l over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            l_velocity = prev_velocity_l + (sign * dt * slew_rate);
+        }
+        
+        if(std::abs(delta_velocity_r) > (dt * slew_rate) && (std::signbit(delta_velocity_r) == std::signbit(r_velocity))) {
+            int sign = std::abs(delta_velocity_r) / delta_velocity_r;
+            std::cout << "r over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            r_velocity = prev_velocity_r + (sign * dt * slew_rate);
         }
         
         
-        // cap voltage to max voltage with regard to velocity
-        if ( std::abs(left_voltage) > args.max_voltage ) {
-            left_voltage = left_voltage > 0 ? args.max_voltage : -args.max_voltage;
+        // cap velocity to max velocity with regard to velocity
+        if ( std::abs(l_velocity) > args.max_velocity ) {
+            l_velocity = l_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
-        if ( std::abs(right_voltage) > args.max_voltage ) {
-            right_voltage = right_voltage > 0 ? args.max_voltage : -args.max_voltage;
+        if ( std::abs(r_velocity) > args.max_velocity ) {
+            r_velocity = r_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
+        
+        prev_velocity_l = l_velocity;
+        prev_velocity_r = r_velocity;
+        
+        previous_l_velocities.push_back(l_velocity);
+        previous_r_velocities.push_back(r_velocity);
+        if(previous_l_velocities.size() > velocity_history) {
+            previous_l_velocities.erase(previous_l_velocities.begin());
+        }
+        
+        if(previous_r_velocities.size() > velocity_history) {
+            previous_r_velocities.erase(previous_r_velocities.begin());
+        }
+        
+                
+        std::cout << l_velocity << " " << r_velocity << " " << relative_angle << " " << error << "\n";    
+        // for(int i=0; i < previous_l_velocities.size(); i++) {
+        //     std::cout << previous_l_velocities.at(i) << " ";
+        // }
+        // std::cout << "\n";
 
         if ( args.log_data ) {
             Logger logger;
@@ -819,6 +992,7 @@ void Chassis::t_turn(chassis_params args) {
                 + ", position_r: " + std::to_string(std::get<1>(Sensors::get_average_encoders(l_id, r_id)))
                 + ", Heading_Sp: " + std::to_string(args.setpoint1)
                 + ", Relative_Heading: " + std::to_string(relative_angle)
+                + ", Absolute Angle: " + std::to_string(abs_angle)
                 + ", Actual_Vel1: " + std::to_string(front_left_drive->get_actual_velocity())
                 + ", Actual_Vel2: " + std::to_string(front_right_drive->get_actual_velocity())
                 + ", Actual_Vel3: " + std::to_string(back_left_drive->get_actual_velocity())
@@ -828,22 +1002,44 @@ void Chassis::t_turn(chassis_params args) {
             logger.add(entry);            
         }
 
-        
-        front_left_drive->set_voltage(left_voltage);
-        front_right_drive->set_voltage(-right_voltage);
-        back_left_drive->set_voltage(left_voltage);
-        back_right_drive->set_voltage(-right_voltage);
-        
-        prev_l_voltage = left_voltage;
-        prev_r_voltage = right_voltage;
-        
-        // // settled is when error is almost zero and voltage is minimal
-        if ( ( std::abs(error) < 1 ) && std::abs(left_voltage) < 1000) {        
+        // settled is when error is almost zero and velocity is minimal
+        double l_difference = *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second - *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).first;
+        double r_difference = *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).second - *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).first;
+        std::cout << "difference: " << *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second << " " << previous_l_velocities.size() << "\n";
+        if (
+            std::abs(l_difference) < 2 
+            && previous_l_velocities.size() == velocity_history 
+            && std::abs(r_difference) < 2 
+            && previous_r_velocities.size() == velocity_history
+            && l_velocity < 2
+            && r_velocity < 2
+        ) {  // velocity change has been minimal, so stop   
+            front_left_drive->set_motor_mode(e_voltage);
+            front_right_drive->set_motor_mode(e_voltage);
+            back_left_drive->set_motor_mode(e_voltage);
+            back_right_drive->set_motor_mode(e_voltage);
+            
+            front_left_drive->set_voltage(0);
+            front_right_drive->set_voltage(0);
+            back_left_drive->set_voltage(0);
+            back_right_drive->set_voltage(0);
+            std::cout << "ending\n";
             break; // end before timeout 
         }
+        
+        front_left_drive->move_velocity(l_velocity);
+        front_right_drive->move_velocity(r_velocity);
+        back_left_drive->move_velocity(l_velocity);
+        back_right_drive->move_velocity(r_velocity);
+    
 
         pros::delay(10);
-    } while ( pros::millis() < timeout ); 
+    } while ( pros::millis() < time + args.timeout ); 
+    
+    front_left_drive->set_motor_mode(e_voltage);
+    front_right_drive->set_motor_mode(e_voltage);
+    back_left_drive->set_motor_mode(e_voltage);
+    back_right_drive->set_motor_mode(e_voltage);
     
     front_left_drive->set_voltage(0);
     front_right_drive->set_voltage(0);
@@ -862,85 +1058,95 @@ void Chassis::t_turn(chassis_params args) {
 
 
 void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
-    // PositionTracker* tracker = PositionTracker::get_instance();
+    PositionTracker* tracker = PositionTracker::get_instance();
     
-    // delta theta is bounded by [-pi, pi], re map it to [0,pi]
-    if(point.dtheta < -M_PI) {
-        point.dtheta += M_PI;
+    long double dx = point.x - tracker->get_position().x_pos;
+    long double dy = point.y - tracker->get_position().y_pos;
+    
+    // convert end coordinates to polar to find the change in angle
+    // long double dtheta = std::fmod((-M_PI / 2) + std::atan2(dy, dx), (2 * M_PI));
+    long double dtheta = std::atan2(dy, dx);
+    if(dtheta < 0) {  // map to [0, 2pi]
+        dtheta += 2 * M_PI;
+    }
+
+    // current angle is bounded by [-pi, pi] re map it to [0, 2pi]
+    long double current_angle = tracker->get_heading_rad();
+    if(current_angle < 0) {
+        current_angle += 2 * M_PI;
+    }
+    current_angle = (-current_angle) + (M_PI / 2);
+    
+    // calculate how much the robot needs to turn to be at the angle
+    long double to_turn_face_forwards = current_angle - dtheta;  // change in robot angle
+    long double to_turn_face_backwards = current_angle - dtheta - (M_PI / 2);
+    
+    if(to_turn_face_forwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+        to_turn_face_forwards = (-2 * M_PI) + to_turn_face_forwards;  // give negative value to turn left to point
+    } else if(to_turn_face_forwards < -M_PI) {
+        to_turn_face_forwards = (2 * M_PI) + to_turn_face_forwards;  // give positive value to turn left to point
     }
     
-    // current angle is bounded by [-pi, pi] re map it to [0, pi]
-    long double current_angle = PositionTracking::get_heading_rad();
-    if(current_angle < -M_PI) {
-        current_angle += M_PI;
+    if(to_turn_face_backwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+        to_turn_face_backwards = (-2 * M_PI) + to_turn_face_backwards;  // give negative value to turn left to point
+    } else if(to_turn_face_backwards < -M_PI) {
+        to_turn_face_backwards = (2 * M_PI) + to_turn_face_backwards;  // give positive value to turn left to point
     }
     
-    // forward drive to point
-    long double forward_to_turn = current_angle - point.dtheta;  // change in robot angle
-    
-    if(forward_to_turn > (M_PI / 2)) {  // find minimal angle change and direction of change [-PI/2, PI/2]
-        forward_to_turn = -M_PI + forward_to_turn;  // give negative value to turn left to point
-    }
-    
-    forward_to_turn = PositionTracking::to_degrees(forward_to_turn);
-    
-    
-    // backward drive to point
-    long double backward_dtheta = (M_PI/2) + point.dtheta;  // find opposite of angle
-    long double backward_to_turn = current_angle - backward_dtheta;
-    if(backward_to_turn > (M_PI / 2)) {  // find minimal angle change and direction of change [-PI/2, PI/2]
-        backward_to_turn = -M_PI + backward_to_turn;  // give negative value to turn left to point
-    }
-    backward_to_turn = PositionTracking::to_degrees(backward_to_turn);
     
     long double to_turn;
     int direction;
     if(args.explicit_direction == 1) {  // force positive direction
-        to_turn = forward_to_turn;
+        to_turn = to_turn_face_forwards;
         direction = 1;
     } else if(args.explicit_direction == -1) {  // force negative direction
-        to_turn = backward_to_turn;
+        to_turn = to_turn_face_backwards;
         direction = -1;
-    } else if(std::abs(forward_to_turn) < std::abs(backward_to_turn)) {  // faster to go forwards
-        to_turn = forward_to_turn;
+    } else if(std::abs(to_turn_face_forwards) < std::abs(to_turn_face_backwards)) {  // faster to go forwards
+        to_turn = to_turn_face_forwards;
         direction = 1;
     } else {  // faster to go backwards
-        to_turn = backward_to_turn;
+        to_turn = to_turn_face_backwards;
         direction = -1;
     }
+    
+    to_turn = tracker->to_degrees(to_turn);
+    
     
     // set up turn
     chassis_params turn_args;
     turn_args.setpoint1 = to_turn;
-    turn_args.max_voltage = args.max_voltage;
+    turn_args.max_velocity = args.max_velocity;
     turn_args.timeout = 15000; // TODO: add time estimation
     turn_args.motor_slew = args.motor_slew;
     turn_args.log_data = args.log_data;
     
     // perform turn
+    std::cout << "starting turn\n";
+    std::cout << to_turn << "\n";
     t_turn(turn_args);
+    std::cout << "turn done\n";
     pros::delay(100);  // add delay for extra settling
     
     // caclulate distance to move to point
-    long double dx = args.setpoint1 - PositionTracking::get_position().x_pos;
-    long double dy = args.setpoint2 - PositionTracking::get_position().y_pos;
-    // convert end coordinates to polar and then calculate waypoints
     long double distance = std::sqrt((std::pow(dx, 2) + std::pow(dy, 2)));
-    
-    long double to_drive = direction * PositionTracking::to_encoder_ticks(distance, wheel_diameter);
+    long double to_drive = direction * tracker->to_encoder_ticks(distance, wheel_diameter);
     
     // set up straight drive
     chassis_params drive_straight_args;
     drive_straight_args.setpoint1 = to_drive;
     drive_straight_args.setpoint2 = 0;
-    drive_straight_args.max_voltage = args.max_voltage;
+    drive_straight_args.max_velocity = 125;
     drive_straight_args.timeout = 15000;
     drive_straight_args.motor_slew = args.motor_slew;
     drive_straight_args.correct_heading = true;
     drive_straight_args.log_data = args.log_data;
+    drive_straight_args.profile = args.profile;
 
-    t_profiled_straight_drive(drive_straight_args);
-    
+    std::cout << "starting drive\n";
+    std::cout << to_drive << "\n";
+    t_pid_straight_drive(drive_straight_args);
+    std::cout << "drive finished\n";
     if(args.log_data) {
         Logger logger;
         log_entry entry;
@@ -948,8 +1154,16 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
             "[INFO] " + std::string("CHASSIS_ODOM")
             + ", Time: " + std::to_string(pros::millis())
             + ", Waypoint: " + point.get_string()
-            + ", ToTurn: " + std::to_string(to_turn)
+            + ", ToTurnForwards: " + std::to_string(tracker->to_degrees(to_turn_face_forwards))
+            + ", ToTurnBackwards: " + std::to_string(tracker->to_degrees(to_turn_face_backwards))
+            + ", ToDrive: " + std::to_string(to_turn)
             + ", ToDrive: " + std::to_string(to_drive)
+            + ", Direction: " + std::to_string(direction)
+            + ", dx: " + std::to_string(dx)
+            + ", dy: " + std::to_string(dy)
+            + ", X: " + std::to_string(tracker->get_position().x_pos)
+            + ", Y: " + std::to_string(tracker->get_position().y_pos)
+            + ", Theta: " + std::to_string(tracker->to_degrees(tracker->get_position().theta))
         );
         entry.stream = "clog";
         logger.add(entry);  
@@ -958,18 +1172,18 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
 
 
 
-int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, bool slew /*false*/, bool log_data /*false*/) {
+int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, bool slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = relative_heading;
-    args.max_voltage = max_voltage;
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.motor_slew = slew;
     args.correct_heading = correct_heading;
     args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_pid_straight_drive};
     while ( send_lock.exchange( true ) ); //aquire lock
@@ -986,7 +1200,7 @@ int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/
     return uid;
 }
 
-int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*200*/, int profile /*0*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, bool slew /*false*/, bool log_data /*false*/) {
+int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*150*/, int profile /*0*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, bool slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = relative_heading;
@@ -1018,16 +1232,16 @@ int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*2
 }
 
 
-int Chassis::turn_right(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
+int Chassis::turn_right(double degrees, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = degrees;
-    args.max_voltage = max_voltage;
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.motor_slew = slew;
     args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(degrees) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn};
     while ( send_lock.exchange( true ) ); //aquire lock
@@ -1046,16 +1260,16 @@ int Chassis::turn_right(double degrees, int max_voltage /*12000*/, int timeout /
 
 
 
-int Chassis::turn_left(double degrees, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
+int Chassis::turn_left(double degrees, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = -degrees;
-    args.max_voltage = max_voltage;
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.motor_slew = slew;
     args.log_data = log_data;
 
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(degrees) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(degrees) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn};
     while ( send_lock.exchange( true ) ); //aquire lock
@@ -1073,19 +1287,20 @@ int Chassis::turn_left(double degrees, int max_voltage /*12000*/, int timeout /*
 }
 
 
-int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int explicit_direction /*0*/, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
+int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int explicit_direction /*0*/, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
     chassis_params args;
     args.setpoint1 = x;
     args.setpoint2 = y;
-    args.max_voltage = max_voltage;
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.recalculations = recalculations;
+    args.profile = profile_1;
     args.explicit_direction = explicit_direction;
     args.motor_slew = slew;
     args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(x) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(x) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_drive_to_point};
     while ( send_lock.exchange( true ) ); //aquire lock
@@ -1104,17 +1319,17 @@ int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int ex
 
 
 
-int Chassis::turn_to_point(double x, double y, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
+int Chassis::turn_to_point(double x, double y, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
     chassis_params args;
     args.setpoint1 = x;
     args.setpoint2 = y;
-    args.max_voltage = max_voltage;
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.motor_slew = slew;
     args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(x) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(x) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn_to_point};
     while ( send_lock.exchange( true ) ); //aquire lock
@@ -1133,16 +1348,17 @@ int Chassis::turn_to_point(double x, double y, int max_voltage /*12000*/, int ti
 
 
 
-int Chassis::turn_to_angle(double theta, int max_voltage /*12000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
+int Chassis::turn_to_angle(double theta, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool slew /*false*/, bool log_data /*true*/) {
+    PositionTracker* tracker = PositionTracker::get_instance();
     chassis_params args;
-    args.setpoint1 = theta;
-    args.max_voltage = max_voltage;
+    args.setpoint1 = tracker->to_radians(theta);
+    args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.motor_slew = slew;
     args.log_data = log_data;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
-    int uid = pros::millis() * (std::abs(theta) + 1) + max_voltage + front_left_drive->get_actual_voltage();
+    int uid = pros::millis() * (std::abs(theta) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn_to_angle};
     while ( send_lock.exchange( true ) ); //aquire lock

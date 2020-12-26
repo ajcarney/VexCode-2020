@@ -132,8 +132,8 @@ void Intakes::intake_motion_task(void*) {
                 
                 int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
                 int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
-                l_intake->set_voltage(-6000);
-                r_intake->set_voltage(-6000);
+                l_intake->set_voltage(-4000);
+                r_intake->set_voltage(-4000);
                 break;
             }
         }

@@ -140,16 +140,13 @@ void Indexer::indexer_motion_task(void*) {
                 
                 // look at locations of balls to decide what speed to set indexers at
                 std::vector<bool> locations = ball_detector->locate_balls();
-                
+                std::cout << locations.at(0) << " " << locations.at(1) << "\n";
                 if(!locations.at(0)) {  // move ball into top position
-                    upper_indexer->set_voltage(12000); 
+                    upper_indexer->set_voltage(5000); 
                     lower_indexer->set_voltage(12000);
                 } else if(locations.at(0) && !locations.at(1)) { // move ball from lowest/no position to middle position
-                    upper_indexer->set_voltage(2000); 
+                    // upper_indexer->set_voltage(2000); 
                     lower_indexer->set_voltage(12000);
-                } else if(locations.at(0) && locations.at(1) && !locations.at(0)) { // move ball into first position
-                    upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(6000);
                 } else { // all positions are full so stop
                     upper_indexer->set_voltage(0); 
                     lower_indexer->set_voltage(0);
@@ -178,7 +175,7 @@ void Indexer::indexer_motion_task(void*) {
                 break;
             } case e_fix_ball: {
                 upper_indexer->set_voltage(-12000);
-                pros::delay(500);
+                pros::delay(250);
                 upper_indexer->set_voltage(12000);
                 pros::delay(500);
                 upper_indexer->set_voltage(0);

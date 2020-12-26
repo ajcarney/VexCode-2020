@@ -25,7 +25,7 @@ class DebugGraph:
         self.position_r_data = data_dict.get("position_r")
         self.position_l_data = data_dict.get("position_l")
         self.integral_data = data_dict.get("integral")
-        
+        self.correction_data = data_dict.get("correction")
         
         #add legend for constants
         self.constants_text = "kP : " + str(parameters.get("kP")) + "\n"
@@ -76,9 +76,16 @@ class DebugGraph:
             title += "Position of Sensor"
         elif y1 == "integral":
             y1_data = [self.integral_data]
+            y1_title = "Integral"
             y1_sp = []
             name1 = ["Integral Value"]
             title += "Integral"
+        elif y1 == "correction":
+            y1_data = [self.correction_data]
+            y1_title = "correction"
+            y1_sp = []
+            name1 = ["Correction"]
+            title += "Correction"
         elif y1 == "acceleration":
             vel_data_l = np.diff(self.position_l_data) / np.diff(x)
             vel_data_r = np.diff(self.position_r_data) / np.diff(x)

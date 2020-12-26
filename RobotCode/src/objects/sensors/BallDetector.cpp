@@ -77,7 +77,7 @@ std::vector<bool> BallDetector::locate_balls() {
         locations.push_back(false);
     }
     
-    if(ball_detector_filter.get_raw_value() < threshold) {
+    if(ball_detector_filter.get_raw_value() < 2900) {
         locations.push_back(true);
     } else {
         locations.push_back(false);

@@ -35,6 +35,8 @@ class Parser:
         self.__position_sp = []
         self.__position_l_data = []
         self.__position_r_data = []
+        
+        self.__correction_data = []
 
         self.__brakemode = None
         self.__gearset = None
@@ -93,6 +95,8 @@ class Parser:
             position_r = [ item.strip().split("position_r:")[1] for item in data if "position_r:" in item ]
             position_l = [ item.strip().split("position_l:")[1] for item in data if "position_l:" in item ]
             
+            correction = [ item.strip().split("Correction:")[1] for item in data if "Correction:" in item ]
+            
             data_dict = {
                 "voltage1":float(voltage1[0].strip()),
                 "voltage2":float(voltage2[0].strip()),
@@ -108,6 +112,7 @@ class Parser:
                 "relative_heading":float(relative_heading[0].strip()),
                 "position_sp":float(position_sp[0].strip()),
                 "position_r_data":float(position_r[0].strip()),
+                "correction":float(correction[0].strip()),
                 "position_l_data":float(position_l[0].strip())
                 }
         except:
@@ -155,6 +160,8 @@ class Parser:
                         self.__position_r_data.append(data.get("position_r_data"))
                         self.__position_l_data.append(data.get("position_l_data"))
         
+                        self.__correction_data.append(data.get("correction"))
+        
                         first_line = line.split("[INFO]")[1]
                         data = first_line.split(",")
         
@@ -195,6 +202,7 @@ class Parser:
                     self.__position_sp.append(data.get("position_sp"))
                     self.__position_r_data.append(data.get("position_r_data"))
                     self.__position_l_data.append(data.get("position_l_data"))
+                    self.__correction_data.append(data.get("correction"))
     
 
     def print_data(self):
@@ -269,6 +277,7 @@ class Parser:
             "brakemode":self.__brakemode,
             "gearset":self.__gearset,
             "slew_rate":self.__slew,
+            "correction":self.__correction_data,
             "pid_constants":self.__pid   
         }
 

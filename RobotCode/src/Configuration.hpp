@@ -25,11 +25,11 @@
 #define RIGHT_ENC_BOTTOM_PORT    'B'
 #define STRAFE_ENC_TOP_PORT      'E'
 #define STRAFE_ENC_BOTTOM_PORT   'F'
-#define DETECTOR_MIDDLE_PORT     'H'
-#define POTENTIOMETER_PORT       'G'
+#define DETECTOR_MIDDLE_PORT     'G'
+#define POTENTIOMETER_PORT       'Z'
 
 #define DETECTOR_BOTTOM_PORT     'Z'  // no port available but still wanted in code
-#define DETECTOR_TOP_PORT        'Z'  // no port available but still wanted in code
+#define DETECTOR_TOP_PORT        'H'  // no port available but still wanted in code
 
 #define VISIONSENSOR_PORT        5
 #define IMU_PORT                 10

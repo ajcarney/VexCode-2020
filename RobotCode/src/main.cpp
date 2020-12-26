@@ -310,18 +310,75 @@ void autonomous() {
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
     
-    // PositionTracker* tracker = PositionTracker::get_instance();
-    // tracker->start_thread();
+    PositionTracker* tracker = PositionTracker::get_instance();
+    tracker->start_thread();
     // tracker->start_logging();
-    PositionTracking::set_position({0, 0, 0});
-    PositionTracking::start_thread();
-    PositionTracking::start_logging();
     std::cout << pros::Task::get_count() << "\n";
     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd;
     lcd.update_labels();
     chassis.generate_profiles();
-    chassis.profiled_straight_drive(1000);
+    
+    
+    // chassis.turn_left(90);  // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_right(90); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_left(45); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_right(45); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_left(30); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_right(30); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_left(10); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_right(10); // passing
+    // pros::delay(1000);
+    
+    // chassis.turn_right(270); // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_left(270); // passing
+    // pros::delay(1000);
+    // 
+
+    // chassis.turn_to_angle(90);  // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_to_angle(270);  // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_to_angle(0);  // passing
+    // pros::delay(1000);
+    // 
+    // chassis.turn_to_angle(-90);  // passing
+    // pros::delay(1000);
+    
+    // chassis.turn_to_point(36, 0);  // passing
+    // pros::delay(1000);
+    // chassis.turn_to_point(-36, 0);  // passing
+    // pros::delay(1000);
+    // chassis.turn_to_point(0, 36);  // passing
+    // pros::delay(1000);
+    // chassis.turn_to_point(-36, -36);  // passing
+    
+    // chassis.drive_to_point(0, 36);  // passing
+    // pros::delay(1000);
+    // chassis.drive_to_point(36, 36);  // passing
+    // pros::delay(1000);
+    // chassis.drive_to_point(36, 0);  // passing
+    // pros::delay(1000);
+    // chassis.drive_to_point(0, 0);  // passing
+    
     // tracker->stop_logging();
     lcd.update_labels();
     Autons autons;
@@ -352,6 +409,7 @@ void autonomous() {
         // prev_r = Sensors::right_encoder.get_position(r_id);
         // 
         // std::cout << "delta theta: " << delta_theta << "  |  new angle: " << prev_angle << "\n";
+        std::cout << tracker->get_position().x_pos << " " << tracker->get_position().y_pos << " " << tracker->to_degrees(tracker->get_position().theta) << "\n";
         lcd.update_labels();
         // server.handle_requests(50);
         // std::cout << "handling requests\n";

@@ -24,12 +24,21 @@ namespace Sensors
     AnalogInSensor potentiometer{POTENTIOMETER_PORT};
     BallDetector ball_detector{DETECTOR_TOP_PORT, DETECTOR_MIDDLE_PORT, DETECTOR_BOTTOM_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
     pros::Imu imu{IMU_PORT};
+    bool imu_is_calibrated = false;
 
+    void calibrate_imu() {
+        bool calibrated = false;
+        while(!calibrated) {  // block until imu is connected and calibrated
+            imu.reset();  // calibrate imu
+            while(imu.is_calibrating()) {
+                pros::delay(10);
+                calibrated = true;
+            }
+        }
+        imu_is_calibrated = true;
+    }
 
-
-
-    void log_data()
-    {
+    void log_data() {
         Logger logger;
         log_entry entry;
         entry.content = ("[INFO], " + std::to_string(pros::millis())
@@ -49,8 +58,7 @@ namespace Sensors
      * hopefully to reduce error of encoders
      * returns tuple of encoder values
      */
-    std::tuple<double, double> get_average_encoders(int l_id, int r_id)
-    {
+    std::tuple<double, double> get_average_encoders(int l_id, int r_id) {
         // use a weighted average to merge all encoders on the robot for a hopefully more accurate reading
         double left_encoder_val = (0 * Motors::front_left.get_encoder_position() * Motors::chassis_gear_ratio) + (0 * Motors::back_left.get_encoder_position() * Motors::chassis_gear_ratio) + (1 * Sensors::left_encoder.get_position(l_id));
         double right_encoder_val = (0 * Motors::front_right.get_encoder_position() * Motors::chassis_gear_ratio) + (0 * Motors::back_right.get_encoder_position() * Motors::chassis_gear_ratio) + (1 * Sensors::right_encoder.get_position(r_id));

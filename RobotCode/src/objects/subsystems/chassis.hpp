@@ -71,11 +71,15 @@ typedef struct {
 typedef struct {
     double setpoint1=0;
     double setpoint2=0;
-    int max_velocity=200;
+    double kP=1;
+    double kI=.001;
+    double kD=.001;
+    double I_max=INT32_MAX;
+    int max_velocity=150;
     int timeout=INT32_MAX;
     int recalculations=0;
     int explicit_direction=0;
-    bool motor_slew=false;
+    double motor_slew=INT32_MAX;
     bool correct_heading=true;
     bool log_data=false;
     Profile profile;
@@ -133,13 +137,13 @@ class Chassis
 
         void generate_profiles();
 
-        int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, bool slew=false, bool log_data=true);
-        int profiled_straight_drive(double encoder_ticks, int max_velocity=150, int profile=0, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, bool slew=false, bool log_data=true);
-        int turn_right(double degrees, int max_velocity=200, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
-        int turn_left(double degrees, int max_velocity=200, int timeout=INT32_MAX, bool asynch=false, bool slew=false, bool log_data=true);
-        int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=1, int max_velocity=200, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
-        int turn_to_point(double x, double y, int max_velocity=200, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
-        int turn_to_angle(double theta, int max_velocity=200, int timeout=INT32_MAX, bool asynch = false, bool slew=false, bool log_data=true);
+        int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=10, bool log_data=true);
+        int profiled_straight_drive(double encoder_ticks, int max_velocity=150, int profile=0, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, double slew=10, bool log_data=true);
+        int turn_right(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
+        int turn_left(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
+        int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=1, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
+        int turn_to_point(double x, double y, int max_velocity=150, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=true);
+        int turn_to_angle(double theta, int max_velocity=150, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=true);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to
@@ -187,6 +191,9 @@ class Chassis
          * disables internal slew rate of the motor
          */
         void disable_slew( );
+        
+        void wait_until_finished(int uid);
+        bool is_finished(int uid);
 
 
 };

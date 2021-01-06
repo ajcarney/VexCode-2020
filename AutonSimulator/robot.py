@@ -24,11 +24,15 @@ class robot:
 
         self.sqaure = None
         self.line = None
-
+        
         self.squareVertexes = []
         self.lineVertexes = []
-
+                
         self.iteration = 0
+        
+        self.x_offset_in = 0
+        self.y_offset_in = 0
+        self.theta_offset_deg = 0
 
     def __calcSleepTime(self, distance, iterations):
         return (distance / (10*(2 ** self.controlPanelFrame.speed))) / iterations
@@ -160,10 +164,10 @@ class robot:
         simulates the robot moving in a straight line
         """
         quadrants = {  #quadrant: [xVal, yVal]
-            1:[1, -1],
-            2:[-1, -1],
-            3:[-1, 1],
-            4:[1, 1]
+            1:[1, 1],
+            2:[-1, 1],
+            3:[-1, -1],
+            4:[1, -1]
             }
 
 
@@ -291,7 +295,7 @@ class robot:
         revolutions = rotationUnits / 360
         inches = revolutions * (self.diameterOfWheel * math.pi)
         pixelsToMove = (inches * self.fieldSize) / 144
-        print(rotationUnits, pixelsToMove)
+        # print(rotationUnits, pixelsToMove)
         return pixelsToMove
 
 
@@ -304,6 +308,19 @@ class robot:
         encoderTicks = revolutions * 360
 
         return encoderTicks
+
+    def __to_radians(self, degrees):
+        return ((degrees * math.pi) / 180)
+        
+    def __to_degrees(self, radians):
+        return ((radians * 180) / math.pi)
+    
+    def __in_to_encoder_ticks(self, inches):
+        circumference = (self.diameterOfWheel * math.pi);
+        revolutions = inches / circumference;
+        encoder_ticks = revolutions * 360;
+    
+        return encoder_ticks;
 
 
     def inches(self, pixels):
@@ -374,6 +391,11 @@ class robot:
         self.__generate_postscript()
 
         self.orientationDegrees = angle % 360
+        
+        
+        self.x_offset_in = self.inches(self.__calcCenters()[1])
+        self.y_offset_in = self.inches(self.__calcCenters()[0])
+        self.theta_offset_deg = self.orientationDegrees
 
 
 
@@ -501,7 +523,7 @@ class robot:
             turned += .5
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
 
-            self.orientationDegrees = (self.orientationDegrees - toMove) % 360
+            self.orientationDegrees = (self.orientationDegrees + toMove) % 360
             self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
 
 
@@ -530,11 +552,85 @@ class robot:
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
 
 
-            self.orientationDegrees = (self.orientationDegrees - toMove) % 360
+            self.orientationDegrees = (self.orientationDegrees + toMove) % 360
             self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
 
 
 
 
 
+    def drive_to_point(self, x, y):
+        """
+        drive to a point
+        """
+        self.robotInfoFrame.commandLabelText.set(("drive_to_point (" + str(x) + ", " + str(y) + ")"))
+        
+        
+        current_x = self.inches(self.__calcCenters()[1]) - self.x_offset_in
+        current_y = self.inches(self.__calcCenters()[0]) - self.y_offset_in
+        current_angle = self.__to_radians(self.orientationDegrees - self.theta_offset_deg) 
+        
+        end_x = x
+        end_y = y
+        
+        
+        dx = end_x - current_x
+        dy = end_y - current_y
+        print("current coords: ", current_x, current_y, self.orientationDegrees - self.theta_offset_deg)
+        print("dx,dy:", dx, dy)
+        print("end coords:", end_x, end_y)
+        # print(self.__to_degrees(math.atan2(dy, dx)))
+        dtheta = (math.atan2(dy, dx))
+        if dtheta < 0:
+            dtheta += 2 * math.pi 
+            
+        if current_angle < 0:
+            current_angle += 2 * math.pi
+            
+        current_angle = -current_angle + (math.pi/2)
+        to_turn = current_angle - dtheta
+        # print(self.__to_degrees(current_angle), self.__to_degrees(dtheta))
+        if to_turn > math.pi:
+            to_turn = (-2 * math.pi) + to_turn
+        if to_turn < -math.pi:
+            to_turn = (2 * math.pi) + to_turn
+            
+        
+        to_drive_inches = math.sqrt((dx**2) + (dy**2))
+        to_drive_enc = self.__in_to_encoder_ticks(to_drive_inches)
+        
+        
+        # perform turn command
+        angle = self.__to_degrees(to_turn)
+        print("to turn: ", angle)
+        if angle != 0:
+            if self.reversed:
+                angle = 0 - angle
+    
+            turned = 0
+            orientation = angle / abs(angle) #to account for negative turns
+            toMove = .5 * orientation
 
+            while turned < abs(angle): #turn to specified angle
+                self.__rotateInPlace(toMove)
+                self.__update()
+                self.__generate_postscript()
+                
+                time.sleep(self.__calcSleepTime(angle*2, angle))
+                turned += .5
+                self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
+    
+    
+                self.orientationDegrees = (self.orientationDegrees + toMove) % 360
+                self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
+    
+
+
+        # perform drive command
+        if self.reversed:
+            to_drive_enc = 0 - to_drive_enc
+
+        pixelsToMove = self.__pixels((to_drive_enc))
+
+        self.__move(pixelsToMove)
+        self.__update()

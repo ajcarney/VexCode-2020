@@ -27,7 +27,9 @@ namespace Sensors
     
     extern BallDetector ball_detector;
     extern pros::Imu imu;
+    extern bool imu_is_calibrated;
     
+    void calibrate_imu();
     void log_data();
     std::tuple<double, double> get_average_encoders(int l_id, int r_id);
 }

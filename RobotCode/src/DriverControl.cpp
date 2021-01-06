@@ -47,7 +47,7 @@ void driver_control(void*)
 
     bool auto_filter = true;
     bool brake_is_down = false;
-    bool hold_intakes_out= false;
+    bool hold_intakes_out = false;
 
     controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
 
@@ -127,6 +127,12 @@ void driver_control(void*)
         // float corrected_speed = ( .000043326431866017 * std::pow( rightDriveSpeed, 3 ) ) + ( 0.29594689028631 * rightDriveSpeed);
         Motors::front_right.user_move(right_analog_y);
         Motors::back_right.user_move(right_analog_y);
+
+
+        if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) ) {
+            Autons auton;
+            auton.deploy();
+        }
 
         pros::delay(5);
 

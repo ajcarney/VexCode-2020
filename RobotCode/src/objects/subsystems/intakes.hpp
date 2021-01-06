@@ -25,7 +25,8 @@ typedef enum e_intake_command {
     e_intake,
     e_stop_movement,
     e_secure,
-    e_hold_outward
+    e_hold_outward,
+    e_rocket_outwards
 } intake_command;
 
 
@@ -56,6 +57,7 @@ class Intakes
         void stop();
         void intake_until_secure();        
         void hold_outward();
+        void rocket_outwards();
 
         void reset_queue();
 };

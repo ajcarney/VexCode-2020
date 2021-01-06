@@ -62,7 +62,7 @@ Indexer::~Indexer() {
 void Indexer::indexer_motion_task(void*) {
     while(1) {
         if(command_queue.empty()) {  // delay unitl there is a command in the queue
-            pros::delay(10);
+            pros::delay(7);
             continue;
         }
         
@@ -259,6 +259,7 @@ void Indexer::fix_ball() {
 
 
 void Indexer::stop() {
+    reset_queue();
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_stop);
     lock.exchange( false ); //release lock

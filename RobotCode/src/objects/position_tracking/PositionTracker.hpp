@@ -31,57 +31,6 @@ typedef struct
         std::cout << "angle: " << this->theta << "\n";
     };
 } position;
-// 
-// 
-// namespace PositionTracking {
-//     extern position *current_position;
-// 
-//     extern long double *initial_l_enc;
-//     extern long double *initial_r_enc; 
-//     extern long double *initial_theta;
-//     extern long double *imu_offset;
-// 
-//     extern long double *prev_l_enc;
-//     extern long double *prev_r_enc;
-//     extern long double *delta_theta_rad;
-// 
-//     extern int *l_id;
-//     extern int *r_id;
-// 
-//     extern bool *log_data;
-// 
-//     extern pros::Mutex lock;
-//     extern pros::Task *thread;
-// 
-// 
-//     void calc_position(void*);
-//     long double to_inches( long double encoder_ticks, long double wheel_size );
-//     long double to_encoder_ticks(long double inches, long double wheel_size);
-//     long double to_radians(long double degrees);
-//     long double to_degrees(long double radians);
-//     /**
-//      * @return: None
-//      *
-//      * starts the thread or resmes it if it was stopped
-//      */
-//     void start_thread();
-// 
-//     /**
-//      * @return: None
-//      *
-//      * stops the thread from being scheduled
-//      */
-//     void stop_thread();
-//     void start_logging();
-//     void stop_logging();
-// 
-//     long double get_delta_theta_rad();
-//     long double get_heading_rad();
-// 
-//     position get_position();
-// 
-//     void set_position(position robot_coordinates);
-// };
 
 
 class PositionTracker 
@@ -106,7 +55,8 @@ class PositionTracker
                 
         static std::atomic<bool> lock;  //protect position from concurrent access
         
-        static bool log_data;
+        static int log_level;
+        static bool use_imu;
         
         
         static void calc_position(void*);
@@ -143,8 +93,10 @@ class PositionTracker
          */
         void stop_thread();
         
-        void start_logging();
-        void stop_logging();
+        void set_log_level(int log_lvl);
+
+        void enable_imu();
+        void disable_imu();
         
         long double get_delta_theta_rad();
         long double get_heading_rad();

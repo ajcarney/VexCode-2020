@@ -69,7 +69,7 @@ void Intakes::intake_motion_task(void*) {
     
     while(1) {
         if(command_queue.empty()) {  // delay unitl there is a command in the queue
-            pros::delay(10);
+            pros::delay(7);
             continue;
         }
         
@@ -132,8 +132,12 @@ void Intakes::intake_motion_task(void*) {
                 
                 int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
                 int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
-                l_intake->set_voltage(-4000);
-                r_intake->set_voltage(-4000);
+                l_intake->set_voltage(-5000);
+                r_intake->set_voltage(-5000);
+                break;
+            } case e_rocket_outwards: {
+                l_intake->set_voltage(-12000);
+                r_intake->set_voltage(-12000);
                 break;
             }
         }
@@ -148,6 +152,7 @@ void Intakes::intake() {
 }
 
 void Intakes::stop() {
+    reset_queue();
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_stop_movement);
     lock.exchange( false ); //release lock
@@ -162,6 +167,12 @@ void Intakes::intake_until_secure() {
 void Intakes::hold_outward() {
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_hold_outward);
+    lock.exchange( false ); //release lock
+}
+
+void Intakes::rocket_outwards() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_rocket_outwards);
     lock.exchange( false ); //release lock
 }
 

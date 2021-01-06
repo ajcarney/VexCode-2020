@@ -43,15 +43,7 @@ AutonomousLCD auton_lcd;
     config->filter_color = auton.AUTONOMOUS_COLORS.at(final_auton_choice);
     auton.set_autonomous_number(final_auton_choice);
 
-    bool calibrated = false;
-    while(!calibrated) {  // block until imu is connected and calibrated
-        std::cout << errno << " " << std::strerror(errno) << "\n";
-        Sensors::imu.reset();  // calibrate imu
-        while(Sensors::imu.is_calibrating()) {
-            pros::delay(10);
-            calibrated = true;
-        }
-    }
+    Sensors::calibrate_imu();
     
     
     // std::cout << OptionsScreen::cnfg.use_hardcoded << '\n';
@@ -310,14 +302,13 @@ void autonomous() {
     // std::string controller_text = "no cube loaded";
     // std::string prev_controller_text = "";
     
-    PositionTracker* tracker = PositionTracker::get_instance();
-    tracker->start_thread();
-    // tracker->start_logging();
-    std::cout << pros::Task::get_count() << "\n";
-    Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
+    // PositionTracker* tracker = PositionTracker::get_instance();
+    // tracker->start_thread();
+    // std::cout << pros::Task::get_count() << "\n";
+    // Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
     DriverControlLCD lcd;
-    lcd.update_labels();
-    chassis.generate_profiles();
+    // lcd.update_labels();
+    // chassis.generate_profiles();
     
     
     // chassis.turn_left(90);  // passing
@@ -378,10 +369,11 @@ void autonomous() {
     // chassis.drive_to_point(36, 0);  // passing
     // pros::delay(1000);
     // chassis.drive_to_point(0, 0);  // passing
-    
+
     // tracker->stop_logging();
     lcd.update_labels();
     Autons autons;
+    autons.run_autonomous();
     // autons.setup_odometry();
     
     // gather data from position tracker
@@ -409,7 +401,7 @@ void autonomous() {
         // prev_r = Sensors::right_encoder.get_position(r_id);
         // 
         // std::cout << "delta theta: " << delta_theta << "  |  new angle: " << prev_angle << "\n";
-        std::cout << tracker->get_position().x_pos << " " << tracker->get_position().y_pos << " " << tracker->to_degrees(tracker->get_position().theta) << "\n";
+        // std::cout << tracker->get_position().x_pos << " " << tracker->get_position().y_pos << " " << tracker->to_degrees(tracker->get_position().theta) << "\n";
         lcd.update_labels();
         // server.handle_requests(50);
         // std::cout << "handling requests\n";

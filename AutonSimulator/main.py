@@ -18,13 +18,6 @@ ROBOT_START_ANGLE = 0
 
 
 
-def motion(event):
-    x, y = event.x, event.y
-    corrected_coords = [x - 400, y - 50]
-    print('{}, {}'.format(bot.inches(corrected_coords[0]), bot.inches(corrected_coords[1])))
-    
-
-
 #sets up and draws field
 f = field.Field(X_RES, Y_RES)
 f.drawField()
@@ -48,7 +41,7 @@ master = f.master
 master.title("Autonomous Simulator")
 master.wm_title("Autonomous Simulator")
 icon = tk.Image("photo", file="autonSimulator.png")
-master.tk.call('wm', 'iconphoto', master._w, icon)
+# master.tk.call('wm', 'iconphoto', master._w, icon)
 master.resizable(0, 0)
 
 
@@ -68,6 +61,16 @@ bot = robot.robot(fieldSize=fieldSize, tkobj=master, canvas=canvas, controlPanel
 bot.show(angle=ROBOT_START_ANGLE, position=robotCoordinates)
 
 
+def motion(event):
+    x, y = event.x, event.y
+    screen_offset_x = (X_RES - (Y_RES - 100)) / 2
+    screen_offset_y = 50
+    offset_x = bot.x_offset_in 
+    offset_y = bot.y_offset_in
+    # print(bot.inches(x), bot.x_offset_in)
+    corrected_coords = [bot.inches(x) - bot.y_offset_in, bot.inches(y) - bot.x_offset_in]
+    print('{}, {}'.format(corrected_coords[0], corrected_coords[1]))
+    
 
 
 

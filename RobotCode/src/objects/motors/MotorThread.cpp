@@ -40,16 +40,14 @@ MotorThread::~MotorThread()
 void MotorThread::run(void*)
 {
     int start = pros::millis();
-    while ( 1 )
-    {
+    while (1) {
         while ( lock.exchange( true ) );
-        for ( int i = 0; i < motors.size(); i++ )
-        {
+        for ( int i = 0; i < motors.size(); i++ ) {
             motors.at(i)->run( pros::millis() - start );
         }
         start = pros::millis();
         lock.exchange(false);
-        pros::delay(15);
+        pros::delay(5);
     }
 }
 
@@ -59,29 +57,24 @@ void MotorThread::run(void*)
  * inits object if object is not already initialized based on a static bool
  * sets bool if it is not set
  */
-MotorThread* MotorThread::get_instance()
-{
-    if ( thread_obj == NULL )
-    {
+MotorThread* MotorThread::get_instance() {
+    if ( thread_obj == NULL ) {
         thread_obj = new MotorThread;
     }
     return thread_obj;
 }
 
 
-void MotorThread::start_thread()
-{
+void MotorThread::start_thread() {
     thread->resume();
 }
 
-void MotorThread::stop_thread()
-{
+void MotorThread::stop_thread() {
     thread->suspend();
 }
 
 
-int MotorThread::register_motor( Motor &motor )
-{
+int MotorThread::register_motor( Motor &motor ) {
     while ( lock.exchange( true ) );
     
     Logger logger;

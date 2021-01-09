@@ -277,13 +277,6 @@ void autonomous() {
     // }
 
 
-
-    pros::Task driver_control_task (driver_control,
-                                    (void*)NULL,
-                                    TASK_PRIORITY_DEFAULT,
-                                    TASK_STACK_DEPTH_DEFAULT,
-                                    "DriverControlTask");
-
      // Motors motors;
      // Motors::record_macro();
      //
@@ -381,6 +374,14 @@ void autonomous() {
     // while(1) {  
     //     pros::delay(10);
     // }
+    
+    pros::Task driver_control_task (driver_control,
+                                    (void*)NULL,
+                                    TASK_PRIORITY_DEFAULT,
+                                    TASK_STACK_DEPTH_DEFAULT,
+                                    "DriverControlTask");
+
+    
     
     // double prev_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);
     // double ref_angle = std::fmod(Sensors::imu.get_heading() + 360, 360);

@@ -100,17 +100,17 @@ void Autons::skills() {
     
     deploy();
     
-    int uid = chassis.drive_to_point(0, 15, 0, 1, 150, INT32_MAX, true);
-    while(!chassis.is_finished(uid)) {
-        std::cout << uid << " " << chassis.is_finished(uid) << "\n";
-        intakes.intake();
-        indexer.auto_increment();
-    }
-    intakes.stop();
-    indexer.stop();
-    
-    chassis.drive_to_point(15, 15, 0, 0, 150, INT32_MAX, false);
-    chassis.pid_straight_drive(400);
+    // int uid = chassis.drive_to_point(0, 15, 0, 1, 150, INT32_MAX, true);
+    // while(!chassis.is_finished(uid)) {
+    //     std::cout << uid << " " << chassis.is_finished(uid) << "\n";
+    //     intakes.intake();
+    //     indexer.auto_increment();
+    // }
+    // intakes.stop();
+    // indexer.stop();
+    // 
+    // chassis.drive_to_point(15, 15, 0, 0, 150, INT32_MAX, false);
+    // chassis.pid_straight_drive(400);
 }
 
 

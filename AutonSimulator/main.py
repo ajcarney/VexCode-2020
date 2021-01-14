@@ -71,12 +71,26 @@ def motion(event):
     corrected_coords = [bot.inches(x) - bot.y_offset_in, bot.inches(y) - bot.x_offset_in]
     print('{}, {}'.format(corrected_coords[0], corrected_coords[1]))
     
-
+def forward(event):
+    bot.forward(25)
+    
+def backward(event):
+    bot.backward(25)
+    
+def turnRight(event):
+    bot.turnRight(2)
+    
+def turnLeft(event):
+    bot.turnLeft(2)
 
 
 #runs autonomous
 try:
     master.bind('<Motion>', motion)
+    master.bind("w", forward)
+    master.bind("s", backward)
+    master.bind("a", turnLeft)
+    master.bind("d", turnRight)
 
     auton = autonomous.auton(bot, master, controlPanelPane, robotInfoPane)
     auton.commands()

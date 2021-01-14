@@ -15,6 +15,10 @@ class robotInfoFrame:
 
 
         ##### labels #####
+        
+        # position label
+        self.positionLabelText = tk.StringVar()
+        self.positionLabel = tk.Label(self.guiFrame, textvariable=self.positionLabelText)
 
         #orientation label
         self.orientationLabelText = tk.StringVar()
@@ -41,10 +45,10 @@ class robotInfoFrame:
         """
         places all labels and sets default value
         """
-
-        self.orientationLabel.grid(row=0, column=8, columnspan=1, sticky='w')
-        self.distanceMovedLabel.grid(row=1, column=8, columnspan=1, sticky='w')
-        self.commandLabel.grid(row=2, column=8, columnspan=1, sticky='w')
+        self.positionLabel.grid(row=0, column=8, columnspan=1, sticky='w')
+        self.orientationLabel.grid(row=1, column=8, columnspan=1, sticky='w')
+        self.distanceMovedLabel.grid(row=2, column=8, columnspan=1, sticky='w')
+        self.commandLabel.grid(row=3, column=8, columnspan=1, sticky='w')
 
         self.whiteSpaceLabel.grid(row=0, column=0, columnspan=7, rowspan=3, sticky='news')
         self.trailingWhiteSpaceLabel.grid(row=0, column=4, sticky='news')
@@ -53,7 +57,7 @@ class robotInfoFrame:
         #configures trailing white space to be eaten
         self.guiFrame.grid_columnconfigure(4, weight=1)
 
-
+        self.positionLabelText.set("(x: ?, y: ?)")
         self.orientationLabelText.set("orientation: ")
         self.distanceMovedLabelText.set("distance moved: N/A                   ")
         self.commandLabelText.set("command: ")

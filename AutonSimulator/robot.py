@@ -229,26 +229,30 @@ class robot:
             eus = self.__encoderTicks(d)  # shows distance moved
             distanceMoved = distanceMoved + eus
 
+            #updates vertices of square and line
+            xChange = (xPol * abs(math.cos(math.radians(self.orientationDegrees)) * abs(units))) / iterations
+            yChange = (yPol * abs(math.sin(math.radians(self.orientationDegrees)) * abs(units))) / iterations
+    
+            self.squareVertexes = [
+                [self.squareVertexes[0][0] + xChange, self.squareVertexes[0][1] + yChange],
+                [self.squareVertexes[1][0] + xChange, self.squareVertexes[1][1] + yChange],
+                [self.squareVertexes[2][0] + xChange, self.squareVertexes[2][1] + yChange],
+                [self.squareVertexes[3][0] + xChange, self.squareVertexes[3][1] + yChange]
+                ]
+    
+            self.lineVertexes = [
+                [self.lineVertexes[0][0] + xChange, self.lineVertexes[0][1] + yChange],
+                [self.lineVertexes[1][0] + xChange, self.lineVertexes[1][1] + yChange],
+                [self.lineVertexes[2][0] + xChange, self.lineVertexes[2][1] + yChange],
+                [self.lineVertexes[3][0] + xChange, self.lineVertexes[3][1] + yChange]
+                ]
+            
+            self.__update()
+
             self.__updateDistanceLabel(str(round(distanceMoved, 2)) ,"encoder ticks")
+            self.__update_position_label()
 
 
-        #updates vertices of square and line
-        xChange = xPol * abs(math.cos(math.radians(self.orientationDegrees)) * abs(units))
-        yChange = yPol * abs(math.sin(math.radians(self.orientationDegrees)) * abs(units))
-
-        self.squareVertexes = [
-            [self.squareVertexes[0][0] + xChange, self.squareVertexes[0][1] + yChange],
-            [self.squareVertexes[1][0] + xChange, self.squareVertexes[1][1] + yChange],
-            [self.squareVertexes[2][0] + xChange, self.squareVertexes[2][1] + yChange],
-            [self.squareVertexes[3][0] + xChange, self.squareVertexes[3][1] + yChange]
-            ]
-
-        self.lineVertexes = [
-            [self.lineVertexes[0][0] + xChange, self.lineVertexes[0][1] + yChange],
-            [self.lineVertexes[1][0] + xChange, self.lineVertexes[1][1] + yChange],
-            [self.lineVertexes[2][0] + xChange, self.lineVertexes[2][1] + yChange],
-            [self.lineVertexes[3][0] + xChange, self.lineVertexes[3][1] + yChange]
-            ]
 
 
 
@@ -286,6 +290,22 @@ class robot:
         self.robotInfoFrame.distanceMovedLabelText.set(text)
 
         self.master.update()
+
+    def __update_orientation_label(self, units="degrees"):
+        angle = self.orientationDegrees 
+        if units == "radians":
+            angle = self.__to_radians(angle)
+        text = "Orientation: " + str(angle)
+        self.robotInfoFrame.orientationLabelText.set(text)
+
+
+    def __update_position_label(self):
+        x = round(self.inches(self.__calcCenters()[1]) - self.x_offset_in, 2)
+        y = round(self.inches(self.__calcCenters()[0]) - self.y_offset_in, 2)
+        
+        text = "(x: " + str(x) + ", y: " + str(y) + ")"
+        
+        self.robotInfoFrame.positionLabelText.set(text)
 
 
     def __pixels(self, rotationUnits):
@@ -469,7 +489,7 @@ class robot:
 
             self.orientationDegrees = (self.orientationDegrees - toMove) % 360
             self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
-
+            self.__update_position_label()
 
 
     def rightSide(self, angle):
@@ -497,7 +517,8 @@ class robot:
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
 
             self.orientationDegrees = (self.orientationDegrees + toMove) % 360
-            self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
+            self.__update_orientation_label()
+            self.__update_position_label()
 
 
 
@@ -524,7 +545,8 @@ class robot:
             self.__updateDistanceLabel(str(round(turned, 2)), "degrees")
 
             self.orientationDegrees = (self.orientationDegrees + toMove) % 360
-            self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
+            self.__update_orientation_label()
+            self.__update_position_label()
 
 
 
@@ -553,8 +575,8 @@ class robot:
 
 
             self.orientationDegrees = (self.orientationDegrees + toMove) % 360
-            self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
-
+            self.__update_orientation_label()
+            self.__update_position_label()
 
 
 
@@ -622,7 +644,8 @@ class robot:
     
     
                 self.orientationDegrees = (self.orientationDegrees + toMove) % 360
-                self.robotInfoFrame.orientationLabelText.set("orientation: " + str(self.orientationDegrees))
+                self.__update_orientation_label()
+                self.__update_position_label()
     
 
 

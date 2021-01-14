@@ -13,7 +13,7 @@ import controlPanelFrame
 X_RES = 1600
 Y_RES = 900
 ROBOT_START_TILE = [0, 1]
-ROBOT_START = [0, 24]
+ROBOT_START = [0, 30]
 ROBOT_START_ANGLE = 0
 
 

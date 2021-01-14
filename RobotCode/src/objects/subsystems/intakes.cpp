@@ -132,8 +132,20 @@ void Intakes::intake_motion_task(void*) {
                 
                 int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
                 int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
-                l_intake->set_voltage(-5000);
-                r_intake->set_voltage(-5000);
+                if(abs_position_l > -30) {
+                    l_intake->set_voltage(-5000);
+                } else {
+                    l_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
+                }
+                
+                // if(abs_position_r > -30) {
+                //     r_intake->set_voltage(-5000);
+                // } else {
+                //     r_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
+                // }
+                // 
+                l_intake->set_voltage(-4000);
+                r_intake->set_voltage(-4000);
                 break;
             } case e_rocket_outwards: {
                 l_intake->set_voltage(-12000);

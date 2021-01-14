@@ -73,17 +73,38 @@ class auton:
         """
         autonomous commands
         """
-        self.nextFrame(2)
+        self.nextFrame(1)
     
-        self.robot.drive_to_point(0, 15)
-        self.nextFrame(1)
+        self.robot.drive_to_point(0, 30)
+        self.nextFrame(.25)
         
-        self.robot.drive_to_point(-22.8, 8.5)
-        self.nextFrame(1)
+        self.robot.drive_to_point(19.5, 10.6)
+        self.nextFrame(.25)
         
-        self.robot.forward(300)
-        self.nextFrame(1)
+        self.robot.turnRight(25)
+        self.nextFrame(.25)
         
+        self.robot.forward(150)
+        self.nextFrame(.25)
+        
+        self.robot.backward(500)
+        self.nextFrame(.25)
+        
+        self.robot.drive_to_point(0, 30)
+        self.nextFrame(.25)
+        
+        self.robot.drive_to_point(-24.5, 11.5)
+        self.nextFrame(.25)
+        
+        self.robot.forward(350)
+        self.nextFrame(.25)
+        
+        #self.robot.turnLeft(10)
+        #self.nextFrame(.25)
+
+        
+        self.robot.drive_to_point(0, 30)
+        self.nextFrame(.25)
         
      
         # self.robot.drive_to_point(0, 0)

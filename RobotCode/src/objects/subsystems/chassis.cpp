@@ -263,18 +263,18 @@ void Chassis::chassis_motion_task(void*) {
                 break;
             } case e_turn_to_point: {
                 PositionTracker* tracker = PositionTracker::get_instance();
-
+                
                 long double dx = action.args.setpoint1 - tracker->get_position().x_pos;
                 long double dy = action.args.setpoint2 - tracker->get_position().y_pos;
                 
                 // convert end coordinates to polar to find the change in angle
                 // long double dtheta = std::fmod((-M_PI / 2) + std::atan2(dy, dx), (2 * M_PI));
                 long double dtheta = std::atan2(dy, dx);
-                if(dtheta < 0) {  // current angle is bounded by [-pi, pi] re map it to [0, pi]
+                if(dtheta < 0) {  // map to [0, 2pi]
                     dtheta += 2 * M_PI;
                 }
 
-                // current angle is bounded by [-pi, pi] re map it to [0, pi]
+                // current angle is bounded by [-pi, pi] re map it to [0, 2pi]
                 long double current_angle = tracker->get_heading_rad();
                 if(current_angle < 0) {
                     current_angle += 2 * M_PI;
@@ -282,43 +282,82 @@ void Chassis::chassis_motion_task(void*) {
                 current_angle = (-current_angle) + (M_PI / 2);
                 
                 // calculate how much the robot needs to turn to be at the angle
-                long double to_turn = current_angle - dtheta;  // change in robot angle
+                long double to_turn_face_forwards = current_angle - dtheta;  // change in robot angle
+                long double to_turn_face_backwards = (current_angle - dtheta) - M_PI;
                 
-                if(to_turn > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
-                    to_turn = (-2 * M_PI) + to_turn;  // give negative value to turn left to point
-                } else if(to_turn < -M_PI) {
-                    to_turn = (2 * M_PI) + to_turn;  // give positive value to turn left to point
+                if(to_turn_face_forwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+                    to_turn_face_forwards = (-2 * M_PI) + to_turn_face_forwards;  // give negative value to turn left to point
+                } else if(to_turn_face_forwards < -M_PI) {
+                    to_turn_face_forwards = (2 * M_PI) + to_turn_face_forwards;  // give positive value to turn left to point
+                }
+                
+                if(to_turn_face_backwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
+                    to_turn_face_backwards = (-2 * M_PI) + to_turn_face_backwards;  // give negative value to turn left to point
+                } else if(to_turn_face_backwards < -M_PI) {
+                    to_turn_face_backwards = (2 * M_PI) + to_turn_face_backwards;  // give positive value to turn left to point
+                }
+                
+                
+                long double to_turn;
+                int direction;
+                if(action.args.explicit_direction == 1) {  // force positive direction
+                    to_turn = to_turn_face_forwards;
+                    direction = 1;
+                } else if(action.args.explicit_direction == -1) {  // force negative direction
+                    to_turn = to_turn_face_backwards;
+                    direction = -1;
+                } else if(std::abs(to_turn_face_forwards) < std::abs(to_turn_face_backwards)) {  // faster to go forwards
+                    to_turn = to_turn_face_forwards;
+                    direction = 1;
+                } else {  // faster to go backwards
+                    to_turn = to_turn_face_backwards;
+                    direction = -1;
                 }
                 
                 to_turn = tracker->to_degrees(to_turn);
+                
                 
                 // set up turn
                 chassis_params turn_args;
                 turn_args.setpoint1 = to_turn;
                 turn_args.max_velocity = action.args.max_velocity;
-                turn_args.timeout = action.args.timeout; // TODO: add time estimation
+                turn_args.timeout = 15000; // TODO: add time estimation
                 turn_args.kP = 4;
                 turn_args.kI = 0.00000;
                 turn_args.kD = 54;
                 turn_args.I_max = INT32_MAX;
                 turn_args.motor_slew = action.args.motor_slew;
                 turn_args.log_data = action.args.log_data;
-
+                
+                // perform turn
+                std::cout << "starting turn\n";
+                std::cout << to_turn << "\n";
+                t_turn(turn_args);
+                std::cout << "turn done\n";
+                
                 if(action.args.log_data) {
                     Logger logger;
                     log_entry entry;
-                    std::string msg = (
+                    entry.content = (
                         "[INFO] " + std::string("CHASSIS_ODOM")
                         + ", Time: " + std::to_string(pros::millis())
-                        + ", turning: " + std::to_string(to_turn)
+                        + ", X " + std::to_string(action.args.setpoint1)
+                        + ", Y " + std::to_string(action.args.setpoint2)
+                        + ", ToTurnForwards: " + std::to_string(tracker->to_degrees(to_turn_face_forwards))
+                        + ", ToTurnBackwards: " + std::to_string(tracker->to_degrees(to_turn_face_backwards))
+                        + ", ToTurn: " + std::to_string(to_turn)
+                        + ", Direction: " + std::to_string(direction)
+                        + ", dx: " + std::to_string(dx)
+                        + ", dy: " + std::to_string(dy)
+                        + ", X: " + std::to_string(tracker->get_position().x_pos)
+                        + ", Y: " + std::to_string(tracker->get_position().y_pos)
+                        + ", Theta: " + std::to_string(tracker->to_degrees(tracker->get_position().theta))
                     );
-                    entry.content = msg;
                     entry.stream = "clog";
                     logger.add(entry);  
                 }
                 
-                // perform turn
-                t_turn(turn_args);
+                pros::delay(100);  // add delay for extra settling
                 
                 break;
             } case e_turn_to_angle: {
@@ -636,8 +675,8 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     back_left_drive->enable_driver_control();
     back_right_drive->enable_driver_control();
     
-    right_encoder->forget_position(r_id);  // free up space in the encoders log
-    left_encoder->forget_position(l_id);
+    // right_encoder->forget_position(r_id);  // free up space in the encoders log
+    // left_encoder->forget_position(l_id);
 }
 
 
@@ -834,8 +873,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     back_left_drive->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     back_right_drive->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     
-    right_encoder->forget_position(r_id);  // free up space in the encoders log
-    left_encoder->forget_position(l_id);
+    // right_encoder->forget_position(r_id);  // free up space in the encoders log
+    // left_encoder->forget_position(l_id);
 }
 
 
@@ -1058,8 +1097,8 @@ void Chassis::t_turn(chassis_params args) {
     back_left_drive->enable_driver_control();
     back_right_drive->enable_driver_control();
     
-    right_encoder->forget_position(r_id);  // free up space in the encoders log
-    left_encoder->forget_position(l_id);
+    // right_encoder->forget_position(r_id);  // free up space in the encoders log
+    // left_encoder->forget_position(l_id);
 }
 
 
@@ -1171,7 +1210,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
             + ", Waypoint: " + point.get_string()
             + ", ToTurnForwards: " + std::to_string(tracker->to_degrees(to_turn_face_forwards))
             + ", ToTurnBackwards: " + std::to_string(tracker->to_degrees(to_turn_face_backwards))
-            + ", ToDrive: " + std::to_string(to_turn)
+            + ", ToTurn: " + std::to_string(to_turn)
             + ", ToDrive: " + std::to_string(to_drive)
             + ", Direction: " + std::to_string(direction)
             + ", dx: " + std::to_string(dx)

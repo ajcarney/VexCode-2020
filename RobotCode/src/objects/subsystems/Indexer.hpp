@@ -25,6 +25,7 @@ typedef enum e_indexer_command {
     e_index,
     e_filter,
     e_auto_index,
+    e_index_no_backboard,
     e_increment,
     e_auto_increment,
     e_raise_brake,
@@ -65,6 +66,7 @@ class Indexer
         void index();
         void filter();
         void auto_index();
+        void index_no_backboard();
         
         void increment();
         void auto_increment();

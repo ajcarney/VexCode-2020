@@ -27,7 +27,7 @@ int Autons::selected_number = 1;
 
 Autons::Autons( )
 {
-    debug_auton_num = 4;
+    debug_auton_num = 5;
     driver_control_num = 1;
 }
 
@@ -51,10 +51,7 @@ int Autons::get_autonomous_number() {
 void Autons::deploy() {
     Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "none");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
-    
-    Motors::left_intake.set_log_level(2);
-    Motors::right_intake.set_log_level(2);
-    
+
     intakes.rocket_outwards();
     indexer.run_upper_roller();
     
@@ -62,11 +59,6 @@ void Autons::deploy() {
     
     intakes.stop();
     indexer.stop();
-    
-    pros::delay(1000);
-    
-    Motors::left_intake.set_log_level(0);
-    Motors::right_intake.set_log_level(0);
 }
 
 
@@ -114,6 +106,96 @@ void Autons::skills() {
 }
 
 
+
+void Autons::blue_north() {
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "blue");    
+    Intakes intakes(Motors::left_intake, Motors::right_intake);
+    PositionTracker* tracker = PositionTracker::get_instance();
+    tracker->start_thread();
+    tracker->enable_imu();
+    tracker->set_log_level(5);
+    tracker->set_position({0, 0, 0});
+    
+    deploy();    
+    
+    chassis.drive_to_point(0, 30);
+    
+    chassis.turn_right(125);
+    
+    chassis.pid_straight_drive(1100, 0, 150, INT32_MAX, false, false);
+    
+    for(int i=0; i < 100; i++) {  // score preload
+        indexer.auto_index();
+        pros::delay(10);
+    }
+    
+    chassis.pid_straight_drive(-1100, 0, 150, INT32_MAX, false, false);
+    
+    chassis.turn_right(90);
+    
+    intakes.hold_outward();
+    // chassis.pid_straight_drive(1100, 0, 150, INT32_MAX, false, false);
+    
+    int uid = chassis.pid_straight_drive(1300, 0, 150, INT32_MAX, true, false);
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+    }
+    // chassis.turn_to_point(24, 10.6, 0, 1);
+    
+    // chassis.profiled_straight_drive(1500);
+    // chassis.turn_right(25);
+    // chassis.pid_straight_drive(150);
+    
+    for(int i=0; i < 100; i++) {  // score preload
+        indexer.auto_index();
+        pros::delay(10);
+    }
+    
+    // chassis.pid_straight_drive(-500);
+    // 
+    // chassis.drive_to_point(0, 30, 0, -1);
+    // 
+    // intakes.hold_outward();
+    // chassis.drive_to_point(-24.5, 11.5);
+    // // int uid = chassis.drive_to_point(-24.5, 11.5, 0, 1, 150, INT32_MAX, true);
+    // // while(!chassis.is_finished(uid)) {
+    // //     indexer.auto_increment();
+    // // }
+    // 
+    // int uid = chassis.pid_straight_drive(150, 0, 130, INT32_MAX, true);  // drive to ball
+    // while(!chassis.is_finished(uid)) {
+    //     indexer.auto_increment();
+    //     intakes.intake();
+    // }
+    // 
+    // for(int i=0; i < 100; i++) {  // make sure to pick up ball
+    //     indexer.auto_increment();
+    //     intakes.intake();
+    //     pros::delay(10);
+    // }
+    // 
+    // // uid = chassis.turn_left(10, 130, INT32_MAX, true);  // turn to goal
+    // // while(!chassis.is_finished(uid)) {
+    // //     indexer.auto_increment();
+    // //     intakes.intake();
+    // // }
+    // 
+    // chassis.pid_straight_drive(350);  // drive into goal
+    // 
+    // for(int i=0; i < 200; i++) {  // score balls
+    //     indexer.auto_index();
+    //     pros::delay(10);
+    // }
+    // 
+    // chassis.drive_to_point(0, 30, 0, -1);
+    
+    
+    
+}
+
+
 void Autons::run_autonomous() {
     switch(selected_number)
     {
@@ -126,6 +208,10 @@ void Autons::run_autonomous() {
 
         case 3:
             skills();
+            break;
+            
+        case 4:
+            blue_north();
             break;
 
     }

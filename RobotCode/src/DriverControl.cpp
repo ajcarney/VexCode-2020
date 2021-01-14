@@ -48,8 +48,9 @@ void driver_control(void*)
     bool auto_filter = true;
     bool brake_is_down = false;
     bool hold_intakes_out = false;
+    int intake_start_time = 0;  // no possible way to think indexer should run at the start of driver control
 
-    controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
+    controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);
 
     while ( true ) {
         controllers.update_button_history();
@@ -57,6 +58,7 @@ void driver_control(void*)
     // section for front roller intake movement
         if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_R1)) {  // define velocity for main intake
             intakes.intake();
+            intake_start_time = pros::millis();
         } else if(hold_intakes_out){  // rest state is outward with motor power
             intakes.hold_outward();
         } else {  // rest state is no motor power
@@ -75,21 +77,35 @@ void driver_control(void*)
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.filter();
         } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
-            if(brake_is_down) {
-                indexer.raise_brake();
-                brake_is_down = false;
-            } else {
-                indexer.lower_brake();
-                brake_is_down = true;
-            }
+            // commented out because sensor isn't programmed rn
+            // if(brake_is_down) {
+            //     indexer.raise_brake();
+            //     brake_is_down = false;
+            // } else {
+            //     indexer.lower_brake();
+            //     brake_is_down = true;
+            // }
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
             indexer.auto_increment();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
             indexer.increment();
         } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             indexer.fix_ball();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_X)) {
+            indexer.index_no_backboard();
+        } else if (pros::millis() < intake_start_time + 1000) {
+            indexer.auto_increment();
         } else {
             indexer.stop();
+        }
+        
+        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+            auto_filter = !auto_filter;
+            if(auto_filter) {  // give different message if not auto filtering
+                controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);
+            } else {
+                controllers.master.print(0, 0, "Man Filter %s     ", config->filter_color);
+            }
         }
 
     // section for setting filter color
@@ -101,7 +117,12 @@ void driver_control(void*)
             } else if(config->filter_color == "none") {
                 config->filter_color = "red";
             }
-            controllers.master.print(0, 0, "Filtering %s     ", config->filter_color);
+            
+            if(auto_filter) {  // give different message if not auto filtering
+                controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);
+            } else {
+                controllers.master.print(0, 0, "Man Filter %s     ", config->filter_color);
+            }
             std::cout << "filtering " << config->filter_color << "\n";
             indexer.update_filter_color(config->filter_color);
         }
@@ -136,240 +157,5 @@ void driver_control(void*)
 
         pros::delay(5);
 
-
-
-    //
-    //     //master left analog y moves left side of robot
-    //     if ( std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) > 5 && !shift_key_pressing )
-    //     {
-    //         float leftDriveSpeed = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    //         float corrected_speed = ( .000043326431866017 * std::pow( leftDriveSpeed, 3 ) ) + ( 0.29594689028631 * leftDriveSpeed);
-    //         Motors::front_left.move(leftDriveSpeed);
-    //         Motors::back_left.move(leftDriveSpeed);
-    //     }
-    //     else if ( std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) > 5 && shift_key_pressing )
-    //     {
-    //         lift.move(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
-    //         lift_setpoint = lift.get_potentiometer_value();
-    //     }
-    //     else if ( Motors::front_left.driver_control_allowed() && Motors::back_left.driver_control_allowed() )
-    //     {
-    //         Motors::front_left.move(0);
-    //         Motors::back_left.move(0);
-    //     }
-    //
-    //
-    //
-    //     //master right analog y moves right side of robot
-    //     if ( std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)) > 5 && !shift_key_pressing)
-    //     {
-    //         float rightDriveSpeed = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-    //         float corrected_speed = ( .000043326431866017 * std::pow( rightDriveSpeed, 3 ) ) + ( 0.29594689028631 * rightDriveSpeed);
-    //         Motors::front_right.move(rightDriveSpeed);
-    //         Motors::back_right.move(rightDriveSpeed);
-    //     }
-    //     else if ( Motors::front_right.driver_control_allowed() && Motors::back_right.driver_control_allowed() )
-    //     {
-    //         Motors::front_right.move(0);
-    //         Motors::back_right.move(0);
-    //     }
-    //
-    //     if ( std::abs(controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)) > 5 && shift_key_pressing )  //back up and outake macro
-    //     {
-    //         float drive_speed = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) / 5;
-    //         float intake_speed = controllers.master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) / 4;
-    //
-    //         Motors::front_left.move(drive_speed);
-    //         Motors::back_left.move(drive_speed);
-    //         Motors::front_right.move(drive_speed);
-    //         Motors::back_right.move(drive_speed);
-    //
-    //         Motors::right_intake.move(intake_speed);
-    //         Motors::left_intake.move(intake_speed);
-    //
-    //         intake_running = true;
-    //
-    //     }
-    //     else
-    //     {
-    //         intake_running = false;
-    //     }
-    //
-    //
-    //
-    //     //master right digital moves the intake
-    //     if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && !shift_key_pressing )
-    //     {
-    //         Motors::right_intake.move(127);
-    //         Motors::left_intake.move(127);
-    //     }
-    //     else if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && !shift_key_pressing )
-    //     {
-    //         if ( lift.get_potentiometer_value() < 500 )
-    //         {
-    //             Motors::right_intake.move(-127);
-    //             Motors::left_intake.move(-127);
-    //         }
-    //         else if ( lift.get_potentiometer_value() >= 500 )  //outake slower when lift is up so cubes dont launch over tower
-    //         {
-    //             Motors::right_intake.move(raised_lift_outake_speed);
-    //             Motors::left_intake.move(raised_lift_outake_speed);
-    //         }
-    //
-    //     }
-    //     else if ( controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2) && shift_key_pressing )
-    //     {
-    //         raised_lift_outake_speed = raised_lift_outake_speed == -127 ? -60 : -127; //flip between outake speeds when lift is raised
-    //     }
-    //     else if ( Motors::right_intake.driver_control_allowed() && Motors::left_intake.driver_control_allowed() && !intake_running )
-    //     {
-    //         Motors::right_intake.move(0);
-    //         Motors::left_intake.move(0);
-    //     }
-    //
-    //
-    //
-    //
-    //     //master up arrow moves tilter forward
-    //     if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !shift_key_pressing )
-    //     {
-    //         tilter.move(127, true);
-    //         move_tilter_back = false;
-    //     }
-    //     else if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && !shift_key_pressing || move_tilter_back)
-    //     {
-    //         if ( !Sensors::limit_switch.get_value() )
-    //         {
-    //             Motors::tilter.move(-127);
-    //         }
-    //         else
-    //         {
-    //             Motors::tilter.move(0);
-    //             Motors::tilter.tare_encoder();
-    //             move_tilter_back = false;
-    //         }
-    //     }
-    //     else if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && shift_key_pressing )
-    //     {
-    //         tilter.move(127, false);
-    //         move_tilter_back = false;
-    //     }
-    //     else if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && shift_key_pressing )
-    //     {
-    //         move_tilter_back = true;
-    //     }
-    //     else if ( Motors::tilter.driver_control_allowed() )
-    //     {
-    //         Motors::tilter.move(0);
-    //     }
-    //
-    //
-    //
-    //
-
-    //
-    //
-    //
-    //     //master button B cycles brakemode
-    //     if (controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_B))
-    //     {
-    //         if ( Motors::front_left.get_brake_mode() == pros::E_MOTOR_BRAKE_COAST )
-    //         {
-    //             Motors::front_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    //             Motors::back_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    //             Motors::front_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    //             Motors::back_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    //         }
-    //         else
-    //         {
-    //             Motors::front_left.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    //             Motors::back_left.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    //             Motors::front_right.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    //             Motors::back_right.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    //         }
-    //     }
-    //
-    //
-    //
-    //     #ifdef AUTON_DEBUG
-    //         if (controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && shift_key_pressing )
-    //         {
-    //
-    //             Autons auton;
-    //
-    //             Motors::front_left.disable_driver_control();
-    //             Motors::front_left.disable_driver_control();
-    //             Motors::back_right.disable_driver_control();
-    //             Motors::back_left.disable_driver_control();
-    //             Motors::right_intake.disable_driver_control();
-    //             Motors::left_intake.disable_driver_control();
-    //             Motors::tilter.disable_driver_control();
-    //             Motors::lift.disable_driver_control();
-    //
-    //             switch(DriverControlLCD::auton)
-    //             {
-    //                 case 1:
-    //                    break;
-    //
-    //                 case 2:
-    //                    auton.five_cube_red_small_zone(OptionsScreen::cnfg);
-    //                    break;
-    //
-    //                 case 3:
-    //                    auton.five_cube_blue_small_zone(OptionsScreen::cnfg);
-    //                    break;
-    //
-    //                 case 4:
-    //                    auton.seven_cube_red_small_zone(OptionsScreen::cnfg);
-    //                    break;
-    //
-    //                 case 5:
-    //                    auton.seven_cube_blue_small_zone(OptionsScreen::cnfg);
-    //                    break;
-    //
-    //                 case 6:
-    //                     auton.red_big_zone(OptionsScreen::cnfg);
-    //                     break;
-    //
-    //                 case 7:
-    //                     auton.blue_big_zone(OptionsScreen::cnfg);
-    //                     break;
-    //
-    //                 case 8:
-    //                     auton.one_pt(OptionsScreen::cnfg);
-    //                     break;
-    //
-    //                 case 9:
-    //                     auton.skills(OptionsScreen::cnfg);
-    //                     break;
-    //
-    //             }
-    //
-    //             Motors::front_left.enable_driver_control();
-    //             Motors::front_left.enable_driver_control();
-    //             Motors::back_right.enable_driver_control();
-    //             Motors::back_left.enable_driver_control();
-    //             Motors::right_intake.enable_driver_control();
-    //             Motors::left_intake.enable_driver_control();
-    //             Motors::tilter.enable_driver_control();
-    //             Motors::lift.enable_driver_control();
-    //         }
-    //
-    //         if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) )
-    //         {
-    //             Autons auton;
-    //             auton.deploy();
-    //         }
-    //
-    //         if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_X) )
-    //         {
-    //             Autons auton;
-    //             auton.dump_stack();
-    //         }
-    //
-    //     #endif
-    //
-    //
-    //     pros::delay(20);
     }
 }

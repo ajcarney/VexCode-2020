@@ -53,19 +53,22 @@ class Autons
             {1, "Driver Control"},             //used to find name of auton
             {2, "one_pt"},                     //to keep title the same
             {3, "skills"},
-            {4, "Debugger"}
+            {4, "blue north"},
+            {5, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
             {2, "drives forward and\nbackwards"},
             {3, "skills auton"},
-            {4, "opens debugger"}
+            {4, "Does nothing"},
+            {5, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "none"},                     //used to find color of auton
             {2, "none"},                     //selected to keep background the same  
             {3, "none"},
-            {4, "none"}
+            {4, "blue"},
+            {5, "none"}
         };
 
         void set_autonomous_number(int n);
@@ -101,6 +104,8 @@ class Autons
          * runs skills
          */
         void skills();
+        
+        void blue_north();
 
         void run_autonomous();
 };

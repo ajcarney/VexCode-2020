@@ -74,11 +74,7 @@ void Indexer::indexer_motion_task(void*) {
         
         // execute command
         switch(command) {
-            case e_index: {
-                upper_indexer->set_voltage(12000); 
-                lower_indexer->set_voltage(12000);
-                break;
-            } case e_filter: {
+            case e_filter: {
                 upper_indexer->set_voltage(-12000); 
                 lower_indexer->set_voltage(12000);
                 break;
@@ -97,28 +93,15 @@ void Indexer::indexer_motion_task(void*) {
                     entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", ball was detected but color could not be determined";
                     entry.stream = "cerr";
                     logger.add(entry);
-                }
-                
+                }          
+                // fallthrough and index like normal now that it doesn't need to filter
+            } case e_index: {
                 upper_indexer->set_voltage(12000); 
-                lower_indexer->set_voltage(12000);                        
-                    
+                lower_indexer->set_voltage(12000);
                 break;
-            } case e_increment: {
-                std::vector<bool> locations = ball_detector->locate_balls();
-                
-                if(!locations.at(0)) {  // move ball into top position
-                    upper_indexer->set_voltage(12000); 
-                    lower_indexer->set_voltage(12000);
-                } else if(locations.at(0) && !locations.at(1)) { // move ball from lowest/no position to middle position
-                    upper_indexer->set_voltage(2000); 
-                    lower_indexer->set_voltage(12000);
-                } else if(locations.at(0) && locations.at(1) && !locations.at(0)) { // move ball into first position
-                    upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(3000);
-                } else { // all positions are full so stop
-                    upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(0);
-                }
+            } case e_index_no_backboard: {
+                upper_indexer->set_voltage(12000); 
+                lower_indexer->set_voltage(6500);   
                 break;
             } case e_auto_increment: {
                 // try to filter out ball at second level if necessary
@@ -137,17 +120,16 @@ void Indexer::indexer_motion_task(void*) {
                     entry.stream = "cerr";
                     logger.add(entry);
                 }
-                
-                // look at locations of balls to decide what speed to set indexers at
+                // fall through if there is nothing to filter out
+            } case e_increment: {
                 std::vector<bool> locations = ball_detector->locate_balls();
-                std::cout << locations.at(0) << " " << locations.at(1) << "\n";
+                
                 if(!locations.at(0)) {  // move ball into top position
-                    upper_indexer->set_voltage(5000); 
+                    upper_indexer->set_voltage(4500); 
                     lower_indexer->set_voltage(12000);
                 } else if(locations.at(0) && !locations.at(1)) { // move ball from lowest/no position to middle position
-                    // upper_indexer->set_voltage(2000); 
                     lower_indexer->set_voltage(12000);
-                } else { // all positions are full so stop
+                } else { // indexer can't do anything to increment so don't run
                     upper_indexer->set_voltage(0); 
                     lower_indexer->set_voltage(0);
                 }
@@ -213,6 +195,13 @@ void Indexer::auto_index() {
     lock.exchange( false ); //release lock
 }
 
+void Indexer::index_no_backboard() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_index_no_backboard);
+    lock.exchange( false ); //release lock
+}
+
+
 void Indexer::increment() {
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_increment);
@@ -225,16 +214,20 @@ void Indexer::auto_increment() {
     lock.exchange( false ); //release lock
 }
 
+
+
 void Indexer::lower_brake() {
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_lower_brake);
     lock.exchange( false ); //release lock
 }
+
 void Indexer::raise_brake() {
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_raise_brake);
     lock.exchange( false ); //release lock    
 }
+
 
 
 void Indexer::run_upper_roller() {
@@ -251,11 +244,13 @@ void Indexer::run_lower_roller() {
 }
 
 
+
 void Indexer::fix_ball() {
     while ( lock.exchange( true ) ); //aquire lock
     command_queue.push(e_fix_ball);
     lock.exchange( false ); //release lock   
 }
+
 
 
 void Indexer::stop() {
@@ -266,12 +261,14 @@ void Indexer::stop() {
 }
 
 
+
 void Indexer::reset_queue() {
     while ( lock.exchange( true ) ); //aquire lock
     std::queue<indexer_command> empty_queue;
     std::swap( command_queue, empty_queue );  // replace command queue with an empty queue
     lock.exchange( false ); //release lock    
 }
+
 
 void Indexer::update_filter_color(std::string new_color) {
     while ( lock.exchange( true ) ); //aquire lock

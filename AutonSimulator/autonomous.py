@@ -75,36 +75,27 @@ class auton:
         """
         self.nextFrame(1)
     
-        self.robot.drive_to_point(0, 30)
+        self.robot.drive_to_point(0, 27)
         self.nextFrame(.25)
         
-        self.robot.drive_to_point(19.5, 10.6)
+        self.robot.drive_to_point(27.2, 5.5, 1)
         self.nextFrame(.25)
         
-        self.robot.turnRight(25)
+        self.robot.drive_to_point(0, 27)
         self.nextFrame(.25)
         
-        self.robot.forward(150)
+        self.robot.drive_to_point(-22.5, 4.8, 1)
         self.nextFrame(.25)
         
-        self.robot.backward(500)
-        self.nextFrame(.25)
-        
-        self.robot.drive_to_point(0, 30)
-        self.nextFrame(.25)
-        
-        self.robot.drive_to_point(-24.5, 11.5)
-        self.nextFrame(.25)
-        
-        self.robot.forward(350)
-        self.nextFrame(.25)
+        # self.robot.forward(350)
+        # self.nextFrame(.25)
         
         #self.robot.turnLeft(10)
         #self.nextFrame(.25)
 
         
-        self.robot.drive_to_point(0, 30)
-        self.nextFrame(.25)
+        # self.robot.drive_to_point(0, 30)
+        # self.nextFrame(.25)
         
      
         # self.robot.drive_to_point(0, 0)

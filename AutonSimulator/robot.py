@@ -581,7 +581,7 @@ class robot:
 
 
 
-    def drive_to_point(self, x, y):
+    def drive_to_point(self, x, y, explicit_direction=0):
         """
         drive to a point
         """
@@ -610,16 +610,34 @@ class robot:
             current_angle += 2 * math.pi
             
         current_angle = -current_angle + (math.pi/2)
-        to_turn = current_angle - dtheta
+        to_turn_face_forwards = current_angle - dtheta
+        to_turn_face_backwards = to_turn_face_forwards - math.pi
         # print(self.__to_degrees(current_angle), self.__to_degrees(dtheta))
-        if to_turn > math.pi:
-            to_turn = (-2 * math.pi) + to_turn
-        if to_turn < -math.pi:
-            to_turn = (2 * math.pi) + to_turn
+        if to_turn_face_forwards > math.pi:
+            to_turn_face_forwards = (-2 * math.pi) + to_turn_face_forwards
+        elif to_turn_face_forwards < -math.pi:
+            to_turn_face_forwards = (2 * math.pi) + to_turn_face_forwards
             
+        if to_turn_face_backwards > math.pi:
+            to_turn_face_backwards = (-2 * math.pi) + to_turn_face_backwards
+        elif to_turn_face_backwards < -math.pi:
+            to_turn_face_backwards = (2 * math.pi) + to_turn_face_backwards
+        
+        if explicit_direction == 1:
+            to_turn = to_turn_face_forwards 
+            direction = 1
+        elif explicit_direction == -1:
+            to_turn = to_turn_face_backwards
+            direction = -1
+        elif abs(to_turn_face_forwards) < abs(to_turn_face_backwards):
+            to_turn = to_turn_face_forwards 
+            direction = 1
+        else:
+            to_turn = to_turn_face_backwards
+            direction = -1
         
         to_drive_inches = math.sqrt((dx**2) + (dy**2))
-        to_drive_enc = self.__in_to_encoder_ticks(to_drive_inches)
+        to_drive_enc = direction * self.__in_to_encoder_ticks(to_drive_inches)
         
         
         # perform turn command

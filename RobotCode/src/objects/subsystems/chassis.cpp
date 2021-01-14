@@ -486,10 +486,11 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     bool use_integral_l = true;
     bool use_integral_r = true;
     
-    int time = pros::millis();
+    int current_time = pros::millis();
+    int start_time = current_time;
 
     do {
-        int dt = pros::millis() - time;
+        int dt = pros::millis() - current_time;
         // pid distance controller
         double error_l = args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id));
         double error_r = args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
@@ -508,7 +509,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
             integral_r = integral_r + (error_r * dt);
         }
         
-        time = pros::millis();
+        current_time = pros::millis();
         
         double derivative_l = error_l - prev_error_l;
         double derivative_r = error_r - prev_error_r;
@@ -584,7 +585,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
             right_velocity = right_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
         
-        time = pros::millis();
+       current_time= pros::millis();
 
         if ( args.log_data ) {
             Logger logger;
@@ -663,7 +664,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         back_right_drive->move_velocity(right_velocity);
 
         pros::delay(10);
-    } while ( pros::millis() < time + args.timeout ); 
+    } while ( pros::millis() < start_time + args.timeout ); 
     
     front_left_drive->set_voltage(0);
     front_right_drive->set_voltage(0);
@@ -675,8 +676,8 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     back_left_drive->enable_driver_control();
     back_right_drive->enable_driver_control();
     
-    // right_encoder->forget_position(r_id);  // free up space in the encoders log
-    // left_encoder->forget_position(l_id);
+    right_encoder->forget_position(r_id);  // free up space in the encoders log
+    left_encoder->forget_position(l_id);
 }
 
 
@@ -723,7 +724,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     long double prev_integral = 0;
     double prev_error = 0;
     bool use_integral = true;
-    int time = pros::millis();
+    int current_time = pros::millis();
+    int start_time = current_time;
     bool settled = false;
     
     do {
@@ -748,7 +750,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
             velocity = -velocity;
         }
 
-        int dt = pros::millis() - time;
+        int dt = pros::millis() - current_time;
         
         abs_angle = tracker->to_degrees(tracker->get_heading_rad());
         long double delta_theta = abs_angle - prev_abs_angle;
@@ -776,7 +778,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         double derivative = error - prev_error;
         prev_error = error;
         
-        time = pros::millis();
+        current_time = pros::millis();
         
         // std::cout << error << " " << relative_angle << "\n";
         
@@ -851,7 +853,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         }
         
         pros::delay(5);
-    } while (pros::millis() < time + args.timeout); 
+    } while (pros::millis() < start_time + args.timeout); 
     
     front_left_drive->set_motor_mode(e_voltage);
     front_right_drive->set_motor_mode(e_voltage);
@@ -873,8 +875,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     back_left_drive->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     back_right_drive->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     
-    // right_encoder->forget_position(r_id);  // free up space in the encoders log
-    // left_encoder->forget_position(l_id);
+    right_encoder->forget_position(r_id);  // free up space in the encoders log
+    left_encoder->forget_position(l_id);
 }
 
 
@@ -920,7 +922,8 @@ void Chassis::t_turn(chassis_params args) {
     long double integral = 0;
     double prev_error = 0;
     bool use_integral = true;
-    int time = pros::millis();
+    int current_time = pros::millis();
+    int start_time = current_time;
     
     double prev_velocity_l = 0;
     double prev_velocity_r = 0;
@@ -930,7 +933,7 @@ void Chassis::t_turn(chassis_params args) {
     int velocity_history = 15;
     
     do {
-        int dt = pros::millis() - time;
+        int dt = pros::millis() - current_time;
         
         abs_angle = tracker->get_heading_rad();
         abs_angle = std::atan2(std::sin(abs_angle), std::cos(abs_angle));
@@ -961,7 +964,7 @@ void Chassis::t_turn(chassis_params args) {
         double derivative = error - prev_error;
         prev_error = error;
         
-        time = pros::millis();
+        current_time = pros::millis();
         
         // std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
         // std::cout << error << " " << relative_angle << "\n";
@@ -1080,7 +1083,7 @@ void Chassis::t_turn(chassis_params args) {
     
 
         pros::delay(10);
-    } while ( pros::millis() < time + args.timeout ); 
+    } while ( pros::millis() < start_time + args.timeout ); 
     
     front_left_drive->set_motor_mode(e_voltage);
     front_right_drive->set_motor_mode(e_voltage);
@@ -1097,8 +1100,8 @@ void Chassis::t_turn(chassis_params args) {
     back_left_drive->enable_driver_control();
     back_right_drive->enable_driver_control();
     
-    // right_encoder->forget_position(r_id);  // free up space in the encoders log
-    // left_encoder->forget_position(l_id);
+    right_encoder->forget_position(r_id);  // free up space in the encoders log
+    left_encoder->forget_position(l_id);
 }
 
 

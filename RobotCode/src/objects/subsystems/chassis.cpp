@@ -567,13 +567,14 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         double d_heading_error = heading_error - prev_heading_error;
         prev_heading_error = heading_error;
         // std::cout << "delta_theta: " << delta_theta << " | prev_anlge: " << prev_angle << " | relative angle: " << relative_angle << " | heading_error: " << heading_error << "\n";
-        int velocity_correction = (.05 * heading_error) + (0 * integral_heading) + (0 * d_heading_error);
+        // int velocity_correction = (.05 * heading_error) + (0 * integral_heading) + (0 * d_heading_error);
+        int velocity_correction = (4 * heading_error) + (0 * integral_heading) + (54 * d_heading_error);
         if(args.correct_heading && heading_error > 0.00001) {  // veering right
-            // int velocity_correction = 5;
-            right_velocity -= velocity_correction;  
+            // velocity_correction = 5;
+            left_velocity -= velocity_correction;  
         } else if ( args.correct_heading && heading_error < -0.00001) {  // veering left
-            // int velocity_correction = 5;
-            left_velocity -= velocity_correction;
+            // velocity_correction = 5;
+            right_velocity -= velocity_correction;
         }
         
         
@@ -786,9 +787,9 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         double velocity_correction = std::abs(kI * integral);
         std::cout << "integral: " << integral << " " << velocity_correction << "\n";
         if(args.correct_heading  && error > 0.000001) {  // veering off course, so correct
-            velocity_r -= velocity_correction;
+            velocity_l -= velocity_correction;
         } else if(args.correct_heading && error < -0.000001) {
-            velocity_l -= velocity_correction;  
+            velocity_r -= velocity_correction;  
         }
         
 
@@ -1185,24 +1186,30 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     long double distance = std::sqrt((std::pow(dx, 2) + std::pow(dy, 2)));
     long double to_drive = direction * tracker->to_encoder_ticks(distance, wheel_diameter);
     
-    // set up straight drive
+    // // set up straight drive
     chassis_params drive_straight_args;
     drive_straight_args.setpoint1 = to_drive;
     drive_straight_args.setpoint2 = 0;
     drive_straight_args.max_velocity = 125;
     drive_straight_args.timeout = 15000;
-    drive_straight_args.kP = .77;
-    drive_straight_args.kI = 0.000002;
-    drive_straight_args.kD = 7;
-    drive_straight_args.I_max = INT32_MAX;
+    // drive_straight_args.kP = .77;
+    // drive_straight_args.kI = 0.000002;
+    // drive_straight_args.kD = 7;
+    // drive_straight_args.I_max = INT32_MAX;
     drive_straight_args.motor_slew = args.motor_slew;
     drive_straight_args.correct_heading = true;
     drive_straight_args.log_data = args.log_data;
     drive_straight_args.profile = args.profile;
-
-    std::cout << "starting drive\n";
-    std::cout << to_drive << "\n";
-    t_pid_straight_drive(drive_straight_args);
+    // 
+    // std::cout << "starting drive\n";
+    // std::cout << to_drive << "\n";
+    // t_pid_straight_drive(drive_straight_args);
+    drive_straight_args.kP = .2;
+    drive_straight_args.kI = .001;
+    drive_straight_args.kD = 0;
+    drive_straight_args.I_max = 2000;
+    t_profiled_straight_drive(drive_straight_args);
+    
     std::cout << "drive finished\n";
     if(args.log_data) {
         Logger logger;

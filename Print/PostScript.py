@@ -63,7 +63,8 @@ class PostScript:
             "../Print/tree.rtf",
             "../RobotCode/include/main.h",
             "../RobotCode/include/api.h",
-            "../RobotCode/compile_commands.json"
+            "../RobotCode/compile_commands.json",
+            "../RobotCode/src/objects/lcdCode/DriverControl/logo.c"
             ]
 
         self.valid_extensions = [ #files with this extension will be allowed to

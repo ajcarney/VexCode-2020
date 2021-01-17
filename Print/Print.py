@@ -407,9 +407,10 @@ class Print(DirectoryTree.DirectoryTree): #inherits DirectoryTree so that
         @return = None
         """     
         
-        if files:
-            self.print_order = files
+        if not files:
+            files - self.print_order
             
         command = "psmerge " + " ".join(files) + " > all.ps; ps2pdf all.ps; rm all.ps"
-        os.system(command)
+        print(command)
+        #os.system(command)
         

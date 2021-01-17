@@ -365,8 +365,8 @@ void autonomous() {
 
     // tracker->stop_logging();
     lcd.update_labels();
-    Autons autons;
-    autons.run_autonomous();
+    // Autons autons;
+    // autons.run_autonomous();
     // autons.setup_odometry();
     
     // gather data from position tracker

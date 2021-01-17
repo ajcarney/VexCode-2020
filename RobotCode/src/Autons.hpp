@@ -54,21 +54,27 @@ class Autons
             {2, "one_pt"},                     //to keep title the same
             {3, "skills"},
             {4, "blue north"},
-            {5, "Debugger"}
+            {5, "blue north 2"},
+            {6, "red north"},
+            {7, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
             {2, "drives forward and\nbackwards"},
             {3, "skills auton"},
-            {4, "Does nothing"},
-            {5, "opens debugger"}
+            {4, "Goes to cap middle wall\ntower and then cycle\nstarting tower"},
+            {5, "cycles closest tower, turns left"},
+            {6, "cylces closest tower, turns right"},
+            {7, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "none"},                     //used to find color of auton
             {2, "none"},                     //selected to keep background the same  
             {3, "none"},
             {4, "blue"},
-            {5, "none"}
+            {5, "blue"},
+            {6, "red"},
+            {6, "none"}
         };
 
         void set_autonomous_number(int n);
@@ -106,6 +112,8 @@ class Autons
         void skills();
         
         void blue_north();
+        void blue_north_2();
+        void red_north();
 
         void run_autonomous();
 };

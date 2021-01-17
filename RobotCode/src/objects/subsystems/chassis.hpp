@@ -139,9 +139,10 @@ class Chassis
 
         int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=10, bool log_data=true);
         int profiled_straight_drive(double encoder_ticks, int max_velocity=150, int profile=0, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, double slew=10, bool log_data=true);
+        int uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=false);
         int turn_right(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
         int turn_left(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
-        int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=0, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
+        int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=0, int max_velocity=150, int timeout=INT32_MAX, bool correct_heading=true, bool asynch=false, double slew=10, bool log_data=true);
         int turn_to_point(double x, double y, int max_velocity=150, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=true);
         int turn_to_angle(double theta, int max_velocity=150, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=true);
         

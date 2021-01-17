@@ -124,20 +124,20 @@ void Intakes::intake_motion_task(void*) {
                 }
                 break;
             } case e_hold_outward: {  // PI controller to hold outwards
-                double l_error = -37 - abs_position_l;  // set first number to encoder setpoint
-                double r_error = -37 - abs_position_r;  // set first number to encoder setpoint
-                
-                integral_l = integral_l + (l_error * dt);
-                integral_r = integral_r + (r_error * dt);
-                
-                int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
-                int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
-                if(abs_position_l > -30) {
-                    l_intake->set_voltage(-5000);
-                } else {
-                    l_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
-                }
-                
+                // double l_error = -37 - abs_position_l;  // set first number to encoder setpoint
+                // double r_error = -37 - abs_position_r;  // set first number to encoder setpoint
+                // 
+                // integral_l = integral_l + (l_error * dt);
+                // integral_r = integral_r + (r_error * dt);
+                // 
+                // int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
+                // int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
+                // if(abs_position_l > -30) {
+                //     l_intake->set_voltage(-5000);
+                // } else {
+                //     l_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
+                // }
+                // 
                 // if(abs_position_r > -30) {
                 //     r_intake->set_voltage(-5000);
                 // } else {

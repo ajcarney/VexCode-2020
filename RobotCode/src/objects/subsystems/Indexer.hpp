@@ -26,6 +26,7 @@ typedef enum e_indexer_command {
     e_filter,
     e_auto_index,
     e_index_no_backboard,
+    e_index_until_filtered,
     e_increment,
     e_auto_increment,
     e_raise_brake,
@@ -53,6 +54,8 @@ class Indexer
         
         static int num_instances;
         
+        static bool finished_filtering;
+        
         pros::Task *thread;  // the motor thread
         static std::queue<indexer_command> command_queue;
         static std::atomic<bool> lock;
@@ -67,6 +70,7 @@ class Indexer
         void filter();
         void auto_index();
         void index_no_backboard();
+        void index_until_filtered(bool asynch=false);
         
         void increment();
         void auto_increment();
@@ -81,6 +85,8 @@ class Indexer
         
         void stop();
 
+        bool get_filtered_status();
+        void clear_filtered_status();
         void reset_queue();
         void update_filter_color(std::string new_color);
         

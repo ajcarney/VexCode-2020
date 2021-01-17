@@ -12,6 +12,7 @@
 #include <cmath>
 #include <algorithm>
 #include <deque>
+#include <type_traits>
 
 #include "main.h"
 
@@ -20,85 +21,53 @@
 #include "chassis.hpp"
 
 
-Profile::Profile() {
-    
-}
 
-
-Profile::~Profile() {
-    
-}
-
-
-void Profile::generate_profile(const std::function<double(double)>& acceleration_equation, const std::function<double(double)>& deceleration_equation, int ticks_accel, int ticks_decel, int max_velocity, int min_velocity) {
-    ticks_to_accelerate = ticks_accel;
-    ticks_to_decelerate = ticks_decel;
-    
-    acceleration_profile.clear();
-    deceleration_profile.clear();
-    
-    for(int i = 0; i < ticks_to_accelerate; i++) {
-        double value = acceleration_equation(i);
-        double value_norm = (value - min_velocity) / (max_velocity - min_velocity);  // normalize between [0,1]
-        acceleration_profile.push_back(value_norm);
+std::vector<double> generate_velocity_profile(int encoder_ticks, const std::function<double(double)>& max_acceleration, double max_decceleration, double max_velocity, double initial_velocity) {
+    if(encoder_ticks <= 0) {
+        Logger logger;
+        log_entry entry;
+        entry.content = (
+            "[ERROR] " + std::string("PROFILE_CALCULATION")
+            + ", Time: " + std::to_string(pros::millis())
+            + ", Could not generate profile with negative or 0 encoder ticks"
+            + ", enc_ticks: " + std::to_string(encoder_ticks)
+            + ", max_velocity: " + std::to_string(max_velocity)
+        );
+        entry.stream = "clog";
+        logger.add(entry);  
+        pros::delay(100); // add delay for msg to be logged
+        throw std::invalid_argument("Cannot generate profile with negative or 0 encoder ticks");
     }
+        
+    std::vector<double> profile = {initial_velocity};
     
-    for(int i = 0; i < ticks_to_decelerate; i++) {
-        double value = deceleration_equation(i);
-        double value_norm = (value - min_velocity) / (max_velocity - min_velocity);  // normalize between [0,1]
-        deceleration_profile.push_back(value_norm);
-    }
-}
-
-
-bool Profile::is_generated() {
-    return (!acceleration_profile.empty() && !deceleration_profile.empty());
-}
-
-
-double Profile::get_target_velocity(int current_enc_value, int max_enc_value, int max_velocity) {
-    double norm_velocity;
-    if(current_enc_value < 0) {
-        current_enc_value = 0;
-    }
-    // std::cout << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
-    if(max_enc_value > (ticks_to_accelerate + ticks_to_decelerate)) {
-        if(current_enc_value < ticks_to_accelerate) {                         // acceleration segment
-            norm_velocity = acceleration_profile.at(current_enc_value);
-        } else if(max_enc_value - current_enc_value < ticks_to_decelerate) {  // deceleration segment
-            int i = (current_enc_value - max_enc_value) + ticks_to_decelerate;
-            if(i < deceleration_profile.size()) {
-                norm_velocity = deceleration_profile.at(i);
-            } else {  // out of range of controller, so set to 0
-                norm_velocity = 0;
+    int i = 0;
+    while(i < encoder_ticks) {
+        int ticks_left = encoder_ticks - i;
+        int ticks_to_deccelerate = profile.at(i) / max_decceleration;
+        if(ticks_to_deccelerate < ticks_left) {
+            double step = profile.at(i) + max_acceleration(i);
+            if(step > max_velocity) {
+                step = max_velocity;
             }
-            
-        } else {                                                              // constant max velocity segment
-            norm_velocity = 1;
+            profile.push_back(step);
+        } else {
+            profile.push_back(profile.at(i) - max_decceleration);
         }
-    } else {  // will not be able to follow entire profile
-        int i = (current_enc_value - max_enc_value) + ticks_to_decelerate;
-        if(i < deceleration_profile.size()) {
-            norm_velocity = deceleration_profile.at(i);
-        } else {  // out of range of controller, so set to 0
-            norm_velocity = 0;
-        }
+        
+        i += 1;
     }
     
-    double target_velocity = norm_velocity * max_velocity;
-    // std::cout << target_velocity << " " << current_enc_value << " " << max_enc_value << " " << max_velocity << " " << ticks_to_accelerate << " " << ticks_to_decelerate << " " << acceleration_profile.size() << " " << deceleration_profile.size() << "\n";
-
-    return target_velocity;
+    return profile;
 }
-
 
 
 
 int Chassis::num_instances = 0;
 std::queue<chassis_action> Chassis::command_queue;
 std::vector<int> Chassis::commands_finished;
-std::atomic<bool> Chassis::send_lock = ATOMIC_VAR_INIT(false);
-std::atomic<bool> Chassis::receive_lock = ATOMIC_VAR_INIT(false);
+std::atomic<bool> Chassis::command_start_lock = ATOMIC_VAR_INIT(false);
+std::atomic<bool> Chassis::command_finish_lock = ATOMIC_VAR_INIT(false);
 
 Motor* Chassis::front_left_drive;
 Motor* Chassis::front_right_drive;
@@ -111,8 +80,6 @@ pros::Imu* Chassis::imu;
 double Chassis::width;
 double Chassis::gear_ratio;
 double Chassis::wheel_diameter;
-
-Profile Chassis::profile_1;
 
 
 Chassis::Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing /*1*/, double wheel_size /*4.05*/)
@@ -164,23 +131,23 @@ Chassis::~Chassis()
 }
 
 
-void Chassis::generate_profiles() {
-    if(!profile_1.is_generated()) {
-        profile_1.generate_profile(
-            [](double n) -> double { return 183335300 + ((16.29262 - 183335300) / (1 + std::pow((n / 5807375), 1.381135))); },
-            [](double n) -> double { return 201.3993 - (0.07738232 * n) - (0.0001796556 * std::pow(n, 2)); },
-            // [](double n) -> double { return (201.3993 - (0.0967279 * n) - (0.0002807118 * std::pow(n, 2))); },
-            // [](double n) -> double { return -14.87879 + ((199.9947 - -14.87879) / (1 + std::pow((n / 216.5658), 1.756448))); },  // 700 endpoint
-            // [](double n) -> double { return -718.7411 + ((200.0491 - -718.7411) / (1 + std::pow((n / 3436.08), 0.8049193))); },  // 700 endpoint
-            // [](double n) -> double { return -39.01548 + ((195.369 - -39.01548) / (1 + std::pow((n / 978.0565), 2.266577))); },  // 1700 endpoint
-            // [](double n) -> double { return (-0.2 * n + 1000); },  // 1000 endpoint
-            250,
-            820,
-            200,
-            0
-        );
-    }
-}
+// void Chassis::generate_profiles() {
+//     if(!profile_1.is_generated()) {
+//         profile_1.generate_profile(
+//             [](double n) -> double { return 183335300 + ((16.29262 - 183335300) / (1 + std::pow((n / 5807375), 1.381135))); },
+//             [](double n) -> double { return 201.3993 - (0.07738232 * n) - (0.0001796556 * std::pow(n, 2)); },
+//             // [](double n) -> double { return (201.3993 - (0.0967279 * n) - (0.0002807118 * std::pow(n, 2))); },
+//             // [](double n) -> double { return -14.87879 + ((199.9947 - -14.87879) / (1 + std::pow((n / 216.5658), 1.756448))); },  // 700 endpoint
+//             // [](double n) -> double { return -718.7411 + ((200.0491 - -718.7411) / (1 + std::pow((n / 3436.08), 0.8049193))); },  // 700 endpoint
+//             // [](double n) -> double { return -39.01548 + ((195.369 - -39.01548) / (1 + std::pow((n / 978.0565), 2.266577))); },  // 1700 endpoint
+//             // [](double n) -> double { return (-0.2 * n + 1000); },  // 1000 endpoint
+//             250,
+//             820,
+//             200,
+//             0
+//         );
+//     }
+// }
 
 
 void Chassis::chassis_motion_task(void*) {
@@ -191,10 +158,10 @@ void Chassis::chassis_motion_task(void*) {
         }
         
         // take lock and get command
-        while ( send_lock.exchange( true ) ); //aquire lock
+        while ( command_start_lock.exchange( true ) ); //aquire lock
         chassis_action action = command_queue.front();
         command_queue.pop();
-        send_lock.exchange( false ); //release lock
+        command_start_lock.exchange( false ); //release lock
         
         // execute command
         switch(action.command) {
@@ -415,9 +382,9 @@ void Chassis::chassis_motion_task(void*) {
             }
         }
         
-        while ( send_lock.exchange( true ) ); //aquire lock
+        while ( command_finish_lock.exchange( true ) ); //aquire lock
         commands_finished.push_back(action.command_uid);
-        send_lock.exchange( false ); //release lock
+        command_finish_lock.exchange( false ); //release lock
     }
 }
 
@@ -448,20 +415,8 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     back_left_drive->set_motor_mode(e_builtin_velocity_pid);
     back_right_drive->set_motor_mode(e_builtin_velocity_pid);
     
-    front_left_drive->move_velocity(0);
-    front_right_drive->move_velocity(0);
-    back_left_drive->move_velocity(0);
-    back_right_drive->move_velocity(0);
-    
-    front_left_drive->tare_encoder();
-    front_right_drive->tare_encoder();
-    back_left_drive->tare_encoder();
-    back_right_drive->tare_encoder();
-    
-    int r_id = right_encoder->get_unique_id();
-    int l_id = left_encoder->get_unique_id();
-    right_encoder->reset(r_id);
-    left_encoder->reset(l_id);
+    int r_id = right_encoder->get_unique_id(true);
+    int l_id = left_encoder->get_unique_id(true);
     
     double integral_l = 0;
     double integral_r = 0;
@@ -520,7 +475,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         double right_velocity = (kP_r * error_r) + (kI_r * integral_r) + (kD_r * derivative_r);
 
         
-        // slew rate code
+    // slew rate code
         double delta_velocity_l = left_velocity - prev_velocity_l;
         double delta_velocity_r = right_velocity - prev_velocity_r;
         double slew_rate = .1;
@@ -537,18 +492,11 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         }
         
         
-        
-        
-        // p controller heading correction
-        // double delta_l = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - prev_l_encoder;
-        // double delta_r = std::get<1>(Sensors::get_average_encoders(l_id, r_id)) - prev_r_encoder;
-        // double delta_theta = calc_delta_theta(prev_angle, delta_l, delta_r);
-        // prev_angle = prev_angle + delta_theta;
+    // p controller heading correction
         abs_angle = tracker->get_heading_rad();
         abs_angle = std::atan2(std::sin(abs_angle), std::cos(abs_angle));
         long double delta_theta;
-        // account for angle wrap around
-        // ie. new = -1, prev = -359   == bad delta
+        // account for angle wrap around    ie. new = -1, prev = -359   == bad delta
         if(prev_abs_angle > 0 && abs_angle < 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
             delta_theta = tracker->to_degrees((2*M_PI) + abs_angle) - prev_abs_angle;
         } else if(prev_abs_angle < 0 && abs_angle > 0 && std::abs(tracker->to_radians(prev_abs_angle)) + std::abs(abs_angle) > (M_PI)) {
@@ -556,8 +504,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         } else {
             delta_theta = tracker->to_degrees(abs_angle) - prev_abs_angle;
         }
-        // long double delta_theta = abs_angle - prev_abs_angle;
-        // long double delta_theta = tracker->to_degrees(tracker->get_delta_theta_rad());
+
         relative_angle += delta_theta;
         prev_abs_angle = tracker->to_degrees(abs_angle);
         
@@ -586,8 +533,6 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
             right_velocity = right_velocity > 0 ? args.max_velocity : -args.max_velocity;
         }
         
-       current_time = pros::millis();
-
         if ( args.log_data ) {
             Logger logger;
             log_entry entry;
@@ -644,17 +589,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
             && previous_r_velocities.size() == velocity_history
             && left_velocity < 2
             && right_velocity < 2
-        ) {  // velocity change has been minimal, so stop   
-            front_left_drive->set_motor_mode(e_voltage);
-            front_right_drive->set_motor_mode(e_voltage);
-            back_left_drive->set_motor_mode(e_voltage);
-            back_right_drive->set_motor_mode(e_voltage);
-            
-            front_left_drive->set_voltage(0);
-            front_right_drive->set_voltage(0);
-            back_left_drive->set_voltage(0);
-            back_right_drive->set_voltage(0);
-            std::cout << "ending\n";
+        ) { 
             break; // end before timeout 
         }
         
@@ -666,6 +601,11 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
 
         pros::delay(10);
     } while ( pros::millis() < start_time + args.timeout ); 
+    
+    front_left_drive->set_motor_mode(e_voltage);
+    front_right_drive->set_motor_mode(e_voltage);
+    back_left_drive->set_motor_mode(e_voltage);
+    back_right_drive->set_motor_mode(e_voltage);
     
     front_left_drive->set_voltage(0);
     front_right_drive->set_voltage(0);
@@ -703,20 +643,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     back_left_drive->set_motor_mode(e_builtin_velocity_pid);
     back_right_drive->set_motor_mode(e_builtin_velocity_pid);
     
-    front_left_drive->move_velocity(0);
-    front_right_drive->move_velocity(0);
-    back_left_drive->move_velocity(0);
-    back_right_drive->move_velocity(0);
-    
-    front_left_drive->tare_encoder();
-    front_right_drive->tare_encoder();
-    back_left_drive->tare_encoder();
-    back_right_drive->tare_encoder();
-    
-    int r_id = right_encoder->get_unique_id();
-    int l_id = left_encoder->get_unique_id();
-    right_encoder->reset(r_id);
-    left_encoder->reset(l_id);
+    int r_id = right_encoder->get_unique_id(true);
+    int l_id = left_encoder->get_unique_id(true);
     
     long double relative_angle = 0;
     long double abs_angle = tracker->to_degrees(tracker->get_heading_rad());
@@ -725,65 +653,66 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     long double prev_integral = 0;
     double prev_error = 0;
     bool use_integral = true;
+    
     int current_time = pros::millis();
     int start_time = current_time;
     bool settled = false;
     
+    auto accel_func = [](double n) -> double { return 0.05 * n; };
+    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .25, args.max_velocity, 10);  // .25 is decceleration, 5 is initial velocity
+    
     do {
-        double velocity_l = args.profile.get_target_velocity(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))), std::abs(args.setpoint1), args.max_velocity);
-        double velocity_r = args.profile.get_target_velocity(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))), std::abs(args.setpoint1), args.max_velocity);
+        int dt = pros::millis() - current_time;
+        current_time = pros::millis();
         
-        double velocity;
-        if(velocity_l > velocity_r) {
-            velocity_r = velocity_r;
-            velocity_l = velocity_r;
-        } else {
-            velocity_r = velocity_l;
-            velocity_l = velocity_l;
-        }
+        double velocity_l = velocity_profile.at(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))));
+        double velocity_r = velocity_profile.at(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))));
         
-        double error_l = std::abs(args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id)));
-        double error_r = std::abs(args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
-        
+        // double velocity;
+        // if(velocity_l > velocity_r) {
+        //     velocity_r = velocity_r;
+        //     velocity_l = velocity_r;
+        // } else {
+        //     velocity_r = velocity_l;
+        //     velocity_l = velocity_l;
+        // }
+
         if(args.setpoint1 < 0) {
             velocity_l = -velocity_l;
             velocity_r = -velocity_r;
-            velocity = -velocity;
         }
-
-        int dt = pros::millis() - current_time;
         
         abs_angle = tracker->to_degrees(tracker->get_heading_rad());
         long double delta_theta = abs_angle - prev_abs_angle;
         relative_angle += delta_theta;
         prev_abs_angle = abs_angle;
         
-        // long double error = args.setpoint2 - relative_angle;
+        // long double error = 0 - relative_angle;  // setpoint is 0 because we want to drive straight
         long double error = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
         std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
         // cap velocity to max velocity with regard to velocity
         if ( std::abs(integral) > I_max ) {
             integral = integral > 0 ? I_max : -I_max;
-        }else if(std::abs(error) < .000001) {  // 
-            integral = 0;
         } else {
             integral = integral + (error * dt);
         }
         
-        if(std::signbit(integral) != std::signbit(prev_integral)) {
+        if(std::signbit(error) != std::signbit(prev_error)) {
             std::cout << "halving " << integral << " " << prev_integral;
             integral = .5 * integral;
         }
         prev_integral = integral;
         
-        double derivative = error - prev_error;
-        prev_error = error;
+        // double derivative = error - prev_error;
+        // prev_error = error;
         
-        current_time = pros::millis();
         
         // std::cout << error << " " << relative_angle << "\n";
         
+    // pid heading correction
         // int velocity_correction = (kP * error) + (kI * integral) + (kD * derivative);
+        
+    // tbh heading correction
         double velocity_correction = std::abs(kI * integral);
         std::cout << "integral: " << integral << " " << velocity_correction << "\n";
         if(args.correct_heading  && error > 0.000001) {  // veering off course, so correct
@@ -793,26 +722,13 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         }
         
 
-        if(error_l < 5 || error_r < 5) {  // shut off motors when one side reaches the setpoint
-            velocity_l = 0;
-            velocity_r = 0;
-            settled = true;
-        }
-
-        // cap velocity to max velocity with regard to velocity
+    // cap velocity to max velocity with regard to velocity
         if ( std::abs(velocity_l) > args.max_velocity ) {
             velocity_l = velocity_l > 0 ? args.max_velocity : -args.max_velocity;
         }
         if ( std::abs(velocity_r) > args.max_velocity ) {
             velocity_r = velocity_r > 0 ? args.max_velocity : -args.max_velocity;
         }
-                
-        std::cout << "velocity: " << velocity_l << " " << velocity_r << "\n";    
-        std::cout << "error: " << error_r << " " << error_l << " " << error << "\n";
-        front_left_drive->move_velocity(velocity_l);
-        front_right_drive->move_velocity(velocity_r);
-        back_left_drive->move_velocity(velocity_l);
-        back_right_drive->move_velocity(velocity_r);
 
         if ( args.log_data ) {
             Logger logger;
@@ -847,13 +763,22 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
             logger.add(entry);            
         }
         
-        // std::cout << error_l << " " << error_r << " " << velocity_l << " " << velocity_r << " " << error << "\n";
-        // // settled is when error is almost zero and velocity is 0
-        if (settled) {        
-            break; // end before timeout 
+        double error_l = std::abs(args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id)));
+        double error_r = std::abs(args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
+        if(error_l < 5 || error_r < 5) {  // shut off motors when one side reaches the setpoint
+            velocity_l = 0;
+            velocity_r = 0;
+            break;
         }
         
-        pros::delay(5);
+        std::cout << "velocity: " << velocity_l << " " << velocity_r << "\n";    
+        std::cout << "error: " << error_r << " " << error_l << " " << error << "\n";
+        front_left_drive->move_velocity(velocity_l);
+        front_right_drive->move_velocity(velocity_r);
+        back_left_drive->move_velocity(velocity_l);
+        back_right_drive->move_velocity(velocity_r);
+        
+        pros::delay(10);
     } while (pros::millis() < start_time + args.timeout); 
     
     front_left_drive->set_motor_mode(e_voltage);
@@ -1216,7 +1141,6 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     drive_straight_args.motor_slew = args.motor_slew;
     drive_straight_args.correct_heading = args.correct_heading;
     drive_straight_args.log_data = args.log_data;
-    drive_straight_args.profile = args.profile;
     // 
     // std::cout << "starting drive\n";
     // std::cout << to_drive << "\n";
@@ -1270,21 +1194,18 @@ int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/
     int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_pid_straight_drive};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
 }
 
-int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*150*/, int profile /*0*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, double slew /*false*/, bool log_data /*false*/) {
+int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*150*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, double slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = relative_heading;
@@ -1297,23 +1218,17 @@ int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*1
     args.motor_slew = slew;
     args.correct_heading = correct_heading;
     args.log_data = log_data;
-    if(profile == 0) {
-        args.profile = profile_1;
-    }
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
     int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_profiled_straight_drive};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;    
@@ -1339,15 +1254,12 @@ int Chassis::uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_veloci
     int uid = pros::millis() * (std::abs(l_enc_ticks) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_pid_straight_drive};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1371,15 +1283,12 @@ int Chassis::turn_right(double degrees, int max_velocity /*200*/, int timeout /*
     int uid = pros::millis() * (std::abs(degrees) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1403,15 +1312,12 @@ int Chassis::turn_left(double degrees, int max_velocity /*200*/, int timeout /*I
     int uid = pros::millis() * (std::abs(degrees) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1425,7 +1331,6 @@ int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int ex
     args.max_velocity = max_velocity;
     args.timeout = timeout;
     args.recalculations = recalculations;
-    args.profile = profile_1;
     args.explicit_direction = explicit_direction;
     args.motor_slew = slew;
     args.correct_heading = correct_heading;
@@ -1435,15 +1340,12 @@ int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int ex
     int uid = pros::millis() * (std::abs(x) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_drive_to_point};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1464,15 +1366,12 @@ int Chassis::turn_to_point(double x, double y, int max_velocity /*200*/, int tim
     int uid = pros::millis() * (std::abs(x) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn_to_point};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1493,15 +1392,12 @@ int Chassis::turn_to_angle(double theta, int max_velocity /*200*/, int timeout /
     int uid = pros::millis() * (std::abs(theta) + 1) + max_velocity + front_left_drive->get_actual_voltage();
     
     chassis_action command = {args, uid, e_turn_to_angle};
-    while ( send_lock.exchange( true ) ); //aquire lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
     command_queue.push(command);
-    send_lock.exchange( false ); //release lock
+    command_start_lock.exchange( false ); //release lock
     
     if(!asynch) {
-        while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-            pros::delay(10);
-        }
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        wait_until_finished(uid);
     }
     
     return uid;
@@ -1611,13 +1507,18 @@ void Chassis::wait_until_finished(int uid) {
     while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
         pros::delay(10);
     }
+    while ( command_finish_lock.exchange( true ) ); //aquire lock
     commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    command_finish_lock.exchange( false ); //release lock
 }
 
 
 bool Chassis::is_finished(int uid) {
     if(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
+        while ( command_finish_lock.exchange( true ) ); //aquire lock
         commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        command_finish_lock.exchange( false ); //release lock
+        
         return false;  // command is not finished because it is not in the list
     }
     return true;

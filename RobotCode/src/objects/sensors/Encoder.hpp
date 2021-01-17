@@ -29,7 +29,7 @@ class Encoder
         Encoder(char upper_port, char lower_port, bool reverse);
         ~Encoder();
         
-        int get_unique_id();
+        int get_unique_id(bool zero=false);
         
         double get_position(int unique_id);
         double get_absolute_position(bool scaled);

@@ -20,22 +20,7 @@
 #include "../sensors/Sensors.hpp"
 
 
-class Profile {
-    private:
-        std::vector<double> acceleration_profile;
-        std::vector<double> deceleration_profile;
-        int ticks_to_accelerate;
-        int ticks_to_decelerate;
-        
-    public:
-        Profile();
-        ~Profile();
-        
-        void generate_profile(const std::function<double(double)>& acceleration_equation, const std::function<double(double)>& deceleration_equation, int ticks_accel, int ticks_decel, int max_velocity, int min_velocity);
-        bool is_generated();
-        double get_target_velocity(int current_enc_value, int max_enc_value, int max_velocity);
-};
-
+std::vector<double> generate_velocity_profile(int encoder_ticks, const std::function<double(double)>& max_acceleration, double max_decceleration, double max_velocity, double initial_velocity);
 
 
 typedef enum {
@@ -82,7 +67,6 @@ typedef struct {
     double motor_slew=INT32_MAX;
     bool correct_heading=true;
     bool log_data=false;
-    Profile profile;
 } chassis_params;
 
 typedef struct {
@@ -113,8 +97,8 @@ class Chassis
         pros::Task *thread;  // the motor thread
         static std::queue<chassis_action> command_queue;
         static std::vector<int> commands_finished;
-        static std::atomic<bool> send_lock;
-        static std::atomic<bool> receive_lock;
+        static std::atomic<bool> command_start_lock;
+        static std::atomic<bool> command_finish_lock;
         static int num_instances;
         
         static void t_pid_straight_drive(chassis_params args);  // functions called by thread for asynchronous movement
@@ -127,18 +111,14 @@ class Chassis
         static double gear_ratio;
         
         static void chassis_motion_task(void*);
-        
-        // profiles for straight driving
-        static Profile profile_1;
+
 
     public:
         Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
         ~Chassis();
 
-        void generate_profiles();
-
         int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=10, bool log_data=true);
-        int profiled_straight_drive(double encoder_ticks, int max_velocity=150, int profile=0, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, double slew=10, bool log_data=true);
+        int profiled_straight_drive(double encoder_ticks, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, double slew=10, bool log_data=true);
         int uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=false);
         int turn_right(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);
         int turn_left(double degrees, int max_velocity=150, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=true);

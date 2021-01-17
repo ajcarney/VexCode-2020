@@ -16,14 +16,17 @@
 #include "Indexer.hpp"
 
 int Indexer::num_instances = 0;
-std::queue<indexer_command> Indexer::command_queue;
-std::atomic<bool> Indexer::lock = ATOMIC_VAR_INIT(false);
+std::queue<indexer_action> Indexer::command_queue;
+std::vector<int> Indexer::commands_finished;
+std::atomic<bool> Indexer::command_start_lock = ATOMIC_VAR_INIT(false);
+std::atomic<bool> Indexer::command_finish_lock = ATOMIC_VAR_INIT(false);
+
 Motor* Indexer::upper_indexer;
 Motor* Indexer::lower_indexer;
 BallDetector* Indexer::ball_detector;
 AnalogInSensor* Indexer::potentiometer;
 std::string Indexer::filter_color;
-bool Indexer::finished_filtering;
+
 
 Indexer::Indexer(Motor &upper, Motor &lower, BallDetector &detector, AnalogInSensor &pot, std::string color)
 {    
@@ -68,13 +71,13 @@ void Indexer::indexer_motion_task(void*) {
         }
         
         // take lock and get command
-        while ( lock.exchange( true ) ); //aquire lock
-        indexer_command command = command_queue.front();
+        while ( command_start_lock.exchange( true ) ); //aquire lock
+        indexer_action action = command_queue.front();
         command_queue.pop();
-        lock.exchange( false ); //release lock
+        command_start_lock.exchange( false ); //release lock
             
         // execute command
-        switch(command) {
+        switch(action.command) {
             case e_filter: {
                 upper_indexer->set_voltage(-12000); 
                 lower_indexer->set_voltage(12000);
@@ -116,9 +119,7 @@ void Indexer::indexer_motion_task(void*) {
                         pros::delay(300);  // let ball filter out
                         upper_indexer->set_voltage(0); 
                         lower_indexer->set_voltage(0);
-                        
-                        finished_filtering = true;
-                        
+                                                
                         break;
                     } else if(color < 0) {  // ball was detected but color could not be determined: print error message and default to intaking
                         Logger logger;
@@ -202,125 +203,152 @@ void Indexer::indexer_motion_task(void*) {
                 break;
             }
         }
+        
+        while ( command_finish_lock.exchange( true ) ); //aquire lock
+        commands_finished.push_back(action.uid);
+        command_finish_lock.exchange( false ); //release lock
     }
 }
 
+int Indexer::send_command(indexer_command command) {
+    while ( command_start_lock.exchange( true ) ); //aquire lock
+    indexer_action action;
+    action.command = command;
+    action.uid = pros::millis() + lower_indexer->get_actual_voltage() + upper_indexer->get_actual_voltage();
+    command_queue.push(action);
+    command_start_lock.exchange( false ); //release lock
+    
+    return action.uid;
+}
+
 void Indexer::index() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_index);
-    lock.exchange( false ); //release lock
+    send_command(e_index);
 }
 
 void Indexer::filter() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_filter);
-    lock.exchange( false ); //release lock
+    send_command(e_filter);
 }
 
 void Indexer::auto_index() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_auto_index);
-    lock.exchange( false ); //release lock
+    send_command(e_auto_index);
 }
 
 void Indexer::index_no_backboard() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_index_no_backboard);
-    lock.exchange( false ); //release lock
+    send_command(e_index_no_backboard);
 }
 
 void Indexer::index_until_filtered(bool asynch /*false*/) {
-    while ( lock.exchange( true ) ); //aquire lock
-    finished_filtering = false;
-    command_queue.push(e_index_until_filtered);
-    lock.exchange( false ); //release lock
+    while ( command_start_lock.exchange( true ) ); //aquire lock
+    // command_queue.push(e_index_until_filtered);
+    command_start_lock.exchange( false ); //release lock
     
-    while(!finished_filtering && !asynch) {
+    while(!asynch) {
         pros::delay(10);
     }
 }
 
 
 void Indexer::increment() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_increment);
-    lock.exchange( false ); //release lock
+    send_command(e_increment);
 }
 
 void Indexer::auto_increment() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_auto_increment);
-    lock.exchange( false ); //release lock
+    send_command(e_auto_increment);
 }
 
 
 
 void Indexer::lower_brake() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_lower_brake);
-    lock.exchange( false ); //release lock
+    send_command(e_lower_brake);
 }
 
 void Indexer::raise_brake() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_raise_brake);
-    lock.exchange( false ); //release lock    
+    send_command(e_raise_brake);
 }
 
 
 
 void Indexer::run_upper_roller() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_run_upper);
-    lock.exchange( false ); //release lock   
+    send_command(e_run_upper);
 }
 
 
 void Indexer::run_lower_roller() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_run_lower);
-    lock.exchange( false ); //release lock   
+    send_command(e_run_lower); 
 }
 
 
 
 void Indexer::fix_ball() {
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_fix_ball);
-    lock.exchange( false ); //release lock   
+    send_command(e_fix_ball);
 }
 
 
 
 void Indexer::stop() {
-    reset_queue();
-    while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_stop);
-    lock.exchange( false ); //release lock
+    reset_command_queue();
+    send_command(e_stop);
 }
 
-
-bool Indexer::get_filtered_status() {
-    return finished_filtering;
+ball_positions Indexer::get_state() {
+    ball_positions state;
+    
+    int color = ball_detector->check_filter_level();
+    std::vector<bool> ball_locations = ball_detector->locate_balls();
+    if(ball_locations.at(0)) {
+        state.top = true;
+    } else {
+        state.top = false;
+    }
+    if(ball_locations.at(1)) {
+        state.middle = true;
+    } else {
+        state.middle = false;
+    }
+    
+    if (color == 0) {
+        state.middle_color = "none";
+    } else if(color == 1) {
+        state.middle_color = "blue";
+    } else if (color == 2) {
+        state.middle_color = "red";
+    } else {
+        state.middle_color = "unknown";
+    }
+    
+    return state;
 }
 
-void Indexer::clear_filtered_status() {
-    while ( lock.exchange( true ) ); //aquire lock
-    finished_filtering = false;
-    lock.exchange( false ); //release lock
-}
-
-
-void Indexer::reset_queue() {
-    while ( lock.exchange( true ) ); //aquire lock
-    std::queue<indexer_command> empty_queue;
+void Indexer::reset_command_queue() {
+    while ( command_start_lock.exchange( true ) ); //aquire lock
+    std::queue<indexer_action> empty_queue;
     std::swap( command_queue, empty_queue );  // replace command queue with an empty queue
-    lock.exchange( false ); //release lock    
+    command_start_lock.exchange( false ); //release lock    
 }
 
 
 void Indexer::update_filter_color(std::string new_color) {
-    while ( lock.exchange( true ) ); //aquire lock
     filter_color = new_color;
-    lock.exchange( false ); //release lock
+}
+
+
+void Indexer::wait_until_finished(int uid) {
+    while(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
+        pros::delay(10);
+    }
+    while ( command_finish_lock.exchange( true ) ); //aquire lock
+    commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    command_finish_lock.exchange( false ); //release lock
+}
+
+
+bool Indexer::is_finished(int uid) {
+    if(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
+        while ( command_finish_lock.exchange( true ) ); //aquire lock
+        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+        command_finish_lock.exchange( false ); //release lock
+        
+        return false;  // command is not finished because it is not in the list
+    }
+    return true;
 }

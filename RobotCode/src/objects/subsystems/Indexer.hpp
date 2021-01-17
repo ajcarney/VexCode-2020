@@ -37,6 +37,17 @@ typedef enum e_indexer_command {
     e_stop
 } indexer_command;
 
+typedef struct {
+    int uid;
+    indexer_command command;
+} indexer_action;
+
+typedef struct {
+    bool top;
+    bool middle;
+    std::string middle_color;
+} ball_positions;
+
 
 /**
  * @see: Motors.hpp
@@ -53,12 +64,14 @@ class Indexer
         static std::string filter_color;
         
         static int num_instances;
-        
-        static bool finished_filtering;
-        
+                
         pros::Task *thread;  // the motor thread
-        static std::queue<indexer_command> command_queue;
-        static std::atomic<bool> lock;
+        static std::queue<indexer_action> command_queue;
+        static std::vector<int> commands_finished;
+        static std::atomic<bool> command_start_lock;
+        static std::atomic<bool> command_finish_lock;
+        
+        int send_command(indexer_command command);
 
         static void indexer_motion_task(void*);
                 
@@ -85,10 +98,14 @@ class Indexer
         
         void stop();
 
-        bool get_filtered_status();
-        void clear_filtered_status();
-        void reset_queue();
+        ball_positions get_state();
+
+        void reset_command_queue();
         void update_filter_color(std::string new_color);
+        
+        void wait_until_finished(int uid);
+        bool is_finished(int uid);
+
         
 };
 

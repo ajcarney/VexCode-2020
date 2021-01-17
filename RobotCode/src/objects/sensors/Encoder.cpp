@@ -43,7 +43,7 @@ Encoder::~Encoder()
 
 
 
-int Encoder::get_unique_id()
+int Encoder::get_unique_id(bool zero /*false*/)
 {
     while ( lock.exchange( true ) ); //aquire lock
     
@@ -51,6 +51,10 @@ int Encoder::get_unique_id()
     int id = latest_uid;
     zero_positions[id] = zero_positions.at(0);
     lock.exchange(false);  //release lock
+    
+    if(zero) {
+        reset(id);
+    }
     
     return id;
 }

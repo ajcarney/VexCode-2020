@@ -66,7 +66,7 @@ Indexer::~Indexer() {
 void Indexer::indexer_motion_task(void*) {
     while(1) {
         if(command_queue.empty()) {  // delay unitl there is a command in the queue
-            pros::delay(7);
+            pros::delay(10);
             continue;
         }
         
@@ -103,8 +103,8 @@ void Indexer::indexer_motion_task(void*) {
                 lower_indexer->set_voltage(12000);
                 break;
             } case e_index_no_backboard: {
-                upper_indexer->set_voltage(12000); 
-                lower_indexer->set_voltage(6500);   
+                upper_indexer->set_voltage(9000); 
+                lower_indexer->set_voltage(12000);   
                 break;
             } case e_index_until_filtered: {
                 upper_indexer->set_voltage(12000); 
@@ -163,6 +163,32 @@ void Indexer::indexer_motion_task(void*) {
                     lower_indexer->set_voltage(0);
                 }
                 break;
+            } case e_index_to_state: {
+                ball_positions current_state = get_state();
+                do {
+                    current_state = get_state();
+                    int color = ball_detector->check_filter_level();
+                    if(action.args.allow_filter) {
+                        if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
+                            upper_indexer->set_voltage(-12000); 
+                            lower_indexer->set_voltage(12000);
+                            pros::delay(300);  // let ball filter out
+                            upper_indexer->set_voltage(0); 
+                            lower_indexer->set_voltage(0);
+                            break;
+                        } else if(color < 0) {  // ball was detected but color could not be determined: print error message and default to intaking
+                            Logger logger;
+                            log_entry entry;
+                            entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", ball was detected but color could not be determined";
+                            entry.stream = "cerr";
+                            logger.add(entry);
+                        }
+                    } 
+                    upper_indexer->set_voltage(12000); 
+                    lower_indexer->set_voltage(12000);   
+                } while(current_state != action.args.end_state);
+                
+                
             } case e_raise_brake: {
                 lower_indexer->set_voltage(-12000);
 
@@ -238,12 +264,10 @@ void Indexer::index_no_backboard() {
 }
 
 void Indexer::index_until_filtered(bool asynch /*false*/) {
-    while ( command_start_lock.exchange( true ) ); //aquire lock
-    // command_queue.push(e_index_until_filtered);
-    command_start_lock.exchange( false ); //release lock
+    int uid = send_command(e_index_until_filtered);
     
-    while(!asynch) {
-        pros::delay(10);
+    if(!asynch) {
+        wait_until_finished(uid);
     }
 }
 
@@ -279,14 +303,22 @@ void Indexer::run_lower_roller() {
 
 
 
-void Indexer::fix_ball() {
-    send_command(e_fix_ball);
+void Indexer::fix_ball(bool asynch /*true*/) {
+    int uid = send_command(e_fix_ball);
+    
+    if(!asynch) {
+        wait_until_finished(uid);
+    }
 }
 
 
 
-void Indexer::stop() {
+void Indexer::hard_stop() {
     reset_command_queue();
+    send_command(e_stop);
+}
+
+void Indexer::stop() {
     send_command(e_stop);
 }
 

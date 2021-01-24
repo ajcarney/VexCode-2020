@@ -89,7 +89,7 @@ Wiring::Wiring()
         "top detector      - " + DETECTOR_TOP_PORT + "\n" +
         "middle detector   - " + DETECTOR_MIDDLE_PORT + "\n" +
         "bottom detector   - " + DETECTOR_BOTTOM_PORT + "\n" +
-        "vision sensor     - " + std::to_string(VISIONSENSOR_PORT) + "\n"
+        "optical sensor    - " + std::to_string(OPTICAL_PORT) + "\n"
     );
 
     lv_label_set_text(sensors_info, sensors_text.c_str());

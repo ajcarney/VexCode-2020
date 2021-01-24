@@ -21,6 +21,45 @@
 #include "../sensors/BallDetector.hpp"
 
 
+
+struct ball_positions{
+    bool top;
+    bool middle;
+    std::string middle_color;
+    bool operator== (const ball_positions &state) {
+        bool top_equal = (top == state.top);
+        bool middle_equal = (middle == state.middle);
+        bool middle_color_equal;
+        if(middle_color == "any" && state.middle_color != "none") {
+            middle_color_equal = true;
+        } else if (middle_color == "red" && state.middle_color == "red") {
+            middle_color_equal = true;
+        } else if (middle_color == "blue" && state.middle_color == "blue") {
+            middle_color_equal = true;
+        } else if (middle_color == "none" && state.middle_color == "none") {
+            middle_color_equal = true;
+        }
+        
+        return (top_equal && middle_equal && middle_color_equal);
+    }
+    bool operator!= (const ball_positions &state) {
+        bool top_equal = (top == state.top);
+        bool middle_equal = (middle == state.middle);
+        bool middle_color_equal;
+        if(middle_color == "any" && state.middle_color != "none") {
+            middle_color_equal = true;
+        } else if (middle_color == "red" && state.middle_color == "red") {
+            middle_color_equal = true;
+        } else if (middle_color == "blue" && state.middle_color == "blue") {
+            middle_color_equal = true;
+        } else if (middle_color == "none" && state.middle_color == "none") {
+            middle_color_equal = true;
+        }
+        
+        return !(top_equal && middle_equal && middle_color_equal);
+    }
+};
+
 typedef enum e_indexer_command {
     e_index,
     e_filter,
@@ -29,6 +68,7 @@ typedef enum e_indexer_command {
     e_index_until_filtered,
     e_increment,
     e_auto_increment,
+    e_index_to_state,
     e_raise_brake,
     e_lower_brake,
     e_fix_ball,
@@ -38,16 +78,15 @@ typedef enum e_indexer_command {
 } indexer_command;
 
 typedef struct {
-    int uid;
-    indexer_command command;
-} indexer_action;
+    ball_positions end_state;
+    bool allow_filter;
+}indexer_args;
 
 typedef struct {
-    bool top;
-    bool middle;
-    std::string middle_color;
-} ball_positions;
-
+    int uid;
+    indexer_command command;
+    indexer_args args;
+} indexer_action;
 
 /**
  * @see: Motors.hpp
@@ -94,11 +133,12 @@ class Indexer
         void run_upper_roller();
         void run_lower_roller();
         
-        void fix_ball();
+        void fix_ball(bool asynch=true);
         
+        void hard_stop();
         void stop();
 
-        ball_positions get_state();
+        static ball_positions get_state();
 
         void reset_command_queue();
         void update_filter_color(std::string new_color);

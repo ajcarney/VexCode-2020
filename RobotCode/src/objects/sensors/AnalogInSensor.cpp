@@ -16,12 +16,13 @@ AnalogInSensor::AnalogInSensor() {
     sensor = NULL;
 }
 
-
-AnalogInSensor::AnalogInSensor(char port)
-{        
+AnalogInSensor::AnalogInSensor(char port) {        
     sensor = new pros::ADIAnalogIn(port);
 }
 
+AnalogInSensor::AnalogInSensor(pros::ext_adi_port_pair_t port_pair) {
+    sensor = new pros::ADIAnalogIn(port_pair);
+}
 
 AnalogInSensor::~AnalogInSensor()
 {
@@ -31,8 +32,7 @@ AnalogInSensor::~AnalogInSensor()
 }
 
 
-void AnalogInSensor::set_port(char port)
-{
+void AnalogInSensor::set_port(char port) {
     if(sensor != NULL) {
         delete sensor;
     }
@@ -41,18 +41,23 @@ void AnalogInSensor::set_port(char port)
 }
 
 
-double AnalogInSensor::get_raw_value()
-{
+void AnalogInSensor::set_port(pros::ext_adi_port_pair_t port_pair) {
+    if(sensor != NULL) {
+        delete sensor;
+    }
+    
+    sensor = new pros::ADIAnalogIn(port_pair);    
+}
+
+
+double AnalogInSensor::get_raw_value() {
     double value = sensor->get_value();
     return value;
     
 }
 
 
-
-
-double AnalogInSensor::get_value(bool high_res)
-{
+double AnalogInSensor::get_value(bool high_res) {
     if(!calibrated)
     {
         Logger logger;
@@ -76,19 +81,13 @@ double AnalogInSensor::get_value(bool high_res)
 }
 
 
-
-
-void AnalogInSensor::calibrate()
-{
+void AnalogInSensor::calibrate() {
     sensor->calibrate();
     calibrated = true;
     
 }
 
 
-
-
-bool AnalogInSensor::is_calibrated()
-{
+bool AnalogInSensor::is_calibrated() {
     return calibrated;
 }

@@ -629,9 +629,9 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     Configuration* config = Configuration::get_instance();
 
     double kP = args.kP;
-    double kI = args.kI;
+    double kI = .9;
     double kD = args.kD;
-    double I_max = args.I_max;
+    double I_max = 15;
     
     front_left_drive->disable_driver_control();
     front_right_drive->disable_driver_control();
@@ -658,15 +658,32 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     int start_time = current_time;
     bool settled = false;
     
-    auto accel_func = [](double n) -> double { return 0.05 * n; };
-    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .25, args.max_velocity, 10);  // .25 is decceleration, 5 is initial velocity
+    std::vector<double> previous_l_velocities;
+    std::vector<double> previous_r_velocities;
+    int velocity_history = 15;
+    
+    // auto accel_func = [](double n) -> double { return 0.05 * n; };
+    auto accel_func = [](double n) -> double { return 0.45; };
+    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .45, args.max_velocity, 30);  // .45 is decceleration, 10 is initial velocity
     
     do {
         int dt = pros::millis() - current_time;
         current_time = pros::millis();
         
-        double velocity_l = velocity_profile.at(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))));
-        double velocity_r = velocity_profile.at(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))));
+        double velocity_l;
+        double velocity_r;
+        if(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))) <= args.setpoint1) {
+            velocity_l = velocity_profile.at(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))));
+        } else {
+            velocity_l = 0;
+        }
+        
+        if(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))) <= args.setpoint1) {
+            velocity_r = velocity_profile.at(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))));
+        } else {
+            velocity_r = 0;
+        }
+
         
         // double velocity;
         // if(velocity_l > velocity_r) {
@@ -687,12 +704,13 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         relative_angle += delta_theta;
         prev_abs_angle = abs_angle;
         
-        // long double error = 0 - relative_angle;  // setpoint is 0 because we want to drive straight
-        long double error = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
+        long double error = 0 - relative_angle;  // setpoint is 0 because we want to drive straight
+        // long double error = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
         std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
         // cap velocity to max velocity with regard to velocity
         if ( std::abs(integral) > I_max ) {
-            integral = integral > 0 ? I_max : -I_max;
+            // integral = integral > 0 ? I_max : -I_max;
+            integral = 0;
         } else {
             integral = integral + (error * dt);
         }
@@ -722,7 +740,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         }
         
 
-    // cap velocity to max velocity with regard to velocity
+    // cap velocity to max velocity with regard to direction
         if ( std::abs(velocity_l) > args.max_velocity ) {
             velocity_l = velocity_l > 0 ? args.max_velocity : -args.max_velocity;
         }
@@ -765,11 +783,34 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         
         double error_l = std::abs(args.setpoint1 - std::get<0>(Sensors::get_average_encoders(l_id, r_id)));
         double error_r = std::abs(args.setpoint1 - std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
-        if(error_l < 5 || error_r < 5) {  // shut off motors when one side reaches the setpoint
-            velocity_l = 0;
-            velocity_r = 0;
-            break;
+        
+        previous_l_velocities.push_back(velocity_l);
+        previous_r_velocities.push_back(velocity_r);
+        if(previous_l_velocities.size() > velocity_history) {
+            previous_l_velocities.erase(previous_l_velocities.begin());
         }
+        if(previous_r_velocities.size() > velocity_history) {
+            previous_r_velocities.erase(previous_r_velocities.begin());
+        }
+        
+        // settled is when error is almost zero and velocity is minimal
+        double l_difference = *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second - *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).first;
+        double r_difference = *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).second - *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).first;
+        if (
+            std::abs(l_difference) < 2 
+            && previous_l_velocities.size() == velocity_history 
+            && std::abs(r_difference) < 2 
+            && previous_r_velocities.size() == velocity_history
+            && velocity_l < 2
+            && velocity_r < 2
+        ) { 
+            break; // end before timeout 
+        }
+        // if(error_l < 5 || error_r < 5) {  // shut off motors when one side reaches the setpoint
+        //     velocity_l = 0;
+        //     velocity_r = 0;
+        //     break;
+        // }
         
         std::cout << "velocity: " << velocity_l << " " << velocity_r << "\n";    
         std::cout << "error: " << error_r << " " << error_l << " " << error << "\n";
@@ -1077,13 +1118,13 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     if(to_turn_face_forwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
         to_turn_face_forwards = (-2 * M_PI) + to_turn_face_forwards;  // give negative value to turn left to point
     } else if(to_turn_face_forwards < -M_PI) {
-        to_turn_face_forwards = (2 * M_PI) + to_turn_face_forwards;  // give positive value to turn left to point
+        to_turn_face_forwards = (2 * M_PI) + to_turn_face_forwards;  // give positive value to turn right to point
     }
     
     if(to_turn_face_backwards > M_PI) {  // find minimal angle change and direction of change [-PI/2, PI/2]
         to_turn_face_backwards = (-2 * M_PI) + to_turn_face_backwards;  // give negative value to turn left to point
     } else if(to_turn_face_backwards < -M_PI) {
-        to_turn_face_backwards = (2 * M_PI) + to_turn_face_backwards;  // give positive value to turn left to point
+        to_turn_face_backwards = (2 * M_PI) + to_turn_face_backwards;  // give positive value to turn right to point
     }
     
     
@@ -1176,7 +1217,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
 
 
 
-int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, double slew /*10*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = encoder_ticks;
@@ -1205,7 +1246,7 @@ int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/
     return uid;
 }
 
-int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*150*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, double slew /*false*/, bool log_data /*false*/) {
+int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, double slew /*false*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = relative_heading;
@@ -1236,7 +1277,7 @@ int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*1
 
 
 
-int Chassis::uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity /*150*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = l_enc_ticks;
     args.setpoint2 = r_enc_ticks;
@@ -1267,7 +1308,7 @@ int Chassis::uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_veloci
 
 
 
-int Chassis::turn_right(double degrees, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::turn_right(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = degrees;
     args.max_velocity = max_velocity;
@@ -1296,7 +1337,7 @@ int Chassis::turn_right(double degrees, int max_velocity /*200*/, int timeout /*
 
 
 
-int Chassis::turn_left(double degrees, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::turn_left(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = -degrees;
     args.max_velocity = max_velocity;
@@ -1324,7 +1365,7 @@ int Chassis::turn_left(double degrees, int max_velocity /*200*/, int timeout /*I
 }
 
 
-int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int explicit_direction /*0*/, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool correct_heading /*true*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
+int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int explicit_direction /*0*/, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool correct_heading /*true*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
     chassis_params args;
     args.setpoint1 = x;
     args.setpoint2 = y;
@@ -1353,7 +1394,7 @@ int Chassis::drive_to_point(double x, double y, int recalculations /*0*/, int ex
 
 
 
-int Chassis::turn_to_point(double x, double y, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
+int Chassis::turn_to_point(double x, double y, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
     chassis_params args;
     args.setpoint1 = x;
     args.setpoint2 = y;
@@ -1379,7 +1420,7 @@ int Chassis::turn_to_point(double x, double y, int max_velocity /*200*/, int tim
 
 
 
-int Chassis::turn_to_angle(double theta, int max_velocity /*200*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
+int Chassis::turn_to_angle(double theta, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*true*/) {
     PositionTracker* tracker = PositionTracker::get_instance();
     chassis_params args;
     args.setpoint1 = tracker->to_radians(theta);

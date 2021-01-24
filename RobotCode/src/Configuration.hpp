@@ -19,19 +19,19 @@
 #include "../lib/json.hpp"
 
 
-#define LEFT_ENC_TOP_PORT        'C'
-#define LEFT_ENC_BOTTOM_PORT     'D'
+#define LEFT_ENC_TOP_PORT        'G'
+#define LEFT_ENC_BOTTOM_PORT     'H'
 #define RIGHT_ENC_TOP_PORT       'A'
 #define RIGHT_ENC_BOTTOM_PORT    'B'
 #define STRAFE_ENC_TOP_PORT      'E'
 #define STRAFE_ENC_BOTTOM_PORT   'F'
-#define DETECTOR_MIDDLE_PORT     'G'
+#define DETECTOR_MIDDLE_PORT     'C'
 #define POTENTIOMETER_PORT       'Z'
 
 #define DETECTOR_BOTTOM_PORT     'Z'  // no port available but still wanted in code
-#define DETECTOR_TOP_PORT        'H'  // no port available but still wanted in code
+#define DETECTOR_TOP_PORT        'D'  // no port available but still wanted in code
 
-#define VISIONSENSOR_PORT        5
+#define OPTICAL_PORT        5
 #define IMU_PORT                 10
 
 

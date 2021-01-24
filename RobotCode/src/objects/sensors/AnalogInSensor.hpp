@@ -25,9 +25,11 @@ class AnalogInSensor
     public:
         AnalogInSensor();
         AnalogInSensor(char port);
+        AnalogInSensor(pros::ext_adi_port_pair_t port_pair);
         ~AnalogInSensor();
         
         void set_port(char port);
+        void set_port(pros::ext_adi_port_pair_t port_pair);
         
         double get_raw_value();
         double get_value(bool high_res);

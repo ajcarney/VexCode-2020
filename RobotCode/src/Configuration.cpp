@@ -58,7 +58,7 @@ Configuration::Configuration( )
     upper_indexer_reversed = 0;
     lower_indexer_reversed = 0;
 
-    filter_threshold = 2830;
+    filter_threshold = 2890;
     filter_color = "blue";
 
 

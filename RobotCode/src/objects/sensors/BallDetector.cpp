@@ -12,27 +12,28 @@
 
 
 
-BallDetector::BallDetector(char line_sensor_port_top_port, char ball_detector_filter_port, char line_sensor_port_bottom_port, char vision_port, int detector_threshold) {
-    ball_detector_top.set_port(line_sensor_port_top_port);
-    ball_detector_filter.set_port(ball_detector_filter_port);
-    ball_detector_bottom.set_port(line_sensor_port_bottom_port);
-    vision_sensor = new pros::Vision(vision_port);
-
+BallDetector::BallDetector(
+    const AnalogInSensor& detector_top_left, 
+    const AnalogInSensor& detector_filter, 
+    const AnalogInSensor& detector_bottom, 
+    int optical_port, 
+    int detector_threshold
+) {
+    ball_detector_top = detector_top_left;
+    ball_detector_filter = detector_filter;
+    ball_detector_bottom = detector_bottom;
+    optical_sensor = new pros::Optical(optical_port);
+    
+    optical_sensor->disable_gesture();
+    optical_sensor->set_led_pwm(50);
+    
     threshold = detector_threshold;
-
     time_since_last_ball = 0;
-
-    pros::vision_signature_s_t RED_SIG = pros::Vision::signature_from_utility(2, 1917, 5595, 3756, -211, 1591, 690, 1.000, 0);
-    vision_sensor->set_signature(1, &RED_SIG);
-
-    pros::vision_signature_s_t BLUE_SIG = pros::Vision::signature_from_utility(1, -2449, -825, -1638, 5173, 9899, 7536, 1.500, 0);
-    vision_sensor->set_signature(2, &BLUE_SIG);
-
+    log_data = false;
 }
 
-
 BallDetector::~BallDetector() {
-    delete vision_sensor;
+    delete optical_sensor;
 }
 
 
@@ -43,29 +44,40 @@ int BallDetector::set_threshold(int new_threshold) {
 
 
 int BallDetector::check_filter_level() {
+    int return_code = 0;
     if(ball_detector_filter.get_raw_value() < threshold) {  // ball is detected
         time_since_last_ball = 0;  // ball detected so there is no time since last ball
 
-        pros::vision_object_s_t red = vision_sensor->get_by_sig(0, 1);
-        pros::vision_object_s_t blue = vision_sensor->get_by_sig(0, 2);
-        std::cout << red.signature << " " << blue.signature << "\n";
-        if(red.signature == 255) {
-            vision_sensor->set_led(0x4287f5);  // blue
-            // std::cout << "color is not red, color is blue\n";
-            return 1;
-        } else if(blue.signature == 255) {
-            vision_sensor->set_led(0xf7070f);  // red
-            // std::cout << "color is not blue, color is red\n";
-            return 2;
-        } else {
-            vision_sensor->set_led(0xf2ff00);  // yellow for error
-            return -1;
+        double hue = optical_sensor->get_hue();
+        if(hue > 170 && hue < 260) {  // color is blue
+            return_code = 1;
+        } else if(hue > 335 || hue < 25) {  // color is red
+            return_code = 2;
+        } else {  // could not determine color based on ranges
+            return_code = -1;
         }
+    } else {
+        time_since_last_ball = pros::millis() - time_since_last_ball;  // get time elapsed
     }
-    vision_sensor->set_led(0x4cbb17);  // kelly green
     
-    time_since_last_ball = pros::millis() - time_since_last_ball;  // get time elapsed
-    return 0;  // no ball is detected
+    if(log_data) {
+        Logger logger;
+        log_entry entry;
+        entry.content = (
+            "[INFO] " + std::string("BALL_DETECT_MIDDLE")
+            + ", Time: " + std::to_string(pros::millis())
+            + ", ball_detected: " + std::to_string(return_code)
+            + ", time_since_last_ball " + std::to_string(time_since_last_ball)
+            + ", line_detector: " + std::to_string(ball_detector_filter.get_raw_value())
+            + ", threshold: " + std::to_string(threshold)
+            
+        );
+        entry.stream = "clog";
+        logger.add(entry);  
+    }
+    
+    
+    return return_code;  // no ball is detected
 }
 
 
@@ -77,7 +89,7 @@ std::vector<bool> BallDetector::locate_balls() {
         locations.push_back(false);
     }
     
-    if(ball_detector_filter.get_raw_value() < 2900) {
+    if(ball_detector_filter.get_raw_value() < threshold) {
         locations.push_back(true);
     } else {
         locations.push_back(false);
@@ -89,9 +101,48 @@ std::vector<bool> BallDetector::locate_balls() {
         locations.push_back(false);
     }
     
+    if(log_data) {
+        Logger logger;
+        log_entry entry;
+        entry.content = (
+            "[INFO] " + std::string("BALL_DETECT_MIDDLE")
+            + ", time: " + std::to_string(pros::millis())
+            + ", top_present: " + std::to_string(locations.at(0))
+            + ", middle_present: " + std::to_string(locations.at(1))
+            + ", bottom_present: " + std::to_string(locations.at(2))
+            + ", top: " + std::to_string(ball_detector_top.get_raw_value())
+            + ", middle: " + std::to_string(ball_detector_filter.get_raw_value())
+            + ", bottom: " + std::to_string(ball_detector_bottom.get_raw_value())
+            + ", threshold: " + std::to_string(threshold)
+        );
+        entry.stream = "clog";
+        logger.add(entry);  
+    }
+    
+    
     return locations;
 }
 
+
+void BallDetector::set_led_brightness(int pct) {
+    optical_sensor->set_led_pwm(pct);
+}
+
+
+void BallDetector::auto_set_led_brightness() {
+    int pct = 100 * std::abs(1 - optical_sensor->get_brightness());  // 1 to 1 scale
+    optical_sensor->set_led_pwm(pct);
+}
+
+
 std::tuple<int, int> BallDetector::debug_color() {
     return std::make_tuple(ball_detector_filter.get_raw_value(), check_filter_level());
+}
+
+void BallDetector::start_logging() {
+    log_data = true;
+}
+
+void BallDetector::stop_logging() {
+    log_data = false;
 }

@@ -23,21 +23,33 @@ class BallDetector
         AnalogInSensor ball_detector_top;
         AnalogInSensor ball_detector_filter;
         AnalogInSensor ball_detector_bottom;
-        pros::Vision* vision_sensor;
+        pros::Optical* optical_sensor;
         
         int time_since_last_ball;
+        bool log_data;
         
         int threshold;
                         
     public:
-        BallDetector(char line_sensor_port_top_port, char ball_detector_filter_port, char line_sensor_port_bottom_port, char vision_port, int detector_threshold);
+        BallDetector(
+            const AnalogInSensor& detector_top_left, 
+            const AnalogInSensor& detector_filter, 
+            const AnalogInSensor& detector_bottom, 
+            int optical_port, 
+            int detector_threshold
+        );
         ~BallDetector();
                         
         int set_threshold(int new_threshold);
         int check_filter_level();
         std::vector<bool> locate_balls();
         
+        void set_led_brightness(int pct);
+        void auto_set_led_brightness();
+        
         std::tuple<int, int> debug_color();
+        void start_logging();
+        void stop_logging();
     
 };
 

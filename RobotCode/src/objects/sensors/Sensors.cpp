@@ -22,7 +22,14 @@ namespace Sensors
     Encoder strafe_encoder{STRAFE_ENC_TOP_PORT, STRAFE_ENC_BOTTOM_PORT, true};
     
     AnalogInSensor potentiometer{POTENTIOMETER_PORT};
-    BallDetector ball_detector{DETECTOR_TOP_PORT, DETECTOR_MIDDLE_PORT, DETECTOR_BOTTOM_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
+    // BallDetector ball_detector{DETECTOR_TOP_PORT, DETECTOR_MIDDLE_PORT, DETECTOR_BOTTOM_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
+    BallDetector ball_detector{
+        AnalogInSensor(DETECTOR_TOP_PORT),
+        AnalogInSensor(DETECTOR_MIDDLE_PORT), 
+        AnalogInSensor(DETECTOR_BOTTOM_PORT),
+        OPTICAL_PORT,
+        Configuration::get_instance()->filter_threshold
+    };
     pros::Imu imu{IMU_PORT};
     bool imu_is_calibrated = false;
 

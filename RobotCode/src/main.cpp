@@ -187,7 +187,7 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
- void opcontrol() {
+void opcontrol() {
      // pros::ADIAnalogIn l1 (1);
      // pros::ADIAnalogIn l2 (2);
      // pros::ADIAnalogIn l3 (3);
@@ -365,9 +365,13 @@ void autonomous() {
 
     // tracker->stop_logging();
     lcd.update_labels();
+    Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
+    PositionTracker* tracker = PositionTracker::get_instance();
+    tracker->enable_imu();
+    tracker->start_thread();
+    // chassis.profiled_straight_drive(1000);
     // Autons autons;
     // autons.run_autonomous();
-    // autons.setup_odometry();
     
     // gather data from position tracker
     // tracker->start_logging();
@@ -395,7 +399,7 @@ void autonomous() {
     while(1)
     {
         // print encoder values
-        // std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
+        std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
         // double delta_theta = chassis.calc_delta_theta(prev_angle, ref_angle, Sensors::left_encoder.get_position(l_id) - prev_l, Sensors::right_encoder.get_position(r_id) - prev_r);
         // prev_angle = prev_angle + delta_theta;
         // prev_l = Sensors::left_encoder.get_position(l_id);

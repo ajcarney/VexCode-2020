@@ -31,7 +31,7 @@
 #define DETECTOR_BOTTOM_PORT     'Z'  // no port available but still wanted in code
 #define DETECTOR_TOP_PORT        'D'  // no port available but still wanted in code
 
-#define OPTICAL_PORT        5
+#define OPTICAL_PORT              5
 #define IMU_PORT                 10
 
 

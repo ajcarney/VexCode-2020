@@ -92,7 +92,6 @@ class Chassis
          
         static Encoder* left_encoder;
         static Encoder* right_encoder;
-        static pros::Imu* imu;
         
         pros::Task *thread;  // the motor thread
         static std::queue<chassis_action> command_queue;
@@ -114,7 +113,7 @@ class Chassis
 
 
     public:
-        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing=1, double wheel_size=4.05);
+        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, double chassis_width, double gearing=1, double wheel_size=4.05);
         ~Chassis();
 
         int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=10, bool log_data=true);
@@ -133,10 +132,7 @@ class Chassis
          * sets voltage of chassis
          */
         void move( int voltage );
-        
-        // deprecated
-        static double calc_delta_theta(double prev_angle, double delta_l, double delta_r);
-        
+
         /**
          * @param: pros::motor_brake_mode_e_t new_brake_mode -> the new brakemode for the chassis
          * @return: None

@@ -148,8 +148,7 @@ void SensorsDebug::debug()
         v1,
         v2
     );
-    AnalogInDebugger analog_in_debug(analog_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::potentiometer}, {"Pot 1"});
-    // DigitalInDebugger digital_in_debug(digital_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::limit_switch}, {"Limit Switch 1"});
+    AnalogInDebugger analog_in_debug(analog_in_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, {&Sensors::line_tracker_top, &Sensors::line_tracker_middle, &Sensors::line_tracker_bottom}, {"Tracker Top", "Tracker Middle", "Tracker Bottom"});
     IMUDebugger imu_debug(imu_tab, SENSORS_CONTAINER_WIDTH, SENSORS_CONTAINER_HEIGHT, &Sensors::imu);
     EncoderDebugger encoder_debug(
         encoders_tab, 
@@ -158,10 +157,12 @@ void SensorsDebug::debug()
         {
             &Sensors::right_encoder,
             &Sensors::left_encoder,
+            &Sensors::strafe_encoder
         }, 
         {
             "R Encoder",
             "L Encoder",
+            "S Encoder"
         }
     );
 

@@ -24,16 +24,14 @@ std::atomic<bool> Indexer::command_finish_lock = ATOMIC_VAR_INIT(false);
 Motor* Indexer::upper_indexer;
 Motor* Indexer::lower_indexer;
 BallDetector* Indexer::ball_detector;
-AnalogInSensor* Indexer::potentiometer;
 std::string Indexer::filter_color;
 
 
-Indexer::Indexer(Motor &upper, Motor &lower, BallDetector &detector, AnalogInSensor &pot, std::string color)
+Indexer::Indexer(Motor &upper, Motor &lower, BallDetector &detector, std::string color)
 {    
     upper_indexer = &upper;
     lower_indexer = &lower;
     ball_detector = &detector;
-    potentiometer = &pot;
     filter_color = color;
 
     upper_indexer->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
@@ -132,6 +130,38 @@ void Indexer::indexer_motion_task(void*) {
                 
                 break;
                 
+            } case e_index_to_state: {
+                ball_positions current_state = get_state();
+                do {
+                    current_state = get_state();
+                    int color = ball_detector->check_filter_level();
+                    if(action.args.allow_filter) {
+                        if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
+                            upper_indexer->set_voltage(-12000); 
+                            lower_indexer->set_voltage(12000);
+                            pros::delay(300);  // let ball filter out
+                            upper_indexer->set_voltage(0); 
+                            lower_indexer->set_voltage(0);
+                        } else if(color < 0) {  // ball was detected but color could not be determined: print error message and default to intaking
+                            Logger logger;
+                            log_entry entry;
+                            entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", ball was detected but color could not be determined";
+                            entry.stream = "cerr";
+                            logger.add(entry);
+                        }
+                        
+                    } 
+                    
+                    if(current_state.top != action.args.end_state.top) {
+                        upper_indexer->set_voltage(12000); 
+                    }
+                    
+                    if(current_state.middle != action.args.end_state.middle) {
+                        lower_indexer->set_voltage(12000);   
+                    }
+                } while(current_state != action.args.end_state);
+                
+                break;
             } case e_auto_increment: {
                 // try to filter out ball at second level if necessary
                 int color = ball_detector->check_filter_level();
@@ -163,53 +193,6 @@ void Indexer::indexer_motion_task(void*) {
                     lower_indexer->set_voltage(0);
                 }
                 break;
-            } case e_index_to_state: {
-                ball_positions current_state = get_state();
-                do {
-                    current_state = get_state();
-                    int color = ball_detector->check_filter_level();
-                    if(action.args.allow_filter) {
-                        if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
-                            upper_indexer->set_voltage(-12000); 
-                            lower_indexer->set_voltage(12000);
-                            pros::delay(300);  // let ball filter out
-                            upper_indexer->set_voltage(0); 
-                            lower_indexer->set_voltage(0);
-                            break;
-                        } else if(color < 0) {  // ball was detected but color could not be determined: print error message and default to intaking
-                            Logger logger;
-                            log_entry entry;
-                            entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", ball was detected but color could not be determined";
-                            entry.stream = "cerr";
-                            logger.add(entry);
-                        }
-                    } 
-                    upper_indexer->set_voltage(12000); 
-                    lower_indexer->set_voltage(12000);   
-                } while(current_state != action.args.end_state);
-                
-                
-            } case e_raise_brake: {
-                lower_indexer->set_voltage(-12000);
-
-                int dt = 0;
-                while(potentiometer->get_raw_value() < 3950 && dt < 3000) {  // top value of potentiometer
-                    pros::delay(10);
-                    dt += 10;
-                }
-                
-                lower_indexer->set_voltage(0);
-                break;
-            } case e_lower_brake: {
-                lower_indexer->set_voltage(-12000);
-                
-                int dt = 0;
-                while(potentiometer->get_raw_value() > 3470 && dt < 3000) {  // lowered position of potentiometer
-                    pros::delay(10);
-                    dt += 10;
-                }
-                lower_indexer->set_voltage(0);
-                break;
             } case e_fix_ball: {
                 upper_indexer->set_voltage(-12000);
                 pros::delay(250);
@@ -236,10 +219,11 @@ void Indexer::indexer_motion_task(void*) {
     }
 }
 
-int Indexer::send_command(indexer_command command) {
+int Indexer::send_command(indexer_command command, indexer_args args /*{}*/) {
     while ( command_start_lock.exchange( true ) ); //aquire lock
     indexer_action action;
     action.command = command;
+    action.args = args;
     action.uid = pros::millis() + lower_indexer->get_actual_voltage() + upper_indexer->get_actual_voltage();
     command_queue.push(action);
     command_start_lock.exchange( false ); //release lock
@@ -271,6 +255,16 @@ void Indexer::index_until_filtered(bool asynch /*false*/) {
     }
 }
 
+void Indexer::index_to_state(bool allow_filter, ball_positions end_state, bool asynch) {
+    indexer_args args;
+    args.allow_filter = allow_filter;
+    args.end_state = end_state;
+    int uid = send_command(e_index_until_filtered, args);
+    
+    if(!asynch) {
+        wait_until_finished(uid);
+    }
+}
 
 void Indexer::increment() {
     send_command(e_increment);
@@ -278,16 +272,6 @@ void Indexer::increment() {
 
 void Indexer::auto_increment() {
     send_command(e_auto_increment);
-}
-
-
-
-void Indexer::lower_brake() {
-    send_command(e_lower_brake);
-}
-
-void Indexer::raise_brake() {
-    send_command(e_raise_brake);
 }
 
 

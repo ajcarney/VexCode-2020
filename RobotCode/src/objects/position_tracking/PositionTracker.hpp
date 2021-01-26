@@ -16,9 +16,9 @@
 #include "main.h"
 
 
-#define WHEEL_TRACK_R 6.35  This_value_is_not_correct
-#define WHEEL_TRACK_L 6.35  This_value_is_not_correct
-#define S_ENC_OFFSET 3      This_value_is_not_correct
+#define WHEEL_TRACK_R 6.35  //This_value_is_not_correct
+#define WHEEL_TRACK_L 6.35  //This_value_is_not_correct
+#define S_ENC_OFFSET 3      //This_value_is_not_correct
 
 typedef struct
 {

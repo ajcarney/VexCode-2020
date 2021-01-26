@@ -76,13 +76,12 @@ Motor* Chassis::back_right_drive;
 
 Encoder* Chassis::left_encoder;
 Encoder* Chassis::right_encoder;
-pros::Imu* Chassis::imu;
 double Chassis::width;
 double Chassis::gear_ratio;
 double Chassis::wheel_diameter;
 
 
-Chassis::Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, pros::Imu Imu, double chassis_width, double gearing /*1*/, double wheel_size /*4.05*/)
+Chassis::Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, double chassis_width, double gearing /*1*/, double wheel_size /*4.05*/)
 {
     front_left_drive = &front_left;
     front_right_drive = &front_right;
@@ -91,7 +90,6 @@ Chassis::Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor
     
     left_encoder = &l_encoder;
     right_encoder = &r_encoder;
-    imu = &Imu;
     
     wheel_diameter = wheel_size;
     gear_ratio = gearing;
@@ -662,9 +660,9 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     std::vector<double> previous_r_velocities;
     int velocity_history = 15;
     
-    // auto accel_func = [](double n) -> double { return 0.05 * n; };
-    auto accel_func = [](double n) -> double { return 0.45; };
-    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .45, args.max_velocity, 30);  // .45 is decceleration, 10 is initial velocity
+    auto accel_func = [](double n) -> double { return 0.005 * n; };
+    // auto accel_func = [](double n) -> double { return 1; };
+    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .8, args.max_velocity, 50);  // .45 is decceleration, 10 is initial velocity
     
     do {
         int dt = pros::millis() - current_time;
@@ -1454,32 +1452,6 @@ void Chassis::move( int voltage )
     front_right_drive->move(voltage);
     back_left_drive->move(voltage);
     back_right_drive->move(voltage);
-}
-
-
-
-
-double Chassis::calc_delta_theta(double prev_angle, double delta_l, double delta_r) {
-    // double imu_reading = std::fmod(imu->get_heading() + 360.0, 360); // scale imu to 0, 360
-    // double delta_imu = (imu_reading - prev_angle);
-    // if(delta_imu > 180) {  // find least distance between angles
-    //     delta_imu = 360 - delta_imu;
-    // } else if (delta_imu < -180) {
-    //     delta_imu = 360 + delta_imu;
-    // }
-    
-    // std::cout << delta_imu << " | " << imu_reading << "\n";
-
-    long double circumference = width * M_PI;                       // circumference of turning arc 
-    long double inches_per_tick = (M_PI * wheel_diameter) / 360.0;  // inches per tick = circumference of wheel / num encoder ticks per revolution
-    long double inches_turned = inches_per_tick * (delta_l - delta_r);
-    double delta_encoder_degrees = (360 * inches_turned) / circumference;
-    
-    // double delta_theta = (.6 * delta_imu) + (.4 * delta_encoder_degrees);
-    double delta_theta = delta_encoder_degrees;
-    // double theta = (.6 * imu_reading) + (.4 * (delta_encoder_degrees + prev_angle));
-
-    return delta_theta;
 }
 
 

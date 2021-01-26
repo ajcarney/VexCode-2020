@@ -49,7 +49,7 @@ int Autons::get_autonomous_number() {
  * deploys by outtaking and running top roller
  */
 void Autons::deploy() {
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "none");
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "none");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
 
     intakes.rocket_outwards();
@@ -81,8 +81,8 @@ void Autons::one_pt() {
  * straight drive moving
  */
 void Autons::skills() {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "blue");    
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
     Intakes intakes(Motors::left_intake, Motors::right_intake);
     PositionTracker* tracker = PositionTracker::get_instance();
     tracker->start_thread();
@@ -108,8 +108,8 @@ void Autons::skills() {
 
 
 void Autons::blue_north() {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "blue");    
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
     indexer.update_filter_color("red");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
     PositionTracker* tracker = PositionTracker::get_instance();
@@ -162,8 +162,8 @@ void Autons::blue_north() {
 
 
 void Autons::blue_north_2() {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "blue");    
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
     indexer.update_filter_color("blue");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
     PositionTracker* tracker = PositionTracker::get_instance();
@@ -217,8 +217,8 @@ void Autons::blue_north_2() {
 
 
 void Autons::red_north() {
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, "blue");    
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
     indexer.update_filter_color("blue");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
     PositionTracker* tracker = PositionTracker::get_instance();

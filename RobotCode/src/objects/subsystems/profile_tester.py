@@ -29,13 +29,13 @@ def gen_profile(enc_ticks, max_acceleration, max_decceleration, max_velocity, in
     return profile
 
 def accel_profile(x):
-    vel = .05 * x
+    vel = .005 * x
     print(vel)
     return vel
 
-ticks = 250
+ticks = 1000
 
-y = gen_profile(ticks, accel_profile, .25, 150, 10)
+y = gen_profile(ticks, accel_profile, 0.8, 450, 50)
 x = list(range(ticks + 1))
 print(len(y))
 plt.scatter(x, y)

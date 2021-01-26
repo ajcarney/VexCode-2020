@@ -197,7 +197,7 @@ void PositionTracker::calc_position(void*)
         Logger logger;
         log_entry entry;
 
-        for(int i = 0; i < log_level; i++) {
+        for(int i = 0; i <= log_level; i++) {
             switch(i) {
                 case 0:
                     entry.content = "";
@@ -254,7 +254,7 @@ void PositionTracker::calc_position(void*)
         
         lock.exchange(false);
         
-        pros::delay(4);
+        pros::delay(5);
     }
 }
 
@@ -333,8 +333,8 @@ void PositionTracker::set_position(position robot_coordinates)
     if(r_id != -1) {
         Sensors::right_encoder.forget_position(r_id);
     }
-    l_id = Sensors::left_encoder.get_unique_id();
-    r_id = Sensors::right_encoder.get_unique_id();
+    l_id = Sensors::left_encoder.get_unique_id(true);
+    r_id = Sensors::right_encoder.get_unique_id(true);
     
     initial_l_enc = std::get<0>(Sensors::get_average_encoders(l_id, r_id));
     initial_r_enc = std::get<1>(Sensors::get_average_encoders(l_id, r_id));

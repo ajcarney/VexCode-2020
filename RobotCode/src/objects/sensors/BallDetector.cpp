@@ -16,13 +16,13 @@ BallDetector::BallDetector(
     const AnalogInSensor& detector_top_left, 
     const AnalogInSensor& detector_filter, 
     const AnalogInSensor& detector_bottom, 
-    int optical_port, 
+    pros::Optical optical, 
     int detector_threshold
 ) {
     ball_detector_top = detector_top_left;
     ball_detector_filter = detector_filter;
     ball_detector_bottom = detector_bottom;
-    optical_sensor = new pros::Optical(optical_port);
+    optical_sensor = &optical;
     
     optical_sensor->disable_gesture();
     optical_sensor->set_led_pwm(50);
@@ -49,6 +49,8 @@ int BallDetector::check_filter_level() {
         time_since_last_ball = 0;  // ball detected so there is no time since last ball
 
         double hue = optical_sensor->get_hue();
+        std::cout << "hue: " << hue << "\n";
+        pros::delay(100);
         if(hue > 170 && hue < 260) {  // color is blue
             return_code = 1;
         } else if(hue > 335 || hue < 25) {  // color is red

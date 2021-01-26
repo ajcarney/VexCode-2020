@@ -30,9 +30,11 @@ struct ball_positions{
         bool top_equal = (top == state.top);
         bool middle_equal = (middle == state.middle);
         bool middle_color_equal;
-        if(middle_color == "any" && state.middle_color != "none") {
+        if(middle_color == "present" && state.middle_color != "none") {
             middle_color_equal = true;
-        } else if (middle_color == "red" && state.middle_color == "red") {
+        } else if (middle_color == "any") {
+            middle_color_equal = true;
+        }else if (middle_color == "red" && state.middle_color == "red") {
             middle_color_equal = true;
         } else if (middle_color == "blue" && state.middle_color == "blue") {
             middle_color_equal = true;
@@ -69,8 +71,6 @@ typedef enum e_indexer_command {
     e_increment,
     e_auto_increment,
     e_index_to_state,
-    e_raise_brake,
-    e_lower_brake,
     e_fix_ball,
     e_run_upper,
     e_run_lower,
@@ -99,7 +99,6 @@ class Indexer
         static Motor *upper_indexer;
         static Motor *lower_indexer;
         static BallDetector *ball_detector;
-        static AnalogInSensor *potentiometer;
         static std::string filter_color;
         
         static int num_instances;
@@ -110,12 +109,12 @@ class Indexer
         static std::atomic<bool> command_start_lock;
         static std::atomic<bool> command_finish_lock;
         
-        int send_command(indexer_command command);
+        int send_command(indexer_command command, indexer_args args={});
 
         static void indexer_motion_task(void*);
                 
     public:
-        Indexer(Motor &upper, Motor &lower, BallDetector &detector, AnalogInSensor &pot, std::string color);
+        Indexer(Motor &upper, Motor &lower, BallDetector &detector, std::string color);
         ~Indexer();
     
         void index();
@@ -123,12 +122,10 @@ class Indexer
         void auto_index();
         void index_no_backboard();
         void index_until_filtered(bool asynch=false);
+        void index_to_state(bool allow_filter, ball_positions end_state, bool asynch=false);
         
         void increment();
         void auto_increment();
-        
-        void lower_brake();
-        void raise_brake();
         
         void run_upper_roller();
         void run_lower_roller();

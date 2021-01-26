@@ -105,7 +105,7 @@ void autonomous() {
  {
      // TODO: add back imu functionality when imu is mounted
      Logger logger;
-     Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
+     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
      
      Configuration* config = Configuration::get_instance();
      double kP = config->chassis_pid.kP;
@@ -365,7 +365,7 @@ void opcontrol() {
 
     // tracker->stop_logging();
     lcd.update_labels();
-    Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 12.75, 5/3, 3.25);
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
     PositionTracker* tracker = PositionTracker::get_instance();
     tracker->enable_imu();
     tracker->start_thread();

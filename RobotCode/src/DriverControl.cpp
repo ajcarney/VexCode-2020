@@ -38,16 +38,15 @@ void driver_control(void*)
 
     Controller controllers;
 
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, Sensors::imu, 16, 5/3);
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, Sensors::potentiometer, config->filter_color);
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, config->filter_color);
     Intakes intakes(Motors::left_intake, Motors::right_intake);
     
     int left_analog_y = 0;
     int right_analog_y = 0;
 
     bool auto_filter = true;
-    bool brake_is_down = false;
-    bool hold_intakes_out = false;
+    bool hold_intakes_out = true;
     int intake_start_time = 0;  // no possible way to think indexer should run at the start of driver control
 
     controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);
@@ -76,21 +75,12 @@ void driver_control(void*)
             indexer.index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.filter();
-        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_Y)) {
-            // commented out because sensor isn't programmed rn
-            // if(brake_is_down) {
-            //     indexer.raise_brake();
-            //     brake_is_down = false;
-            // } else {
-            //     indexer.lower_brake();
-            //     brake_is_down = true;
-            // }
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
             indexer.auto_increment();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
             indexer.increment();
-        } else if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-            indexer.fix_ball();
+        } else if(controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            indexer.fix_ball(true);
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_X)) {
             indexer.index_no_backboard();
         } else if (pros::millis() < intake_start_time + 1000) {

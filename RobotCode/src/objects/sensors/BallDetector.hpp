@@ -35,7 +35,7 @@ class BallDetector
             const AnalogInSensor& detector_top_left, 
             const AnalogInSensor& detector_filter, 
             const AnalogInSensor& detector_bottom, 
-            int optical_port, 
+            pros::Optical optical, 
             int detector_threshold
         );
         ~BallDetector();

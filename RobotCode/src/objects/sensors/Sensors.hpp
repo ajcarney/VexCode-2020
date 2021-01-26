@@ -23,9 +23,13 @@ namespace Sensors
     extern Encoder right_encoder;
     extern Encoder left_encoder;
     extern Encoder strafe_encoder;
-    extern AnalogInSensor potentiometer;
     
+    extern AnalogInSensor line_tracker_top;
+    extern AnalogInSensor line_tracker_middle;
+    extern AnalogInSensor line_tracker_bottom;
+    extern pros::Optical optical;
     extern BallDetector ball_detector;
+    
     extern pros::Imu imu;
     extern bool imu_is_calibrated;
     

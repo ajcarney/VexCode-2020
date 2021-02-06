@@ -38,6 +38,22 @@ std::vector<double> generate_velocity_profile(int encoder_ticks, const std::func
         pros::delay(100); // add delay for msg to be logged
         throw std::invalid_argument("Cannot generate profile with negative or 0 encoder ticks");
     }
+    
+    if(max_decceleration || max_acceleration == 0) {
+        Logger logger;
+        log_entry entry;
+        entry.content = (
+            "[ERROR] " + std::string("PROFILE_CALCULATION")
+            + ", Time: " + std::to_string(pros::millis())
+            + ", Could not generate profile with 0 accleration or decceleration"
+            + ", enc_ticks: " + std::to_string(encoder_ticks)
+            + ", max_velocity: " + std::to_string(max_velocity)
+        );
+        entry.stream = "clog";
+        logger.add(entry);  
+        pros::delay(100); // add delay for msg to be logged
+        throw std::invalid_argument("Could not generate profile with 0 accleration or decceleration");
+    }
         
     std::vector<double> profile = {initial_velocity};
     
@@ -127,25 +143,6 @@ Chassis::~Chassis()
         delete thread;
     }
 }
-
-
-// void Chassis::generate_profiles() {
-//     if(!profile_1.is_generated()) {
-//         profile_1.generate_profile(
-//             [](double n) -> double { return 183335300 + ((16.29262 - 183335300) / (1 + std::pow((n / 5807375), 1.381135))); },
-//             [](double n) -> double { return 201.3993 - (0.07738232 * n) - (0.0001796556 * std::pow(n, 2)); },
-//             // [](double n) -> double { return (201.3993 - (0.0967279 * n) - (0.0002807118 * std::pow(n, 2))); },
-//             // [](double n) -> double { return -14.87879 + ((199.9947 - -14.87879) / (1 + std::pow((n / 216.5658), 1.756448))); },  // 700 endpoint
-//             // [](double n) -> double { return -718.7411 + ((200.0491 - -718.7411) / (1 + std::pow((n / 3436.08), 0.8049193))); },  // 700 endpoint
-//             // [](double n) -> double { return -39.01548 + ((195.369 - -39.01548) / (1 + std::pow((n / 978.0565), 2.266577))); },  // 1700 endpoint
-//             // [](double n) -> double { return (-0.2 * n + 1000); },  // 1000 endpoint
-//             250,
-//             820,
-//             200,
-//             0
-//         );
-//     }
-// }
 
 
 void Chassis::chassis_motion_task(void*) {
@@ -287,9 +284,9 @@ void Chassis::chassis_motion_task(void*) {
                 turn_args.setpoint1 = to_turn;
                 turn_args.max_velocity = action.args.max_velocity;
                 turn_args.timeout = 15000; // TODO: add time estimation
-                turn_args.kP = 4;
-                turn_args.kI = 0.00000;
-                turn_args.kD = 54;
+                turn_args.kP = 2.8;
+                turn_args.kI = 0.0005;
+                turn_args.kD = 50;
                 turn_args.I_max = INT32_MAX;
                 turn_args.motor_slew = action.args.motor_slew;
                 turn_args.log_data = action.args.log_data;
@@ -351,9 +348,9 @@ void Chassis::chassis_motion_task(void*) {
                 turn_args.setpoint1 = to_turn;
                 turn_args.max_velocity = action.args.max_velocity;
                 turn_args.timeout = action.args.timeout; // TODO: add time estimation
-                turn_args.kP = 4;
-                turn_args.kI = 0.00000;
-                turn_args.kD = 54;
+                turn_args.kP = 2.8;
+                turn_args.kI = 0.0005;
+                turn_args.kD = 50;
                 turn_args.I_max = INT32_MAX;
                 turn_args.motor_slew = action.args.motor_slew;
                 turn_args.log_data = action.args.log_data;
@@ -476,14 +473,20 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
     // slew rate code
         double delta_velocity_l = left_velocity - prev_velocity_l;
         double delta_velocity_r = right_velocity - prev_velocity_r;
-        double slew_rate = .1;
+        double slew_rate = args.motor_slew;
         if(std::abs(delta_velocity_l) > (dt * slew_rate) && (std::signbit(delta_velocity_l) == std::signbit(left_velocity)) ) {  // ignore deceleration
+            if(delta_velocity_l == 0) {
+                std::cout << previous_l_velocities.at(999) << "\n";  // throw some error that is easy to see
+            }
             int sign = std::abs(delta_velocity_l) / delta_velocity_l;
             std::cout << "l over slew: " << sign << " " << dt << " " << slew_rate << "\n";
             left_velocity = prev_velocity_l + (sign * dt * slew_rate);
         }
         
         if(std::abs(delta_velocity_r) > (dt * slew_rate) && (std::signbit(delta_velocity_r) == std::signbit(right_velocity))) {
+            if(delta_velocity_r == 0) {
+                std::cout << previous_r_velocities.at(999) << "\n";  // throw some error that is easy to see
+            }
             int sign = std::abs(delta_velocity_r) / delta_velocity_r;
             std::cout << "r over slew: " << sign << " " << dt << " " << slew_rate << "\n";
             right_velocity = prev_velocity_r + (sign * dt * slew_rate);
@@ -627,9 +630,9 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     Configuration* config = Configuration::get_instance();
 
     double kP = args.kP;
-    double kI = .9;
+    double kI = args.kI;
     double kD = args.kD;
-    double I_max = 15;
+    double I_max = INT32_MAX;
     
     front_left_drive->disable_driver_control();
     front_right_drive->disable_driver_control();
@@ -655,6 +658,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     int current_time = pros::millis();
     int start_time = current_time;
     bool settled = false;
+    bool was_at_target_l = false;
+    bool was_at_target_r = false;
     
     std::vector<double> previous_l_velocities;
     std::vector<double> previous_r_velocities;
@@ -662,7 +667,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     
     auto accel_func = [](double n) -> double { return 0.005 * n; };
     // auto accel_func = [](double n) -> double { return 1; };
-    std::vector<double> velocity_profile = generate_velocity_profile(args.setpoint1, accel_func, .8, args.max_velocity, 50);  // .45 is decceleration, 10 is initial velocity
+    std::vector<double> velocity_profile = generate_velocity_profile(std::abs(args.setpoint1), accel_func, .55, args.max_velocity, 50);  // .45 is decceleration, 10 is initial velocity
     
     do {
         int dt = pros::millis() - current_time;
@@ -670,15 +675,17 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         
         double velocity_l;
         double velocity_r;
-        if(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))) <= args.setpoint1) {
+        if(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))) <= std::abs(args.setpoint1)) {
             velocity_l = velocity_profile.at(std::abs(std::get<0>(Sensors::get_average_encoders(l_id, r_id))));
         } else {
+            was_at_target_l = true;
             velocity_l = 0;
         }
         
-        if(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))) <= args.setpoint1) {
+        if(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))) <= std::abs(args.setpoint1)) {
             velocity_r = velocity_profile.at(std::abs(std::get<1>(Sensors::get_average_encoders(l_id, r_id))));
         } else {
+            was_at_target_l = true;
             velocity_r = 0;
         }
 
@@ -706,21 +713,21 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
         // long double error = std::get<0>(Sensors::get_average_encoders(l_id, r_id)) - std::get<1>(Sensors::get_average_encoders(l_id, r_id));
         std::cout << "relative angle: " << relative_angle << " | dtheta: " << delta_theta << "\n";
         // cap velocity to max velocity with regard to velocity
-        if ( std::abs(integral) > I_max ) {
-            // integral = integral > 0 ? I_max : -I_max;
-            integral = 0;
-        } else {
-            integral = integral + (error * dt);
+        integral = integral + (error * dt);
+        if(integral > I_max) {
+            integral = I_max;
+        } else if (integral < -I_max) {
+            integral = -I_max;
         }
         
-        if(std::signbit(error) != std::signbit(prev_error)) {
-            std::cout << "halving " << integral << " " << prev_integral;
-            integral = .5 * integral;
-        }
+        // if(std::signbit(error) != std::signbit(prev_error)) {
+        //     std::cout << "halving " << integral << " " << prev_integral;
+        //     integral = .5 * integral;
+        // }
         prev_integral = integral;
         
-        // double derivative = error - prev_error;
-        // prev_error = error;
+        double derivative = error - prev_error;
+        prev_error = error;
         
         
         // std::cout << error << " " << relative_angle << "\n";
@@ -728,13 +735,16 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
     // pid heading correction
         // int velocity_correction = (kP * error) + (kI * integral) + (kD * derivative);
         
-    // tbh heading correction
-        double velocity_correction = std::abs(kI * integral);
+    // PI heading correction
+        // double velocity_correction = std::abs(kI * integral);
+        double velocity_correction = std::abs(args.kP * error + args.kI * integral + args.kD * derivative);
         std::cout << "integral: " << integral << " " << velocity_correction << "\n";
         if(args.correct_heading  && error > 0.000001) {  // veering off course, so correct
-            velocity_r -= velocity_correction;
+            velocity_r -= velocity_correction / 2;
+            velocity_l += velocity_correction / 2;
         } else if(args.correct_heading && error < -0.000001) {
-            velocity_l -= velocity_correction;  
+            velocity_l -= velocity_correction / 2;  
+            velocity_r += velocity_correction / 2;
         }
         
 
@@ -750,7 +760,7 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
             Logger logger;
             log_entry entry;
             entry.content = (
-                "[INFO] " + std::string("CHASSIS_PID_STRAIGHT_DRIVE")
+                "[INFO] " + std::string("CHASSIS_PROFILED_STRAIGHT_DRIVE")
                 + ", Time: " + std::to_string(pros::millis())
                 + ", Actual_Vol1: " + std::to_string(front_left_drive->get_actual_voltage())
                 + ", Actual_Vol2: " + std::to_string(front_right_drive->get_actual_voltage())
@@ -799,8 +809,8 @@ void Chassis::t_profiled_straight_drive(chassis_params args) {
             && previous_l_velocities.size() == velocity_history 
             && std::abs(r_difference) < 2 
             && previous_r_velocities.size() == velocity_history
-            && velocity_l < 2
-            && velocity_r < 2
+            && std::abs(velocity_l) < 2
+            && std::abs(velocity_r) < 2
         ) { 
             break; // end before timeout 
         }
@@ -897,7 +907,7 @@ void Chassis::t_turn(chassis_params args) {
     // std::vector<double> previous_r_velocities;
     // int velocity_history = 15;
     std::vector<double> error_history;
-    int max_history_length = 15;
+    int max_history_length = 20;
     
     do {
         int dt = pros::millis() - current_time;
@@ -921,11 +931,11 @@ void Chassis::t_turn(chassis_params args) {
         
         long double error = args.setpoint1 - relative_angle;
         
-        if ( std::abs(integral) > I_max || !use_integral) {
-            integral = 0;  // reset integral if greater than max allowable value
-            use_integral = false;
-        } else {
-            integral = integral + (error * dt);
+        integral = integral + (error * dt);
+        if(integral > I_max) {
+            integral = I_max;
+        } else if (integral < -I_max) {
+            integral = -I_max;
         }
         
         double derivative = error - prev_error;
@@ -943,7 +953,7 @@ void Chassis::t_turn(chassis_params args) {
         // slew rate code
         double delta_velocity_l = l_velocity - prev_velocity_l;
         double delta_velocity_r = r_velocity - prev_velocity_r;
-        double slew_rate = 5;
+        double slew_rate = args.motor_slew;
         int over_slew = 0;
         if(std::abs(delta_velocity_l) > (dt * slew_rate) && (std::signbit(delta_velocity_l) == std::signbit(l_velocity)) ) {  // ignore deceleration
             int sign = std::abs(delta_velocity_l) / delta_velocity_l;
@@ -1036,7 +1046,7 @@ void Chassis::t_turn(chassis_params args) {
         // double r_difference = *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).second - *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).first;
         // std::cout << "difference: " << *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second << " " << previous_l_velocities.size() << "\n";
         if (
-            std::abs(error_difference) < 1
+            std::abs(error_difference) < .007
             && error_history.size() == max_history_length
             && pros::millis() > start_time + 500
             // std::abs(l_difference) < 2 
@@ -1150,10 +1160,10 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     turn_args.setpoint1 = to_turn;
     turn_args.max_velocity = args.max_velocity;
     turn_args.timeout = 15000; // TODO: add time estimation
-    turn_args.kP = 3.2;
-    turn_args.kI = 0.00000;
-    turn_args.kD = 80;
-    turn_args.I_max = INT32_MAX;
+    args.kP = 2.8;
+    args.kI = 0.0005;
+    args.kD = 50;
+    args.I_max = INT32_MAX;
     turn_args.motor_slew = args.motor_slew;
     turn_args.log_data = args.log_data;
     
@@ -1167,7 +1177,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     long double distance = std::sqrt((std::pow(dx, 2) + std::pow(dy, 2)));
     long double to_drive = direction * tracker->to_encoder_ticks(distance, wheel_diameter);
     
-    // // set up straight drive
+    // set up straight drive
     chassis_params drive_straight_args;
     drive_straight_args.setpoint1 = to_drive;
     drive_straight_args.setpoint2 = to_drive;
@@ -1215,7 +1225,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
 
 
 
-int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, double slew /*0.2*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = encoder_ticks;
@@ -1244,17 +1254,16 @@ int Chassis::pid_straight_drive(double encoder_ticks, int relative_heading /*0*/
     return uid;
 }
 
-int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, double slew /*false*/, bool log_data /*false*/) {
+int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, bool correct_heading /*true*/, int relative_heading /*0*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.setpoint2 = relative_heading;
     args.max_velocity = max_velocity;
     args.timeout = timeout;
-    args.kP = .2;
-    args.kI = .001;
-    args.kD = 0;
-    args.I_max = 2000;
-    args.motor_slew = slew;
+    args.kP = 2;
+    args.kI = 0.0005;
+    args.kD = 0.001;
+    args.I_max = INT32_MAX;
     args.correct_heading = correct_heading;
     args.log_data = log_data;
     
@@ -1306,14 +1315,14 @@ int Chassis::uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_veloci
 
 
 
-int Chassis::turn_right(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::turn_right(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*15*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = degrees;
     args.max_velocity = max_velocity;
     args.timeout = timeout;
-    args.kP = 3.2;
-    args.kI = 0.00000;
-    args.kD = 80;
+    args.kP = 2.8;
+    args.kI = 0.0005;
+    args.kD = 50;
     args.I_max = INT32_MAX;
     args.motor_slew = slew;
     args.log_data = log_data;
@@ -1335,14 +1344,14 @@ int Chassis::turn_right(double degrees, int max_velocity /*450*/, int timeout /*
 
 
 
-int Chassis::turn_left(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*10*/, bool log_data /*false*/) {
+int Chassis::turn_left(double degrees, int max_velocity /*450*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, double slew /*15*/, bool log_data /*false*/) {
     chassis_params args;
     args.setpoint1 = -degrees;
     args.max_velocity = max_velocity;
     args.timeout = timeout;
-    args.kP = 3.2;
-    args.kI = 0.00000;
-    args.kD = 80;
+    args.kP = 2.8;
+    args.kI = 0.0005;
+    args.kD = 50;
     args.I_max = INT32_MAX;
     args.motor_slew = slew;
     args.log_data = log_data;

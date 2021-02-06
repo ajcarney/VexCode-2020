@@ -33,6 +33,7 @@ class Logger
     private:
         static std::queue<log_entry> logger_queue;
         static std::atomic<bool> lock;
+        static bool use_queue;
 
         /**
          * @param: num_entries -> max number of entries to get
@@ -73,6 +74,9 @@ class Logger
          * logged at closer to the max speed
          */
         void dump( );
+        
+        static void stop_queueing();
+        static void start_queueing();
 
 
 

@@ -45,8 +45,7 @@ PositionTracker::PositionTracker() {
 
 
 PositionTracker::~PositionTracker() {
-    thread->remove();
-    delete thread;
+    
 }
 
 
@@ -128,13 +127,11 @@ void PositionTracker::calc_position(void*)
         // wrap angle to [-pi, pi]
         encoder_reading_rad = std::atan2(std::sin(encoder_reading_rad), std::cos(encoder_reading_rad));
 
-
         long double new_abs_theta_rad;
         long double imu_reading_rad;
         if(use_imu) {
             imu_reading_rad = imu_offset + to_radians(Sensors::imu.get_heading());
             imu_reading_rad = std::atan2(std::sin(imu_reading_rad), std::cos(imu_reading_rad));  // wrap angle to [-pi, pi]
-
             // make sure that imu_reading and theta from encoders have the same sign
             // to ensure that they are telling the same reading when merging
             // ie. imu = -359, enc = 1    == bad merge
@@ -261,14 +258,17 @@ void PositionTracker::calc_position(void*)
 
 
 
-void PositionTracker::start_thread()
-{
+void PositionTracker::start_thread() {
     thread->resume();
 }
 
-void PositionTracker::stop_thread()
-{
+void PositionTracker::stop_thread() {
     thread->suspend();
+}
+
+void PositionTracker::kill_thread() {
+    thread->remove();
+    delete thread;
 }
 
 
@@ -308,8 +308,7 @@ long double PositionTracker::get_heading_rad() {
     return heading;
 }
 
-position PositionTracker::get_position()
-{
+position PositionTracker::get_position() {
     while ( lock.exchange( true ) );
     position pos;
     pos.x_pos = current_position.x_pos;
@@ -323,8 +322,7 @@ position PositionTracker::get_position()
 
 
 
-void PositionTracker::set_position(position robot_coordinates)
-{
+void PositionTracker::set_position(position robot_coordinates) {
     while ( lock.exchange( true ) );
     
     if(l_id != -1) {

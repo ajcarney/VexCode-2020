@@ -21,6 +21,7 @@
 
 std::queue<log_entry> Logger::logger_queue;
 std::atomic<bool> Logger::lock = ATOMIC_VAR_INIT(false);
+bool Logger::use_queue = true;
 
 
 Logger::Logger() { }
@@ -68,9 +69,13 @@ bool Logger::add( log_entry entry )
 {
     if ( !entry.stream.empty() && !entry.content.empty() )
     {
-        while ( lock.exchange( true ) ); //aquire lock
-        logger_queue.push( entry );
-        lock.exchange( false ); //release lock
+        if(use_queue) {  // save the message in a queue to be viewed later
+            while ( lock.exchange( true ) ); //aquire lock
+            logger_queue.push( entry );
+            lock.exchange( false ); //release lock
+        } else {  // log the message right away
+            log(entry);
+        }
         
         return true;
     }
@@ -122,6 +127,14 @@ void Logger::dump( )
 
 }
 
+
+void Logger::start_queueing() {
+    use_queue = true;
+}
+
+void Logger::stop_queueing() {
+    use_queue = false;
+}
 
 
 /**

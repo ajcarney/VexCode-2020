@@ -111,6 +111,7 @@ class Indexer
         
         int send_command(indexer_command command, indexer_args args={});
 
+        static bool auto_filter_ball();
         static void indexer_motion_task(void*);
                 
     public:
@@ -121,8 +122,8 @@ class Indexer
         void filter();
         void auto_index();
         void index_no_backboard();
-        void index_until_filtered(bool asynch=false);
-        void index_to_state(bool allow_filter, ball_positions end_state, bool asynch=false);
+        int index_until_filtered(bool asynch=false);
+        int index_to_state(bool allow_filter, ball_positions end_state, bool asynch=false);
         
         void increment();
         void auto_increment();
@@ -130,7 +131,7 @@ class Indexer
         void run_upper_roller();
         void run_lower_roller();
         
-        void fix_ball(bool asynch=true);
+        int fix_ball(bool asynch=true);
         
         void hard_stop();
         void stop();

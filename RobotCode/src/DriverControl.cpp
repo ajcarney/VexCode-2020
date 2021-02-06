@@ -35,6 +35,7 @@
 void driver_control(void*)
 {
     Configuration *config = Configuration::get_instance();
+    config->filter_color = "none";
 
     Controller controllers;
 
@@ -83,13 +84,13 @@ void driver_control(void*)
             indexer.fix_ball(true);
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_X)) {
             indexer.index_no_backboard();
-        } else if (pros::millis() < intake_start_time + 1000) {
+        } else if (pros::millis() < intake_start_time + 1000 && auto_filter) {
             indexer.auto_increment();
         } else {
-            indexer.stop();
+            indexer.hard_stop();
         }
         
-        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_B)) {
             auto_filter = !auto_filter;
             if(auto_filter) {  // give different message if not auto filtering
                 controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);

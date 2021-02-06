@@ -144,8 +144,8 @@ void Intakes::intake_motion_task(void*) {
                 //     r_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
                 // }
                 // 
-                l_intake->set_voltage(-4000);
-                r_intake->set_voltage(-4000);
+                l_intake->set_voltage(-3500);
+                r_intake->set_voltage(-3500);
                 break;
             } case e_rocket_outwards: {
                 l_intake->set_voltage(-12000);

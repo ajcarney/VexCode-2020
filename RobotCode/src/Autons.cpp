@@ -27,7 +27,7 @@ int Autons::selected_number = 1;
 
 Autons::Autons( )
 {
-    debug_auton_num = 7;
+    debug_auton_num = 8;
     driver_control_num = 1;
 }
 
@@ -92,17 +92,166 @@ void Autons::skills() {
     
     deploy();
     
-    // int uid = chassis.drive_to_point(0, 15, 0, 1, 150, INT32_MAX, true);
-    // while(!chassis.is_finished(uid)) {
-    //     std::cout << uid << " " << chassis.is_finished(uid) << "\n";
-    //     intakes.intake();
-    //     indexer.auto_increment();
-    // }
-    // intakes.stop();
-    // indexer.stop();
+    // tower one
+    int uid = chassis.profiled_straight_drive(1000, 450, 3000, true);
+    while(!chassis.is_finished(uid)) {
+        intakes.intake();
+        indexer.auto_increment();
+        pros::delay(10);
+    }
+
+    intakes.stop();
+    indexer.stop();
+    
+    chassis.turn_left(82, 450, 2500);
+    
+    chassis.profiled_straight_drive(1000, 450, 2750);
+    
+    indexer.index();
+    pros::delay(2500);
+    indexer.stop();
+    
+    // tower two
+    chassis.profiled_straight_drive(-1000, 450, 2500);
+    chassis.turn_right(107, 450, 3500);
+    
+    intakes.hold_outward();
+    chassis.pid_straight_drive(1225, 0, 450, 3500);
+    
+    uid = chassis.pid_straight_drive(500, 0, 300, 3000, true);
+    while(!chassis.is_finished(uid)) {
+        intakes.intake();
+        indexer.auto_increment();
+        pros::delay(10);
+    }
+    
+    intakes.stop();
+    indexer.stop();
+    
+    chassis.turn_left(62, 450, 2000);
+    
+    chassis.pid_straight_drive(345, 0, 450, 2000);
+    
+    indexer.index();
+    pros::delay(400);
+    indexer.stop();
+    
+    pros::delay(500);
+    
+    indexer.index();
+    pros::delay(400);
+    indexer.stop();
+    
+    // tower 3 
+    chassis.pid_straight_drive(-450, 0, 450, 2000);
+    chassis.turn_right(78, 450, 2000);
+    
+    intakes.hold_outward();
+    chassis.pid_straight_drive(1500, 0, 450, 3500);
+    
+    uid = chassis.pid_straight_drive(600, 0, 300, 3000, true);
+    while(!chassis.is_finished(uid)) {
+        intakes.intake();
+        indexer.auto_increment();
+        pros::delay(10);
+    }
+    
+    
+    chassis.turn_left(62, 450, 2000);
+    
+    chassis.pid_straight_drive(1175, 0, 450, 2000);
+    
+    indexer.index();
+    pros::delay(400);
+    indexer.stop();
+    
     // 
     // chassis.drive_to_point(15, 15, 0, 0, 150, INT32_MAX, false);
     // chassis.pid_straight_drive(400);
+}
+
+void Autons::skills2() {
+    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
+    Intakes intakes(Motors::left_intake, Motors::right_intake);
+    PositionTracker* tracker = PositionTracker::get_instance();
+    tracker->start_thread();
+    tracker->enable_imu();
+    tracker->set_log_level(0);
+    tracker->set_position({0, 0, 0});
+
+    // tower 1
+    chassis.turn_right(30, 600, 1500);
+    chassis.pid_straight_drive(400, 0, 600, 1000);
+    
+    indexer.index();
+    pros::delay(600);
+    indexer.stop();
+    
+    // tower 2
+    chassis.pid_straight_drive(-500, 0, 600, 1000);
+    chassis.turn_right(181, 450, 1500);
+    
+    int uid = chassis.pid_straight_drive(1500, 0, 500, 2000, true);
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+    }
+    intakes.stop();
+    indexer.stop();
+    
+    chassis.turn_left(68, 450, 1500);
+    chassis.pid_straight_drive(800, 0, 600, 1500);
+    
+    indexer.index();
+    pros::delay(300);
+    indexer.stop();
+    
+    // tower 3 
+    chassis.pid_straight_drive(-750, 0, 600, 1500);
+    chassis.turn_right(140, 240, 1500);
+    chassis.pid_straight_drive(1300, 0, 450, 2000);
+    uid = chassis.pid_straight_drive(1700, 0, 500, 4250, true);
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+    }
+    intakes.stop();
+    indexer.stop();
+    
+    chassis.pid_straight_drive(1100, 0, 450, 1500);
+
+    chassis.turn_left(30, 450, 1000);
+    chassis.pid_straight_drive(730, 0, 450, 1500);
+    
+    indexer.reset_command_queue();
+    indexer.index();
+    pros::delay(300);
+    indexer.stop();
+    
+    // tower 4
+    chassis.pid_straight_drive(-750, 0, 600, 1500);
+    chassis.turn_right(135, 240, 1500);
+    chassis.pid_straight_drive(1300, 0, 450, 2000);
+    uid = chassis.pid_straight_drive(1700, 0, 500, 4250, true);
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+    }
+    intakes.stop();
+    indexer.stop();
+    
+    chassis.pid_straight_drive(1100, 0, 450, 1500);
+
+    chassis.turn_left(30, 450, 1000);
+    chassis.pid_straight_drive(730, 0, 450, 1500);
+    
+    indexer.reset_command_queue();
+    indexer.index();
+    pros::delay(300);
+    indexer.stop();
+    
+    
 }
 
 
@@ -285,15 +434,18 @@ void Autons::run_autonomous() {
             break;
             
         case 4:
-            blue_north();
+            skills2();
             break;
             
         case 5:
-            blue_north_2();
+            blue_north();
             break;
             
         case 6:
+            blue_north_2();
+            break;
+            
+        case 7:
             red_north();
-
     }
 }

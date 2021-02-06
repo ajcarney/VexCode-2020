@@ -16,9 +16,9 @@
 #include "main.h"
 
 
-#define WHEEL_TRACK_R 6.35  //This_value_is_not_correct
-#define WHEEL_TRACK_L 6.35  //This_value_is_not_correct
-#define S_ENC_OFFSET 3      //This_value_is_not_correct
+#define WHEEL_TRACK_R 2.47  
+#define WHEEL_TRACK_L 2.47  
+#define S_ENC_OFFSET 3.5      
 
 typedef struct
 {
@@ -92,6 +92,8 @@ class PositionTracker
          * stops the thread from being scheduled
          */
         void stop_thread();
+        
+        void kill_thread();
         
         void set_log_level(int log_lvl);
 

@@ -52,29 +52,32 @@ class Autons
         const std::unordered_map <int, const char*> AUTONOMOUS_NAMES = {
             {1, "Driver Control"},             //used to find name of auton
             {2, "one_pt"},                     //to keep title the same
-            {3, "skills"},
-            {4, "blue north"},
-            {5, "blue north 2"},
-            {6, "red north"},
-            {7, "Debugger"}
+            {3, "skills-47"},
+            {4, "skills-66"},
+            {5, "blue north"},
+            {6, "blue north 2"},
+            {7, "red north"},
+            {8, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
             {2, "drives forward and\nbackwards"},
-            {3, "skills auton"},
-            {4, "Goes to cap middle wall\ntower and then cycle\nstarting tower"},
-            {5, "cycles closest tower, turns left"},
-            {6, "cylces closest tower, turns right"},
-            {7, "opens debugger"}
+            {3, "skills auton that scores 47 points"},
+            {4, "skills auton that scores 66 points"},
+            {5, "Goes to cap middle wall\ntower and then cycle\nstarting tower"},
+            {6, "cycles closest tower, turns left"},
+            {7, "cylces closest tower, turns right"},
+            {8, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "none"},                     //used to find color of auton
             {2, "none"},                     //selected to keep background the same  
             {3, "none"},
-            {4, "blue"},
+            {4, "none"},
             {5, "blue"},
-            {6, "red"},
-            {6, "none"}
+            {6, "blue"},
+            {7, "red"},
+            {8, "none"}
         };
 
         void set_autonomous_number(int n);
@@ -110,6 +113,9 @@ class Autons
          * runs skills
          */
         void skills();
+        
+        void skills2();
+        
         
         void blue_north();
         void blue_north_2();

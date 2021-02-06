@@ -28,6 +28,7 @@ AutonomousLCD auton_lcd;
  */
  void initialize()
  {
+     std::cout << std::atan2(0, 0) << "\n";
     pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
 
     Motors::register_motors();
@@ -369,9 +370,9 @@ void opcontrol() {
     PositionTracker* tracker = PositionTracker::get_instance();
     tracker->enable_imu();
     tracker->start_thread();
-    // chassis.profiled_straight_drive(1000);
-    // Autons autons;
-    // autons.run_autonomous();
+    // chassis.turn_left(90);
+    Autons autons;
+    // autons.skills2();
     
     // gather data from position tracker
     // tracker->start_logging();
@@ -396,10 +397,13 @@ void opcontrol() {
     // double prev_r = Sensors::right_encoder.get_position(r_id);
     // pros::delay(1);
     // chassis.straight_drive(-1000, 0, 12000, 10000);
+    // Sensors::ball_detector.start_logging();
+    // Logger::stop_queueing();
     while(1)
     {
         // print encoder values
-        std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
+        
+        // std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
         // double delta_theta = chassis.calc_delta_theta(prev_angle, ref_angle, Sensors::left_encoder.get_position(l_id) - prev_l, Sensors::right_encoder.get_position(r_id) - prev_r);
         // prev_angle = prev_angle + delta_theta;
         // prev_l = Sensors::left_encoder.get_position(l_id);

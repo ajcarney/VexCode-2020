@@ -32,10 +32,10 @@ class BallDetector
                         
     public:
         BallDetector(
-            const AnalogInSensor& detector_top_left, 
-            const AnalogInSensor& detector_filter, 
-            const AnalogInSensor& detector_bottom, 
-            pros::Optical optical, 
+            AnalogInSensor& detector_top_left, 
+            AnalogInSensor& detector_filter, 
+            AnalogInSensor& detector_bottom, 
+            int optical_port, 
             int detector_threshold
         );
         ~BallDetector();

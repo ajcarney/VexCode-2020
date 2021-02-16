@@ -1,4 +1,3 @@
-
 /**
  * @file: ./RobotCode/src/DriverControl.cpp
  * @author: Aiden Carney
@@ -29,13 +28,18 @@
 
 /**
  * uses if statements to control motor based on controller settings
- * checks to set it to zero based on if static var in Motors class allows it
- * this is to make sure that other tasks can controll Motors too
  */
 void driver_control(void*)
 {
     Configuration *config = Configuration::get_instance();
-    config->filter_color = "none";
+    Autons autons;
+    if(autons.AUTONOMOUS_COLORS.at(autons.selected_number) == "blue") {
+        config->filter_color = "red";
+    } else if(autons.AUTONOMOUS_COLORS.at(autons.selected_number) == "red") {
+        config->filter_color = "blue";
+    } else {
+        config->filter_color = "none";
+    }
 
     Controller controllers;
 
@@ -74,20 +78,20 @@ void driver_control(void*)
             indexer.auto_index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
             indexer.index();
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-            indexer.filter();
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            indexer.run_upper_roller_reverse();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
-            indexer.auto_increment();
+            indexer.auto_staggered_index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
-            indexer.increment();
-        } else if(controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            indexer.staggered_index();
+        } else if(controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.fix_ball(true);
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_X)) {
             indexer.index_no_backboard();
         } else if (pros::millis() < intake_start_time + 1000 && auto_filter) {
             indexer.auto_increment();
         } else {
-            indexer.hard_stop();
+            indexer.stop();
         }
         
         if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_B)) {

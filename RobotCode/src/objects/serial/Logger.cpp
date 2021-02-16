@@ -37,8 +37,7 @@ Logger::~Logger() { }
 /**
  * fsends data on the given stream based on the log entry
  */
-bool Logger::log( log_entry entry )
-{
+bool Logger::log( log_entry entry ) {
     if ( entry.stream == "cout" )
     {
         std::cout << pros::millis() << " " << entry.content << "\n";
@@ -65,8 +64,7 @@ bool Logger::log( log_entry entry )
 /**
  * add item to the queue by aquiring and releasing atomic lock
  */
-bool Logger::add( log_entry entry )
-{
+bool Logger::add( log_entry entry ) {
     if ( !entry.stream.empty() && !entry.content.empty() )
     {
         if(use_queue) {  // save the message in a queue to be viewed later
@@ -89,8 +87,7 @@ bool Logger::add( log_entry entry )
 /**
  * gets an item from the queue by acquiring the lock and releasing it
  */
-std::vector<log_entry> Logger::get_entries(int num_entries)
-{
+std::vector<log_entry> Logger::get_entries(int num_entries) {
     std::vector<log_entry> contents;
 
     while ( lock.exchange( true ) ); //aquire lock
@@ -116,8 +113,7 @@ std::vector<log_entry> Logger::get_entries(int num_entries)
  * builds up a cache of items 
  * this is used so that data can be sent at closer to the max speed
  */
-void Logger::dump( )
-{
+void Logger::dump( ) {
     std::vector<log_entry> entries = get_entries(50);
 
     for ( int i = 0; i < entries.size(); i++ )
@@ -140,7 +136,6 @@ void Logger::stop_queueing() {
 /**
  * gets the size of the writer queue
  */
-int Logger::get_count()
-{
+int Logger::get_count() {
     return logger_queue.size();
 }

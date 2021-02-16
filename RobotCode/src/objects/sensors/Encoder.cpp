@@ -87,9 +87,8 @@ double Encoder::get_absolute_position(bool scaled)
 {
     double position = encoder->get_value() - zero_positions.at(0);
     
-    if(scaled)
-    {
-        position = ((int)position % 720) - 360;  // scales to interval [-360,360]
+    if(scaled) {
+        position = ((int)position % 360);  // scales to interval [360,360]
     }
     
     return position;
@@ -104,7 +103,7 @@ int Encoder::reset(int unique_id)
     {
         Logger logger;
         log_entry entry;
-        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not get encoder position with unique id " + std::to_string(unique_id);
+        entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not reset encoder position with unique id " + std::to_string(unique_id);
         entry.stream = "cerr";
         
         logger.add(entry);

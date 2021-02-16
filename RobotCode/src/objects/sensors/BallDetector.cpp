@@ -45,7 +45,7 @@ int BallDetector::set_threshold(int new_threshold) {
 
 int BallDetector::check_filter_level() {
     int return_code = 0;
-    if(ball_detector_filter.get_raw_value() < threshold) {  // ball is detected
+    if(optical_sensor->get_proximity() > 245) {  // ball is detected
         time_since_last_ball = 0;  // ball detected so there is no time since last ball
 
         double hue = optical_sensor->get_hue();
@@ -83,13 +83,13 @@ int BallDetector::check_filter_level() {
 
 std::vector<bool> BallDetector::locate_balls() {
     std::vector<bool> locations;
-    if(ball_detector_top.get_raw_value() < 2850) {
+    if(ball_detector_top.get_raw_value() < 2895) {
         locations.push_back(true);
     } else {
         locations.push_back(false);
     }
     
-    if(ball_detector_filter.get_raw_value() < 2860) {
+    if(optical_sensor->get_proximity() > 245) {
         locations.push_back(true);
     } else {
         locations.push_back(false);

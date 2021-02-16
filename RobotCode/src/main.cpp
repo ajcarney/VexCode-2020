@@ -16,6 +16,9 @@
 #include "objects/serial/Logger.hpp"
 #include "objects/serial/Server.hpp"
 #include "objects/subsystems/chassis.hpp"
+#include "objects/subsystems/Indexer.hpp"
+#include "objects/subsystems/intakes.hpp"
+#include "objects/sensors/RGBLed.hpp"
 
 int final_auton_choice;
 AutonomousLCD auton_lcd;
@@ -28,7 +31,6 @@ AutonomousLCD auton_lcd;
  */
  void initialize()
  {
-     std::cout << std::atan2(0, 0) << "\n";
     pros::c::serctl(SERCTL_ACTIVATE, 0);  // I think this enables stdin (necessary to start server)
 
     Motors::register_motors();
@@ -104,7 +106,6 @@ void autonomous() {
 
  void log_thread_fn( void* )
  {
-     // TODO: add back imu functionality when imu is mounted
      Logger logger;
      Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
      
@@ -366,12 +367,24 @@ void opcontrol() {
 
     // tracker->stop_logging();
     lcd.update_labels();
+    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
+    Intakes intakes(Motors::left_intake, Motors::right_intake);
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
     PositionTracker* tracker = PositionTracker::get_instance();
     tracker->enable_imu();
     tracker->start_thread();
+    
+    // while(1) {
+    //     int uid = chassis.pid_straight_drive(INT32_MAX, 0, 25, 1000, true);
+    //     while(!chassis.is_finished(uid)) {
+    //         // indexer.auto_increment();
+    //         // intakes.intake();
+    //         pros::delay(10);
+    //     }    
+    // }
     // chassis.turn_left(90);
     Autons autons;
+    // autons.run_autonomous();
     // autons.skills2();
     
     // gather data from position tracker
@@ -399,8 +412,9 @@ void opcontrol() {
     // chassis.straight_drive(-1000, 0, 12000, 10000);
     // Sensors::ball_detector.start_logging();
     // Logger::stop_queueing();
-    while(1)
-    {
+    Sensors::rgb_leds.set_color(255, 255, 255);
+    while(1) {
+        std::cout << Sensors::ball_detector.optical_sensor->get_proximity() << "\n";
         // print encoder values
         
         // std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";
@@ -416,6 +430,6 @@ void opcontrol() {
         // std::cout << "handling requests\n";
         // logger.dump();
 
-        pros::delay(20);
+        pros::delay(10);
     }
 }

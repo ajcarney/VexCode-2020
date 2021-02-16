@@ -38,13 +38,12 @@ typedef struct
 class Autons
 {
     private:
-        static int selected_number;
 
     public:
         Autons();
         ~Autons();
 
-
+        static int selected_number;
         int debug_auton_num;       //change if more autons are added
                                    //debugger should be last option
         int driver_control_num;
@@ -54,20 +53,30 @@ class Autons
             {2, "one_pt"},                     //to keep title the same
             {3, "skills-47"},
             {4, "skills-66"},
-            {5, "blue north"},
-            {6, "blue north 2"},
-            {7, "red north"},
-            {8, "Debugger"}
+            {5, "blue one tower left"},
+            {6, "blue one tower right"},
+            {7, "red one tower left"},
+            {8, "red one tower right"},
+            {9, "blue two tower left"},
+            {10, "blue two tower right"},
+            {11, "red two tower left"},
+            {12, "red two tower right"},
+            {13, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
             {2, "drives forward and\nbackwards"},
             {3, "skills auton that scores 47 points"},
             {4, "skills auton that scores 66 points"},
-            {5, "Goes to cap middle wall\ntower and then cycle\nstarting tower"},
-            {6, "cycles closest tower, turns left"},
-            {7, "cylces closest tower, turns right"},
-            {8, "opens debugger"}
+            {5, "Caps one tower for blue, turns left"},
+            {6, "Caps one tower for blue, turns right"},
+            {7, "Caps one tower for red, turns left"},
+            {8, "Caps one tower for red, turns right"},
+            {9, "Caps two towers for blue, first tower is right"},
+            {10, "Caps two towers for blue, first turn is left"},
+            {11, "Caps two towers for red, first turn is right"},
+            {12, "Caps two towers for red, first turn is left"},
+            {13, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "none"},                     //used to find color of auton
@@ -77,7 +86,12 @@ class Autons
             {5, "blue"},
             {6, "blue"},
             {7, "red"},
-            {8, "none"}
+            {8, "red"},
+            {9, "blue"},
+            {10, "blue"},
+            {11, "red"},
+            {12, "red"},
+            {13, "none"}
         };
 
         void set_autonomous_number(int n);
@@ -115,6 +129,16 @@ class Autons
         void skills();
         
         void skills2();
+        
+        void blue_one_tower_left();
+        void blue_one_tower_right();
+        void red_one_tower_left();
+        void red_one_tower_right();
+        
+        void blue_two_tower_left();
+        void blue_two_tower_right();
+        void red_two_tower_left();
+        void red_two_tower_right();
         
         
         void blue_north();

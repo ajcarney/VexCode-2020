@@ -136,8 +136,7 @@ Chassis::Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor
 
 
 
-Chassis::~Chassis()
-{
+Chassis::~Chassis() {
     num_instances -= 1;
     if(num_instances == 0) {
         delete thread;
@@ -476,10 +475,12 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         double slew_rate = args.motor_slew;
         if(std::abs(delta_velocity_l) > (dt * slew_rate) && (std::signbit(delta_velocity_l) == std::signbit(left_velocity)) ) {  // ignore deceleration
             if(delta_velocity_l == 0) {
+                std::cout << "delta_velocity_l was equal to 0\n";
+                pros::delay(100);
                 std::cout << previous_l_velocities.at(999) << "\n";  // throw some error that is easy to see
             }
             int sign = std::abs(delta_velocity_l) / delta_velocity_l;
-            std::cout << "l over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            // std::cout << "l over slew: " << sign << " " << dt << " " << slew_rate << "\n";
             left_velocity = prev_velocity_l + (sign * dt * slew_rate);
         }
         
@@ -488,7 +489,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
                 std::cout << previous_r_velocities.at(999) << "\n";  // throw some error that is easy to see
             }
             int sign = std::abs(delta_velocity_r) / delta_velocity_r;
-            std::cout << "r over slew: " << sign << " " << dt << " " << slew_rate << "\n";
+            // std::cout << "r over slew: " << sign << " " << dt << " " << slew_rate << "\n";
             right_velocity = prev_velocity_r + (sign * dt * slew_rate);
         }
         
@@ -582,7 +583,7 @@ void Chassis::t_pid_straight_drive(chassis_params args) {
         // settled is when error is almost zero and velocity is minimal
         double l_difference = *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second - *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).first;
         double r_difference = *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).second - *std::minmax_element(previous_r_velocities.begin(), previous_r_velocities.end()).first;
-        std::cout << "difference: " << *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second << " " << previous_l_velocities.size() << "\n";
+        // std::cout << "difference: " << *std::minmax_element(previous_l_velocities.begin(), previous_l_velocities.end()).second << " " << previous_l_velocities.size() << "\n";
         if (
             std::abs(l_difference) < 2 
             && previous_l_velocities.size() == velocity_history 
@@ -1537,11 +1538,13 @@ void Chassis::wait_until_finished(int uid) {
 
 bool Chassis::is_finished(int uid) {
     if(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-        while ( command_finish_lock.exchange( true ) ); //aquire lock
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
-        command_finish_lock.exchange( false ); //release lock
-        
         return false;  // command is not finished because it is not in the list
     }
+    
+    // remove command because it is in the list
+    while ( command_finish_lock.exchange( true ) ); //aquire lock
+    commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    command_finish_lock.exchange( false ); //release lock
+    
     return true;
 }

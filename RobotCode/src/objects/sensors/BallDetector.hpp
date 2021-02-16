@@ -19,12 +19,7 @@
 
 class BallDetector 
 {
-    private:
-        AnalogInSensor ball_detector_top;
-        AnalogInSensor ball_detector_filter;
-        AnalogInSensor ball_detector_bottom;
-        pros::Optical* optical_sensor;
-        
+    private:        
         int time_since_last_ball;
         bool log_data;
         
@@ -39,6 +34,11 @@ class BallDetector
             int detector_threshold
         );
         ~BallDetector();
+        
+        AnalogInSensor ball_detector_top;
+        AnalogInSensor ball_detector_filter;
+        AnalogInSensor ball_detector_bottom;
+        pros::Optical* optical_sensor;
                         
         int set_threshold(int new_threshold);
         int check_filter_level();

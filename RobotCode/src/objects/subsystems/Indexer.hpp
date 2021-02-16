@@ -67,6 +67,8 @@ typedef enum e_indexer_command {
     e_filter,
     e_auto_index,
     e_index_no_backboard,
+    e_auto_staggered_index,
+    e_staggered_index,
     e_index_until_filtered,
     e_increment,
     e_auto_increment,
@@ -74,6 +76,8 @@ typedef enum e_indexer_command {
     e_fix_ball,
     e_run_upper,
     e_run_lower,
+    e_run_lower_reverse,
+    e_run_upper_reverse,
     e_stop
 } indexer_command;
 
@@ -122,6 +126,8 @@ class Indexer
         void filter();
         void auto_index();
         void index_no_backboard();
+        void auto_staggered_index();
+        void staggered_index();
         int index_until_filtered(bool asynch=false);
         int index_to_state(bool allow_filter, ball_positions end_state, bool asynch=false);
         
@@ -130,6 +136,8 @@ class Indexer
         
         void run_upper_roller();
         void run_lower_roller();
+        void run_lower_roller_reverse();
+        void run_upper_roller_reverse();
         
         int fix_ball(bool asynch=true);
         

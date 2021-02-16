@@ -36,6 +36,9 @@ namespace Sensors
     
     pros::Imu imu{IMU_PORT};
     bool imu_is_calibrated = false;
+    
+    RGBLedString rgb_leds{pros::ext_adi_port_pair_t(EXPANDER_PORT, 'A'), pros::ext_adi_port_pair_t(EXPANDER_PORT, 'B'), pros::ext_adi_port_pair_t(EXPANDER_PORT, 'C')};
+
 
     void calibrate_imu() {
         bool calibrated = false;

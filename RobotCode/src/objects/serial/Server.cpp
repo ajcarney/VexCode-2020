@@ -127,7 +127,7 @@ void Server::read_stdin(void*) {
         }
         
         wait_check += 1;
-        if(wait_check > 1024) {
+        if(wait_check > 1024) {  // wait after 1024 interactions
             wait_check = 0;
             pros::delay(10);
         }
@@ -274,7 +274,7 @@ int Server::handle_request(server_request request) {
             break;
             
         case 41121: {  // 0xA0 0xA1  Actual Voltage
-                int motor_number = request.msg.at(0) - 48;
+                int motor_number = request.msg.at(0) - 48;  // i think this is to convert from ascii char to integer
                 request.msg.erase(0);    
                 
                 status = 1;

@@ -15,6 +15,7 @@
 #include "BallDetector.hpp"
 #include "Encoder.hpp"
 #include "AnalogInSensor.hpp"
+#include "RGBLed.hpp"
 
 
 
@@ -32,6 +33,8 @@ namespace Sensors
     
     extern pros::Imu imu;
     extern bool imu_is_calibrated;
+    
+    extern RGBLedString rgb_leds;
     
     void calibrate_imu();
     void log_data();

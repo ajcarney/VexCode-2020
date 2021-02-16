@@ -66,7 +66,7 @@ bool Indexer::auto_filter_ball() {
     if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
         upper_indexer->set_voltage(-12000); 
         lower_indexer->set_voltage(12000);
-        pros::delay(350);  // let ball filter out
+        pros::delay(300);  // let ball filter out
         upper_indexer->set_voltage(0); 
         lower_indexer->set_voltage(0);
         
@@ -86,6 +86,11 @@ bool Indexer::auto_filter_ball() {
 
 
 void Indexer::indexer_motion_task(void*) {
+    int end_of_run_time = pros::millis();
+    int start_of_run_time = pros::millis();
+    bool stagger_state = false;
+    bool prev_stagger_state = false;
+
     while(1) {
         if(command_queue.empty()) {  // delay unitl there is a command in the queue
             pros::delay(5);
@@ -97,7 +102,7 @@ void Indexer::indexer_motion_task(void*) {
         indexer_action action = command_queue.front();
         command_queue.pop();
         command_start_lock.exchange( false ); //release lock
-            
+                    
         // execute command
         switch(action.command) {
             case e_filter: {
@@ -114,6 +119,39 @@ void Indexer::indexer_motion_task(void*) {
             } case e_index_no_backboard: {
                 upper_indexer->set_voltage(9000); 
                 lower_indexer->set_voltage(12000);   
+                break;
+            } case e_auto_staggered_index: {
+                auto_filter_ball();     
+                // fallthrough and index staggered like normal now that it doesn't need to filter
+            } case e_staggered_index: {
+                std::cout << end_of_run_time << " " <<  start_of_run_time << " " << pros::millis() << "\n";
+                std::vector<bool> locations = ball_detector->locate_balls();
+                
+                if(!locations.at(0)) {  // bring ball to top if it is not there
+                    upper_indexer->set_voltage(9000); 
+                    lower_indexer->set_voltage(9000);
+                } else if(pros::millis() - end_of_run_time > 300 && pros::millis() - start_of_run_time < 300) {  // 300ms between indexing, index for 300ms
+                    std::cout << "here\n";
+                    prev_stagger_state = stagger_state;
+                    stagger_state = true;
+                    if(prev_stagger_state != stagger_state) {  // start time of indexing occurs when state switches
+                        start_of_run_time = pros::millis();
+                    }
+                    
+                    upper_indexer->set_voltage(12000); 
+                    lower_indexer->set_voltage(12000); 
+                } else {
+                    std::cout << "here2\n";
+                    prev_stagger_state = stagger_state;
+                    stagger_state = false;
+                    if(prev_stagger_state != stagger_state) {  // end of indexing occurs when state switches
+                        end_of_run_time = pros::millis();
+                    }
+                    start_of_run_time = pros::millis();  // this is 0 so above condition is met only based on the time in between
+                    
+                    upper_indexer->set_voltage(0); 
+                    lower_indexer->set_voltage(0); 
+                }
                 break;
             } case e_index_until_filtered: {
                 upper_indexer->set_voltage(12000); 
@@ -152,11 +190,11 @@ void Indexer::indexer_motion_task(void*) {
                 std::vector<bool> locations = ball_detector->locate_balls();
                 
                 if(!locations.at(0)) {  // move ball into top position
-                    upper_indexer->set_voltage(6000); 
-                    lower_indexer->set_voltage(9000);
+                    upper_indexer->set_voltage(10000); 
+                    lower_indexer->set_voltage(10000);
                 } else if(locations.at(0) && !locations.at(1)) { // move ball from lowest/no position to middle position
                     upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(10500);
+                    lower_indexer->set_voltage(10000);
                 } else { // indexer can't do anything to increment so don't run
                     upper_indexer->set_voltage(0); 
                     lower_indexer->set_voltage(0);
@@ -174,6 +212,12 @@ void Indexer::indexer_motion_task(void*) {
                 break;
             } case e_run_lower: {
                 lower_indexer->set_voltage(12000);
+                break;
+            } case e_run_lower_reverse: {
+                lower_indexer->set_voltage(-12000);
+                break;
+            } case e_run_upper_reverse: {
+                upper_indexer->set_voltage(-12000);
                 break;
             } case e_stop: {
                 lower_indexer->set_voltage(0);
@@ -250,6 +294,17 @@ void Indexer::auto_increment() {
 }
 
 
+void Indexer::auto_staggered_index() {
+    send_command(e_auto_staggered_index);
+}
+
+
+void Indexer::staggered_index() {
+    send_command(e_staggered_index);
+}
+
+
+
 
 void Indexer::run_upper_roller() {
     send_command(e_run_upper);
@@ -259,6 +314,15 @@ void Indexer::run_upper_roller() {
 void Indexer::run_lower_roller() {
     send_command(e_run_lower); 
 }
+
+void Indexer::run_lower_roller_reverse() {
+    send_command(e_run_lower_reverse);
+}
+
+void Indexer::run_upper_roller_reverse() {
+    send_command(e_run_upper_reverse);
+}
+
 
 
 
@@ -337,11 +401,12 @@ void Indexer::wait_until_finished(int uid) {
 
 bool Indexer::is_finished(int uid) {
     if(std::find(commands_finished.begin(), commands_finished.end(), uid) == commands_finished.end()) {
-        while ( command_finish_lock.exchange( true ) ); //aquire lock
-        commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
-        command_finish_lock.exchange( false ); //release lock
-        
         return false;  // command is not finished because it is not in the list
     }
+    
+    while ( command_finish_lock.exchange( true ) ); //aquire lock
+    commands_finished.erase(std::remove(commands_finished.begin(), commands_finished.end(), uid), commands_finished.end()); 
+    command_finish_lock.exchange( false ); //release lock
+    
     return true;
 }

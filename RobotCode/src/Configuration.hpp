@@ -33,6 +33,7 @@
 
 #define OPTICAL_PORT              5
 #define IMU_PORT                 10
+#define EXPANDER_PORT            20
 
 
 typedef struct

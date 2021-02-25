@@ -100,6 +100,16 @@ void RGBLedString::set_color(int r, int g, int b) {
     blue->set_value(get_pwm(b));
 }
 
+void RGBLedString::set_color(int hex_code) {
+    int r = (hex_code & 0xFF0000) >> 16;
+    int g = (hex_code & 0x00FF00) >> 8;
+    int b = (hex_code & 0x0000FF);
+    
+    red->set_value(get_pwm(r));
+    green->set_value(get_pwm(g));
+    blue->set_value(get_pwm(b));
+}
+
 void RGBLedString::turn_off() {
     red->stop();
     green->stop();

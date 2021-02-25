@@ -58,8 +58,7 @@ double AnalogInSensor::get_raw_value() {
 
 
 double AnalogInSensor::get_value(bool high_res) {
-    if(!calibrated)
-    {
+    if(!calibrated) {
         Logger logger;
         log_entry entry;
         entry.content = "[ERROR], " + std::to_string(pros::millis()) + ", could not read analog sensor (not calibrated) ";
@@ -70,12 +69,9 @@ double AnalogInSensor::get_value(bool high_res) {
         return INT32_MAX;
     }
     
-    if(high_res)
-    {
+    if(high_res) {
         return sensor->get_value_calibrated_HR();
-    }
-    else 
-    {
+    } else {
         return sensor->get_value_calibrated();
     }
 }

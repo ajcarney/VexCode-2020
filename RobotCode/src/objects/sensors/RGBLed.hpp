@@ -38,6 +38,7 @@ class RGBLedString
         std::array<int, 3> get_value();
         
         void set_color(int r, int g, int b);
+        void set_color(int hex_code);
         void turn_off();
 };
 

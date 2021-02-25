@@ -81,9 +81,9 @@ void driver_control(void*)
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             indexer.run_upper_roller_reverse();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
-            indexer.auto_staggered_index();
+            indexer.index();
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
-            indexer.staggered_index();
+            indexer.index();
         } else if(controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.fix_ball(true);
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_X)) {
@@ -148,6 +148,11 @@ void driver_control(void*)
         if ( controllers.master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) ) {
             Autons auton;
             auton.deploy();
+        }
+        
+        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_UP) && controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_Y)) {
+            Autons auton;
+            auton.run_autonomous();
         }
 
         pros::delay(5);

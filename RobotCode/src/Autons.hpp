@@ -38,6 +38,10 @@ typedef struct
 class Autons
 {
     private:
+        void one_tower_auton(std::string filter_color, int turn_direction);
+        void two_tower_auton(std::string filter_color, int turn_direction);
+        void two_tower_mid_auton(std::string filter_color, int turn_direction);
+        
 
     public:
         Autons();
@@ -51,8 +55,8 @@ class Autons
         const std::unordered_map <int, const char*> AUTONOMOUS_NAMES = {
             {1, "Driver Control"},             //used to find name of auton
             {2, "one_pt"},                     //to keep title the same
-            {3, "skills-47"},
-            {4, "skills-66"},
+            {3, "skills-current"},
+            {4, "skills-old"},
             {5, "blue one tower left"},
             {6, "blue one tower right"},
             {7, "red one tower left"},
@@ -61,22 +65,30 @@ class Autons
             {10, "blue two tower right"},
             {11, "red two tower left"},
             {12, "red two tower right"},
-            {13, "Debugger"}
+            {13, "blue two tower mid left"},
+            {14, "blue two tower mid right"},
+            {15, "red two tower mid left"},
+            {16, "red two tower mid right"},
+            {17, "Debugger"}
         };
         const std::unordered_map <int, const char*> AUTONOMOUS_DESCRIPTIONS = {   //used to find color of auton
             {1, "goes directly to\ndriver control"},                               //selected to keep background the same
-            {2, "drives forward and\nbackwards"},
-            {3, "skills auton that scores 47 points"},
-            {4, "skills auton that scores 66 points"},
-            {5, "Caps one tower for blue, turns left"},
-            {6, "Caps one tower for blue, turns right"},
-            {7, "Caps one tower for red, turns left"},
-            {8, "Caps one tower for red, turns right"},
-            {9, "Caps two towers for blue, first tower is right"},
-            {10, "Caps two towers for blue, first turn is left"},
-            {11, "Caps two towers for red, first turn is right"},
-            {12, "Caps two towers for red, first turn is left"},
-            {13, "opens debugger"}
+            {2, "deploys and thats about it"},
+            {3, "skills auton that scores ? points"},
+            {4, "skills auton that scores 66 points\n on a good run"},
+            {5, "Caps one tower for blue, \nturns left"},
+            {6, "Caps one tower for blue, \nturns right"},
+            {7, "Caps one tower for red, \nturns left"},
+            {8, "Caps one tower for red, \nturns right"},
+            {9, "Caps two towers for blue, \nfirst tower is right"},
+            {10, "Caps two towers for blue, \nfirst turn is left"},
+            {11, "Caps two towers for red, \nfirst turn is right"},
+            {12, "Caps two towers for red, \nfirst turn is left"},
+            {13, "Caps two towers for blue middle, \nfirst tower is right"},
+            {14, "Caps two towers for blue middle, \nfirst turn is left"},
+            {15, "Caps two towers for red middle, \nfirst turn is right"},
+            {16, "Caps two towers for red middle, \nfirst turn is left"},
+            {17, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
             {1, "none"},                     //used to find color of auton
@@ -91,7 +103,11 @@ class Autons
             {10, "blue"},
             {11, "red"},
             {12, "red"},
-            {13, "none"}
+            {13, "blue"},
+            {14, "blue"},
+            {15, "red"},
+            {16, "red"},
+            {17, "none"}
         };
 
         void set_autonomous_number(int n);
@@ -109,7 +125,6 @@ class Autons
         void deploy();
 
         /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
          * @return: None
          *
          * @see: Motors.hpp
@@ -119,7 +134,6 @@ class Autons
         void one_pt();
 
         /**
-         * @param: autonConfig cnfg -> the configuration to use for the auton
          * @return: None
          *
          * @see: Motors.hpp
@@ -128,7 +142,7 @@ class Autons
          */
         void skills();
         
-        void skills2();
+        void skills_old();
         
         void blue_one_tower_left();
         void blue_one_tower_right();
@@ -140,6 +154,10 @@ class Autons
         void red_two_tower_left();
         void red_two_tower_right();
         
+        void blue_two_tower_mid_left();
+        void blue_two_tower_mid_right();
+        void red_two_tower_mid_left();
+        void red_two_tower_mid_right();
         
         void blue_north();
         void blue_north_2();

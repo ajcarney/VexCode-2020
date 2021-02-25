@@ -25,7 +25,6 @@ namespace Sensors
     AnalogInSensor line_tracker_middle{DETECTOR_MIDDLE_PORT}; 
     AnalogInSensor line_tracker_bottom{DETECTOR_BOTTOM_PORT};
     
-    // BallDetector ball_detector{DETECTOR_TOP_PORT, DETECTOR_MIDDLE_PORT, DETECTOR_BOTTOM_PORT, VISIONSENSOR_PORT, Configuration::get_instance()->filter_threshold};
     BallDetector ball_detector{
         line_tracker_top,
         line_tracker_middle,

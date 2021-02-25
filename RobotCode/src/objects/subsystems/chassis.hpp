@@ -20,11 +20,12 @@
 #include "../sensors/Sensors.hpp"
 
 
-std::vector<double> generate_velocity_profile(int encoder_ticks, const std::function<double(double)>& max_acceleration, double max_decceleration, double max_velocity, double initial_velocity);
+std::vector<double> generate_chassis_velocity_profile(int encoder_ticks, const std::function<double(double)>& max_acceleration, double max_decceleration, double max_velocity, double initial_velocity);
 
 
 typedef enum {
     e_pid_straight_drive,
+    e_okapi_pid_straight_drive,
     e_profiled_straight_drive,
     e_turn,
     e_drive_to_point,
@@ -53,6 +54,7 @@ typedef struct {
     }
 } waypoint;
 
+
 typedef struct {
     double setpoint1=0;
     double setpoint2=0;
@@ -68,6 +70,15 @@ typedef struct {
     bool correct_heading=true;
     bool log_data=false;
 } chassis_params;
+
+typedef struct {
+    double kP=1;
+    double kI=0;
+    double kD=0;
+    double I_max=INT32_MAX;
+    double motor_slew=INT32_MAX;
+} pid_gains;
+
 
 typedef struct {
     chassis_params args;
@@ -100,7 +111,15 @@ class Chassis
         static std::atomic<bool> command_finish_lock;
         static int num_instances;
         
+        static pid_gains pos_gains;
+        static pid_gains heading_gains;
+        static pid_gains turn_gains;
+        
+        static double get_angle_to_turn(double x, double y, int explicit_direction=1);
+        static double get_angle_to_turn(double theta);
+        
         static void t_pid_straight_drive(chassis_params args);  // functions called by thread for asynchronous movement
+        static void t_okapi_pid_straight_drive(chassis_params args);
         static void t_profiled_straight_drive(chassis_params args);
         static void t_turn(chassis_params args);
         static void t_move_to_waypoint(chassis_params args, waypoint point);
@@ -108,22 +127,27 @@ class Chassis
         static double wheel_diameter;
         static double width;
         static double gear_ratio;
-        
+                
         static void chassis_motion_task(void*);
 
 
     public:
-        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, double chassis_width, double gearing=1, double wheel_size=4.05);
+        Chassis( Motor &front_left, Motor &front_right, Motor &back_left, Motor &back_right, Encoder &l_encoder, Encoder &r_encoder, double chassis_width, double gearing=1, double wheel_size=3.25);
         ~Chassis();
 
         int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=0.2, bool log_data=false);
         int profiled_straight_drive(double encoder_ticks, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, bool log_data=false);
+        int okapi_pid_straight_drive(double encoder_ticks, int max_velocity=550, bool asynch=false, int timeout=INT32_MAX);
         int uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=false);
-        int turn_right(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, double slew=15, bool log_data=false);
-        int turn_left(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, double slew=15, bool log_data=false);
+        int turn_right(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool log_data=false);
+        int turn_left(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool log_data=false);
         int drive_to_point(double x, double y, int recalculations=0, int explicit_direction=0, int max_velocity=450, int timeout=INT32_MAX, bool correct_heading=true, bool asynch=false, double slew=10, bool log_data=false);
         int turn_to_point(double x, double y, int max_velocity=450, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=false);
         int turn_to_angle(double theta, int max_velocity=450, int timeout=INT32_MAX, bool asynch = false, double slew=10, bool log_data=false);
+
+        void set_pos_gains(pid_gains new_gains);
+        void set_heading_gains(pid_gains new_gains);
+        void set_turn_gains(pid_gains new_gains);
         
         /**
          * @param: int voltage -> the voltage on interval [-127, 127] to set the motor to

@@ -3,7 +3,6 @@
  * @author: Aiden Carney
  * @reviewed_on: 10/15/2019
  * @reviewed_by: Aiden Carney
- * TODO: add ability for controller to make selections
  *
  * contains first stage of auton selection--selecting the auton number
  *

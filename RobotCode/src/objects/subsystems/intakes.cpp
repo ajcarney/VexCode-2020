@@ -68,14 +68,17 @@ void Intakes::intake_motion_task(void*) {
     int time = pros::millis();
     
     while(1) {
-        if(command_queue.empty()) {  // delay unitl there is a command in the queue
-            pros::delay(7);
-            continue;
+        while(1) { // delay unitl there is a command in the queue
+            while ( lock.exchange( true ) ); //aquire lock and release it later
+            if(!command_queue.empty()) {
+                break;
+            }
+            
+            lock.exchange( false ); //release lock
+            pros::delay(5);
         }
         
-        // take lock and get command
-        while ( lock.exchange( true ) ); //aquire lock
-        intake_command command = command_queue.front();
+        intake_command command = command_queue.front();  // lock is already owned
         command_queue.pop();
         lock.exchange( false ); //release lock
         
@@ -144,8 +147,8 @@ void Intakes::intake_motion_task(void*) {
                 //     r_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
                 // }
                 // 
-                l_intake->set_voltage(-3500);
-                r_intake->set_voltage(-3500);
+                l_intake->set_voltage(-4500);
+                r_intake->set_voltage(-4500);
                 break;
             } case e_rocket_outwards: {
                 l_intake->set_voltage(-12000);

@@ -92,14 +92,17 @@ void Indexer::indexer_motion_task(void*) {
     bool prev_stagger_state = false;
 
     while(1) {
-        if(command_queue.empty()) {  // delay unitl there is a command in the queue
+        while(1) { // delay unitl there is a command in the queue
+            while ( command_start_lock.exchange( true ) ); //aquire lock and release it later if there is stuff in the queue 
+            if(!command_queue.empty()) {
+                break;
+            }
+            
+            command_start_lock.exchange( false ); //release lock
             pros::delay(5);
-            continue;
         }
         
-        // take lock and get command
-        while ( command_start_lock.exchange( true ) ); //aquire lock
-        indexer_action action = command_queue.front();
+        indexer_action action = command_queue.front(); // lock is already owned
         command_queue.pop();
         command_start_lock.exchange( false ); //release lock
                     
@@ -131,7 +134,6 @@ void Indexer::indexer_motion_task(void*) {
                     upper_indexer->set_voltage(9000); 
                     lower_indexer->set_voltage(9000);
                 } else if(pros::millis() - end_of_run_time > 300 && pros::millis() - start_of_run_time < 300) {  // 300ms between indexing, index for 300ms
-                    std::cout << "here\n";
                     prev_stagger_state = stagger_state;
                     stagger_state = true;
                     if(prev_stagger_state != stagger_state) {  // start time of indexing occurs when state switches
@@ -141,7 +143,6 @@ void Indexer::indexer_motion_task(void*) {
                     upper_indexer->set_voltage(12000); 
                     lower_indexer->set_voltage(12000); 
                 } else {
-                    std::cout << "here2\n";
                     prev_stagger_state = stagger_state;
                     stagger_state = false;
                     if(prev_stagger_state != stagger_state) {  // end of indexing occurs when state switches
@@ -185,7 +186,7 @@ void Indexer::indexer_motion_task(void*) {
             } case e_auto_increment: {
                 // try to filter out ball at second level if necessary
                 auto_filter_ball();
-                // fall through if there is nothing to filter out
+                // fall through to increment
             } case e_increment: {
                 std::vector<bool> locations = ball_detector->locate_balls();
                 
@@ -202,7 +203,7 @@ void Indexer::indexer_motion_task(void*) {
                 break;
             } case e_fix_ball: {
                 upper_indexer->set_voltage(-12000);
-                pros::delay(250);
+                pros::delay(400);
                 upper_indexer->set_voltage(12000);
                 pros::delay(500);
                 upper_indexer->set_voltage(0);

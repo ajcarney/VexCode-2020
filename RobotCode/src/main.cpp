@@ -20,8 +20,6 @@
 #include "objects/subsystems/intakes.hpp"
 #include "objects/sensors/RGBLed.hpp"
 
-int final_auton_choice;
-AutonomousLCD auton_lcd;
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -41,7 +39,7 @@ AutonomousLCD auton_lcd;
     config->init();
     config->print_config_options();
 
-    final_auton_choice = chooseAuton();
+    int final_auton_choice = chooseAuton();
     Autons auton;
     config->filter_color = auton.AUTONOMOUS_COLORS.at(final_auton_choice);
     auton.set_autonomous_number(final_auton_choice);
@@ -81,6 +79,7 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {    
+    AutonomousLCD auton_lcd;
     Autons auton;
     auton_lcd.update_labels(auton.get_autonomous_number());
 }
@@ -366,14 +365,18 @@ void opcontrol() {
     // chassis.drive_to_point(0, 0);  // passing
 
     // tracker->stop_logging();
-    lcd.update_labels();
-    Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
-    Intakes intakes(Motors::left_intake, Motors::right_intake);
+    // lcd.update_labels();
+    // Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "blue");    
+    // Intakes intakes(Motors::left_intake, Motors::right_intake);
     Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
     PositionTracker* tracker = PositionTracker::get_instance();
     tracker->enable_imu();
     tracker->start_thread();
     
+    
+    // chassis.okapi_pid_straight_drive(500);
+    // chassis.okapi_pid_straight_drive(-500);
+    // 
     // while(1) {
     //     int uid = chassis.pid_straight_drive(INT32_MAX, 0, 25, 1000, true);
     //     while(!chassis.is_finished(uid)) {
@@ -412,9 +415,73 @@ void opcontrol() {
     // chassis.straight_drive(-1000, 0, 12000, 10000);
     // Sensors::ball_detector.start_logging();
     // Logger::stop_queueing();
-    Sensors::rgb_leds.set_color(255, 255, 255);
+    // pros::ADIMotor red(pros::ext_adi_port_pair_t('A', 4));
+    // pros::ADIMotor blue(pros::ext_adi_port_pair_t(4, 'B'));
+    // pros::ADIMotor green(pros::ext_adi_port_pair_t(4, 'H'));
+    // blue.set_value(0);
+    // red.set_value(0);
+    // green.set_value(0);
+    int i = 0;
+    uint8_t sins[360] = {
+      127,129,131,134,136,138,140,143,145,147,149,151,154,156,158,160,162,164,166,169,171,173,175,177,179,181,183,185,187,189,191,193,195,196,198,200,
+      202,204,205,207,209,211,212,214,216,217,219,220,222,223,225,226,227,229,230,231,233,234,235,236,237,239,240,241,242,243,243,244,245,246,247,248,
+      248,249,250,250,251,251,252,252,253,253,253,254,254,254,254,254,254,254,255,254,254,254,254,254,254,254,253,253,253,252,252,251,251,250,250,249,
+      248,248,247,246,245,244,243,243,242,241,240,239,237,236,235,234,233,231,230,229,227,226,225,223,222,220,219,217,216,214,212,211,209,207,205,204,
+      202,200,198,196,195,193,191,189,187,185,183,181,179,177,175,173,171,169,166,164,162,160,158,156,154,151,149,147,145,143,140,138,136,134,131,129,
+      127,125,123,120,118,116,114,111,109,107,105,103,100,98,96,94,92,90,88,85,83,81,79,77,75,73,71,69,67,65,63,61,59,58,56,54,
+      52,50,49,47,45,43,42,40,38,37,35,34,32,31,29,28,27,25,24,23,21,20,19,18,17,15,14,13,12,11,11,10,9,8,7,6,
+      6,5,4,4,3,3,2,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,2,2,3,3,4,4,5,
+      6,6,7,8,9,10,11,11,12,13,14,15,17,18,19,20,21,23,24,25,27,28,29,31,32,34,35,37,38,40,42,43,45,47,49,50,
+      52,54,56,58,59,61,63,65,67,69,71,73,75,77,79,81,83,85,88,90,92,94,96,98,100,103,105,107,109,111,114,116,118,120,123,125
+    };
+  
+    pros::ADIDigitalIn limit_switch(pros::ext_adi_port_pair_t(EXPANDER_PORT, 'D'));
+    int mode = 1;
+    
+    int r = 0;
+    int g = 0;
+    int b = 0;
     while(1) {
-        std::cout << Sensors::ball_detector.optical_sensor->get_proximity() << "\n";
+        if(limit_switch.get_new_press()) {
+            mode += 1;
+            if(mode > 2) {
+                mode = 0;
+            }
+            r = 0;  // clear color values
+            g = 0;
+            b = 0;
+        }
+        
+        switch(mode) {
+            case 0: {  // rainbow cycle
+                if(r > 255){
+                   r=0;
+                   g++;
+                }
+                if(g > 255){
+                   g=0;
+                   b++;
+                }
+                if(b > 255){
+                   b=0;
+                }
+                r++;
+                // Sensors::rgb_leds.set_color(r, g, b);
+                i += 1;
+                Sensors::rgb_leds.set_color(sins[i], sins[(i+120)%360], sins[(i+240)%360]);
+                break;
+                
+            } case 1: {  // solid green
+                Sensors::rgb_leds.set_color(0, 255, 0);
+                break;
+                
+            } case 2: {  // off
+                Sensors::rgb_leds.set_color(0, 0, 0);
+                break;
+            }
+        }
+
+        // Sensors::rgb_leds.set_color(sins[i], sins[(i+120)%360], sins[(i+240)%360]);
         // print encoder values
         
         // std::cout << "r: " << Sensors::right_encoder.get_position(r_id) << " | l: " << Sensors::left_encoder.get_position(l_id) << " | s: " << Sensors::strafe_encoder.get_position(s_id) << "\n";

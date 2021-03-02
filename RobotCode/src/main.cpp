@@ -65,7 +65,11 @@
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {}
+void disabled() {
+    AutonomousLCD auton_lcd;
+    Autons auton;
+    auton_lcd.update_labels(auton.get_autonomous_number());
+}
 
 
 
@@ -78,11 +82,7 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {    
-    AutonomousLCD auton_lcd;
-    Autons auton;
-    auton_lcd.update_labels(auton.get_autonomous_number());
-}
+void competition_initialize() {}
 
 
 

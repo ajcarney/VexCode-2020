@@ -40,6 +40,7 @@ void driver_control(void*)
     } else {
         config->filter_color = "none";
     }
+    config->filter_color = "blue";
 
     Controller controllers;
 

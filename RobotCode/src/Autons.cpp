@@ -52,7 +52,7 @@ void Autons::deploy() {
     Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, "none");
     Intakes intakes(Motors::left_intake, Motors::right_intake);
 
-    intakes.rocket_outwards();
+    intakes.rocket_outward();
     indexer.run_upper_roller();
     
     pros::delay(1000);
@@ -118,31 +118,39 @@ void Autons::skills() {
     indexer.stop();
     
     chassis.turn_left(68, 450, 1500);   // turn and drive to corner tower
-    chassis.okapi_pid_straight_drive(850, 550, false, 1200);
+    chassis.okapi_pid_straight_drive(800, 350, false, 1200);
     
     indexer.index();  // score
     pros::delay(1000);
     indexer.stop();
     
-    for(int i = 0; i < 80; i++) {  // pick up two balls from corner tower
+    for(int i = 0; i < 90; i++) {  // pick up two balls from corner tower
         indexer.increment();
         intakes.intake();
         pros::delay(10);
     }
-    intakes.rocket_outwards();  // hold outward while indexed unwanted balls so they don't get picked back up
+    intakes.rocket_outward();  // hold outward while indexed unwanted balls so they don't get picked back up
     indexer.stop();
     
 // tower 3 
-    chassis.okapi_pid_straight_drive(-2100, 550, false, 3000);  // drive backwards to next tower and index two blue balls
-    pros::delay(500);  // wait to get moving before indexing out blue balls
-    indexer.index();
+    uid = chassis.okapi_pid_straight_drive(-2000, 550, true, 3000);  // drive backwards to next tower and index two blue balls
+    pros::delay(200);  // wait to get moving before indexing out blue balls
+    indexer.run_upper_roller_reverse();
+    indexer.run_lower_roller_reverse();
     chassis.wait_until_finished(uid);
     indexer.stop();
     intakes.stop();
 
-    chassis.turn_to_angle(245, 525, 2000);  // turns to pick up ball near 3rd tower
-    
-    uid = chassis.okapi_pid_straight_drive(1500, 550, true, 1000);  // picks up ball to score in 3rd tower
+    // chassis.turn_to_angle(245, 525, 2000);  // turns to pick up ball near 3rd tower
+    // 
+    // uid = chassis.okapi_pid_straight_drive(1500, 550, true, 1000);  // picks up ball to score in 3rd tower
+    uid = chassis.drive_to_point(-61, -23, 0, 1, 600, 2000, true, true);
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+        pros::delay(5);
+    }
+    chassis.okapi_pid_straight_drive(200, 400, false, 900);
     while(!chassis.is_finished(uid)) {
         indexer.auto_increment();
         intakes.intake();
@@ -151,8 +159,8 @@ void Autons::skills() {
     indexer.stop();
     intakes.stop();
     
-    chassis.turn_left(45, 400, 1500);  // turn and drive to 3rd tower
-    chassis.okapi_pid_straight_drive(300, 550, false, 1200);
+    chassis.turn_to_angle(185, 400, 1500);  // turn and drive to 3rd tower
+    chassis.okapi_pid_straight_drive(500, 550, false, 1000);
     
     indexer.index();  //score ball
     pros::delay(1000);
@@ -164,16 +172,46 @@ void Autons::skills() {
         pros::delay(10);
     }
 
-    intakes.stop();
+    intakes.hold_outward();
     indexer.stop();
     
 // tower 4
-    chassis.pid_straight_drive(-750, 550);
+    chassis.pid_straight_drive(-1000, 550);
     intakes.stop();
-    chassis.turn_to_angle(275, 525, 2000);  // turns to pick up ball near 4th tower
+    chassis.turn_to_angle(274, 525, 2500);  // turns to pick up ball near 4th tower
     
-
+    uid = chassis.okapi_pid_straight_drive(1750, 400, true, 3000);   // pick up next ball
+    while(!chassis.is_finished(uid)) {
+        indexer.auto_increment();
+        intakes.intake();
+        pros::delay(5);
+    }
+    intakes.stop();
+    indexer.stop();
     
+    chassis.turn_left(48, 450, 1500);   // turn and drive to corner tower
+    chassis.okapi_pid_straight_drive(1500, 550, false, 1800);
+    
+    indexer.index();  // score
+    pros::delay(1000);
+    indexer.stop();
+    
+    for(int i = 0; i < 90; i++) {  // pick up two balls from corner tower
+        indexer.increment();
+        intakes.intake();
+        pros::delay(10);
+    }
+    indexer.stop();
+    intakes.rocket_outward();  // hold outward while indexed unwanted balls so they don't get picked back up
+    
+// tower 5
+    uid = chassis.okapi_pid_straight_drive(-1000, 550, true, 3000);  // drive backwards to next tower and index two blue balls
+    pros::delay(200);  // wait to get moving before indexing out blue balls
+    indexer.run_upper_roller_reverse();
+    indexer.run_lower_roller_reverse();
+    chassis.wait_until_finished(uid);
+    indexer.stop();
+    intakes.stop();
 }
 
 
@@ -187,114 +225,7 @@ void Autons::skills_old() {
     tracker->enable_imu();
     tracker->set_log_level(0);
     tracker->set_position({0, 0, 0});
-    // chassis.set_turn_gains({4, 0.0001, 20, INT32_MAX, INT32_MAX});  // this was written with slow turns in mind
-    
-    // tower 1
-    int uid = chassis.turn_right(30, 600, 1250, true);
-    indexer.run_upper_roller();
-    while(!chassis.is_finished(uid)) {
-        pros::delay(5);
-    }
-
-    uid = chassis.pid_straight_drive(400, 0, 600, 1000, true);
-    while(!chassis.is_finished(uid)) {
-        indexer.auto_increment();
-        pros::delay(5);
-    }
-    indexer.hard_stop();
-
-    indexer.index();
-    pros::delay(1000);
-    indexer.stop();
-    
-    // tower 2
-    chassis.pid_straight_drive(-500, 0, 600, 1000);
-    chassis.turn_right(181, 450, 1500);
-    
-    uid = chassis.pid_straight_drive(1500, 0, 500, 2000, true);  
-    while(!chassis.is_finished(uid)) {
-        indexer.auto_increment();
-        intakes.intake();
-    }
-    intakes.stop();
-    indexer.stop();
-    
-    chassis.turn_left(68, 450, 1500);
-    chassis.pid_straight_drive(800, 0, 600, 1500);
-    
-    indexer.index();
-    pros::delay(1000);
-    indexer.stop();
-    
-    // tower 3 
-    chassis.pid_straight_drive(-750, 0, 600, 1500);
-    chassis.turn_right(136, 240, 1500);
-    chassis.pid_straight_drive(1300, 0, 450, 2000);
-    uid = chassis.pid_straight_drive(1700, 0, 500, 4250, true);  // will sometimes error
-    while(!chassis.is_finished(uid)) {
-        indexer.auto_increment();
-        intakes.intake();
-    }
-    intakes.stop();
-    indexer.stop();
-    
-    chassis.pid_straight_drive(1100, 0, 450, 1500);
-
-    chassis.turn_left(47, 450, 1000);
-    chassis.pid_straight_drive(780, 0, 450, 1500);
-    
-    indexer.reset_command_queue();
-    indexer.index();
-    pros::delay(1000);
-    indexer.stop();
-    
-    // tower 4
-    chassis.pid_straight_drive(-625, 0, 600, 1500);
-    chassis.turn_right(131, 240, 1500);
-    chassis.pid_straight_drive(1300, 0, 450, 2000);
-    chassis.pid_straight_drive(700, 0, 450, 2000);
-    uid = chassis.pid_straight_drive(1700, 0, 500, 4250, true);
-    while(!chassis.is_finished(uid)) {
-        indexer.auto_increment();
-        intakes.intake();
-    }
-    intakes.stop();
-    indexer.stop();
-    
-    chassis.pid_straight_drive(300, 0, 450, 1500);
-
-    chassis.turn_left(48, 450, 1000);
-    chassis.pid_straight_drive(730, 0, 450, 1500);
-    
-    indexer.reset_command_queue();
-    indexer.index();
-    pros::delay(1000);
-    indexer.stop();
-    
-    
-    // tower 5
-    chassis.pid_straight_drive(-625, 0, 600, 1500);
-    chassis.turn_right(130, 240, 1500);
-    chassis.pid_straight_drive(1300, 0, 450, 2000);
-    uid = chassis.pid_straight_drive(1700, 0, 500, 4250, true);
-    while(!chassis.is_finished(uid)) {
-        indexer.auto_increment();
-        intakes.intake();
-    }
-    intakes.stop();
-    indexer.stop();
-    chassis.pid_straight_drive(1050, 0, 450, 2000);
-
-    chassis.turn_left(46, 450, 1000);
-    chassis.pid_straight_drive(730, 0, 450, 1500);
-    
-    indexer.reset_command_queue();
-    indexer.index();
-    pros::delay(1000);
-    indexer.stop();
-    
-    
-    
+    chassis.set_turn_gains({4, 0.0001, 20, INT32_MAX, INT32_MAX});  // this was written with slow turns in mind
     
 }
 
@@ -434,15 +365,21 @@ void Autons::two_tower_auton(std::string filter_color, int turn_direction) {
 
     // score
     indexer.index();
-    pros::delay(1500);
-    indexer.stop();
-    intakes.stop();
-
     pros::delay(300);
-
-    indexer.index();
-    pros::delay(400);
+    intakes.stop();
+    pros::delay(250);
     indexer.stop();
+    
+    // pros::delay(250);
+    // indexer.index();
+    // pros::delay(400);
+    // indexer.stop();
+
+    // pros::delay(300);
+    // 
+    // indexer.index();
+    // pros::delay(400);
+    // indexer.stop();
 
     intakes.hold_outward();
 

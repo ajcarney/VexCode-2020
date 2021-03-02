@@ -674,9 +674,9 @@ void Chassis::t_okapi_pid_straight_drive(chassis_params args) {
         relative_angle += delta_theta;
         prev_abs_angle = tracker->to_degrees(abs_angle);
         
-        double left_voltage = 11000 * pos_l_controller.step(std::get<0>(Sensors::get_average_encoders(l_id, r_id)));  // 11000 is max voltage
-        double right_voltage = 11000 * pos_r_controller.step(std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
-        double heading_correction = 1000 * heading_controller.step(relative_angle);
+        double left_voltage = args.max_voltage * pos_l_controller.step(std::get<0>(Sensors::get_average_encoders(l_id, r_id)));  // 11000 is max voltage
+        double right_voltage = args.max_voltage * pos_r_controller.step(std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
+        double heading_correction = args.max_heading_voltage_correction * heading_controller.step(relative_angle);
         left_voltage += heading_correction;
         right_voltage -= heading_correction;
         
@@ -1243,7 +1243,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     chassis_params turn_args;
     turn_args.setpoint1 = to_turn;
     turn_args.max_velocity = args.max_velocity;
-    turn_args.timeout = 15000; // TODO: add time estimation
+    turn_args.timeout = args.timeout; // TODO: add time estimation
     args.kP = 2.8;
     args.kI = 0.0005;
     args.kD = 50;
@@ -1263,7 +1263,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     drive_straight_args.setpoint1 = to_drive;
     drive_straight_args.setpoint2 = to_drive;
     drive_straight_args.max_velocity = 125;
-    drive_straight_args.timeout = 15000;
+    drive_straight_args.timeout = args.timeout;
     drive_straight_args.kP = .77;
     drive_straight_args.kI = 0.000002;
     drive_straight_args.kD = 7;
@@ -1278,7 +1278,7 @@ void Chassis::t_move_to_waypoint(chassis_params args, waypoint point) {
     // drive_straight_args.kI = .001;
     // drive_straight_args.kD = 0;
     // drive_straight_args.I_max = 2000;
-    t_pid_straight_drive(drive_straight_args);
+    t_okapi_pid_straight_drive(drive_straight_args);
     
     std::cout << "drive finished\n";
     if(args.log_data) {
@@ -1358,11 +1358,12 @@ int Chassis::profiled_straight_drive(double encoder_ticks, int max_velocity  /*4
     return uid;    
 }
 
-int Chassis::okapi_pid_straight_drive(double encoder_ticks, int max_velocity /*550*/, bool asynch /*false*/, int timeout /*INT32_MAX*/) {
+int Chassis::okapi_pid_straight_drive(double encoder_ticks, int max_voltage /*11000*/, int timeout /*INT32_MAX*/, bool asynch /*false*/, int max_heading_correction /*5000*/) {
     chassis_params args;
     args.setpoint1 = encoder_ticks;
     args.timeout = timeout;
-    args.max_velocity = max_velocity;
+    args.max_voltage = max_voltage;
+    args.max_heading_voltage_correction = max_heading_correction;
     
     // generate a unique id based on time, parameters, and seemingly random value of the voltage of one of the motors
     int uid = pros::millis() * (std::abs(encoder_ticks) + 1) + front_left_drive->get_actual_voltage();

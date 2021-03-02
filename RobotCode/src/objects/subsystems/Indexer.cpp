@@ -66,7 +66,7 @@ bool Indexer::auto_filter_ball() {
     if((color == 1 && filter_color == "blue") || (color == 2 && filter_color == "red")) {  // ball should be filtered
         upper_indexer->set_voltage(-12000); 
         lower_indexer->set_voltage(12000);
-        pros::delay(300);  // let ball filter out
+        pros::delay(225);  // let ball filter out
         upper_indexer->set_voltage(0); 
         lower_indexer->set_voltage(0);
         

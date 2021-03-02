@@ -60,8 +60,10 @@ void Intakes::intake_motion_task(void*) {
     
     int abs_position_l = 0;  // the absolute postions are calculated based on the change in encoder value
     int abs_position_r = 0;  // and capped to max and min values
-    int prev_encoder_l = l_intake->get_encoder_position();
-    int prev_encoder_r = r_intake->get_encoder_position();
+    int prev_encoder_l = 0;
+    int prev_encoder_r = 0;
+    double prev_error_l = 0;
+    double prev_error_r = 0;
     int integral_l = 0;
     int integral_r = 0;
     int dt = 0;
@@ -85,28 +87,31 @@ void Intakes::intake_motion_task(void*) {
         if(command != e_hold_outward) {  // reset integral if no longer holding outwards
             integral_l = 0;
             integral_r = 0;
+            prev_error_l = 0;
+            prev_error_r = 0;
+        } else {  // calculate PID stuff
+            dt = pros::millis() - time;  // calculate change in time since last command
+            time = pros::millis();
+            
+            double d_enc_l = l_intake->get_encoder_position() - prev_encoder_l;
+            double d_enc_r = r_intake->get_encoder_position() - prev_encoder_r;
+            prev_encoder_l = l_intake->get_encoder_position();
+            prev_encoder_r = r_intake->get_encoder_position();
+            abs_position_l += d_enc_l;
+            abs_position_r += d_enc_r;
+            
+            // cap encoder values. This can be done because mechanical stops stop the motion of
+            // the intakes
+            if (abs_position_l > 0) {  // innermost value of the encoder
+                abs_position_l = 0;
+            }
+            
+            if (abs_position_r > 0) {  // innermost value of the encoder
+                abs_position_r = 0;
+            }
+            // std::cout << abs_position_l << " " << l_intake->get_actual_voltage() << "\n";
         }
         
-        dt = pros::millis() - time;  // calculate change in time since last command
-        time = pros::millis();
-        
-        int d_enc_l = l_intake->get_encoder_position() - prev_encoder_l;
-        int d_enc_r = r_intake->get_encoder_position() - prev_encoder_r;
-        prev_encoder_l = l_intake->get_encoder_position();
-        prev_encoder_r = r_intake->get_encoder_position();
-        abs_position_l += d_enc_l;
-        abs_position_r += d_enc_r;
-        
-        // cap encoder values. This can be done because mechanical stops stop the motion of
-        // the intakes
-        if (abs_position_l > 0) {  // innermost value of the encoder
-            abs_position_l = 0;
-        }
-        
-        if (abs_position_r > 0) {  // innermost value of the encoder
-            abs_position_r = 0;
-        }
-        // std::cout << abs_position_l << " " << l_intake->get_actual_voltage() << "\n";
         // execute command
         switch(command) {
             case e_intake: {
@@ -127,30 +132,31 @@ void Intakes::intake_motion_task(void*) {
                 }
                 break;
             } case e_hold_outward: {  // PI controller to hold outwards
-                // double l_error = -37 - abs_position_l;  // set first number to encoder setpoint
-                // double r_error = -37 - abs_position_r;  // set first number to encoder setpoint
-                // 
-                // integral_l = integral_l + (l_error * dt);
-                // integral_r = integral_r + (r_error * dt);
-                // 
-                // int voltage_l = (40 * l_error) + (1 * integral_l);  // set first number to kP, second number to kI
-                // int voltage_r = (40 * r_error) + (1 * integral_r);  // set first number to kP, second number to kI
-                // if(abs_position_l > -30) {
-                //     l_intake->set_voltage(-5000);
-                // } else {
-                //     l_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
-                // }
-                // 
-                // if(abs_position_r > -30) {
-                //     r_intake->set_voltage(-5000);
-                // } else {
-                //     r_intake->set_voltage(-1500);  // doesn't take a lot to keep it out, so less voltage
-                // }
-                // 
                 l_intake->set_voltage(-4500);
                 r_intake->set_voltage(-4500);
+                
                 break;
-            } case e_rocket_outwards: {
+            } case e_pid_hold_outward: {
+                double l_error = 100 - abs_position_l;  // set first number to encoder setpoint
+                double r_error = 100 - abs_position_r;  // set first number to encoder setpoint
+                
+                integral_l = integral_l + (l_error * dt);
+                integral_r = integral_r + (r_error * dt);
+
+                double d_error_l = l_error - prev_error_l;
+                double d_error_r = r_error - prev_error_r;
+                
+                prev_error_l = l_error;
+                prev_error_r = r_error;
+
+                int voltage_l = (1 * l_error) + (.001 * integral_l) + (.001 * d_error_l);  // set first number to kP, second number to kI
+                int voltage_r = (1 * r_error) + (.001 * integral_r) + (.001 * d_error_r);  // set first number to kP, second number to kI
+
+                l_intake->set_voltage(voltage_l);
+                r_intake->set_voltage(voltage_r);
+
+                break;
+            } case e_rocket_outward: {
                 l_intake->set_voltage(-12000);
                 r_intake->set_voltage(-12000);
                 break;
@@ -185,9 +191,15 @@ void Intakes::hold_outward() {
     lock.exchange( false ); //release lock
 }
 
-void Intakes::rocket_outwards() {
+void Intakes::pid_hold_outward() {
     while ( lock.exchange( true ) ); //aquire lock
-    command_queue.push(e_rocket_outwards);
+    command_queue.push(e_pid_hold_outward);
+    lock.exchange( false ); //release lock
+}
+
+void Intakes::rocket_outward() {
+    while ( lock.exchange( true ) ); //aquire lock
+    command_queue.push(e_rocket_outward);
     lock.exchange( false ); //release lock
 }
 

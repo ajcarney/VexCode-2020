@@ -63,6 +63,8 @@ typedef struct {
     double kD=.001;
     double I_max=INT32_MAX;
     int max_velocity=150;
+    int max_voltage=11000;
+    int max_heading_voltage_correction=5000;
     int timeout=INT32_MAX;
     int recalculations=0;
     int explicit_direction=0;
@@ -137,7 +139,7 @@ class Chassis
 
         int pid_straight_drive(double encoder_ticks, int relative_heading=0, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, double slew=0.2, bool log_data=false);
         int profiled_straight_drive(double encoder_ticks, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool correct_heading=true, int relative_heading=0, bool log_data=false);
-        int okapi_pid_straight_drive(double encoder_ticks, int max_velocity=550, bool asynch=false, int timeout=INT32_MAX);
+        int okapi_pid_straight_drive(double encoder_ticks, int max_voltage=11000, int timeout=INT32_MAX, bool asynch=false, int max_heading_correction=5000);
         int uneven_drive(double l_enc_ticks, double r_enc_ticks, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, double slew=10, bool log_data=false);
         int turn_right(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool log_data=false);
         int turn_left(double degrees, int max_velocity=450, int timeout=INT32_MAX, bool asynch=false, bool log_data=false);

@@ -142,7 +142,7 @@ void PositionTracker::calc_position(void*)
                 imu_reading_rad -= 2 * M_PI;
             }
             
-            new_abs_theta_rad = (.7 * imu_reading_rad) + (.3 * encoder_reading_rad);  // merge with imu
+            new_abs_theta_rad = (.85 * imu_reading_rad) + (.15 * encoder_reading_rad);  // merge with imu
         } else {
             new_abs_theta_rad = encoder_reading_rad;
         }

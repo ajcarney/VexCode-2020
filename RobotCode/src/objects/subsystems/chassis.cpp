@@ -674,7 +674,7 @@ void Chassis::t_okapi_pid_straight_drive(chassis_params args) {
         relative_angle += delta_theta;
         prev_abs_angle = tracker->to_degrees(abs_angle);
         
-        double left_voltage = args.max_voltage * pos_l_controller.step(std::get<0>(Sensors::get_average_encoders(l_id, r_id)));  // 11000 is max voltage
+        double left_voltage = args.max_voltage * pos_l_controller.step(std::get<0>(Sensors::get_average_encoders(l_id, r_id)));
         double right_voltage = args.max_voltage * pos_r_controller.step(std::get<1>(Sensors::get_average_encoders(l_id, r_id)));
         double heading_correction = args.max_heading_voltage_correction * heading_controller.step(relative_angle);
         left_voltage += heading_correction;

@@ -40,7 +40,7 @@ class Autons
     private:
         void one_tower_auton(std::string filter_color, int turn_direction);
         void two_tower_auton(std::string filter_color, int turn_direction);
-        void two_tower_mid_auton(std::string filter_color, int turn_direction);
+        void two_tower_new_auton(std::string filter_color, int turn_direction);
         
 
     public:
@@ -80,14 +80,14 @@ class Autons
             {6, "Caps one tower for blue, \nturns right"},
             {7, "Caps one tower for red, \nturns left"},
             {8, "Caps one tower for red, \nturns right"},
-            {9, "Caps two towers for blue, \nfirst tower is right"},
-            {10, "Caps two towers for blue, \nfirst turn is left"},
-            {11, "Caps two towers for red, \nfirst turn is right"},
-            {12, "Caps two towers for red, \nfirst turn is left"},
-            {13, "Caps two towers for blue middle, \nfirst tower is right"},
-            {14, "Caps two towers for blue middle, \nfirst turn is left"},
-            {15, "Caps two towers for red middle, \nfirst turn is right"},
-            {16, "Caps two towers for red middle, \nfirst turn is left"},
+            {9, "Caps two towers for blue (old), \nfirst tower is right"},
+            {10, "Caps two towers for blue (old), \nfirst turn is left"},
+            {11, "Caps two towers for red (old), \nfirst turn is right"},
+            {12, "Caps two towers for red (old), \nfirst turn is left"},
+            {13, "Caps two towers for blue (new), \nfirst tower is right"},
+            {14, "Caps two towers for blue (new), \nfirst turn is left"},
+            {15, "Caps two towers for red (new), \nfirst turn is right"},
+            {16, "Caps two towers for red (new), \nfirst turn is left"},
             {17, "opens debugger"}
         };
         const std::unordered_map <int, std::string> AUTONOMOUS_COLORS = {
@@ -154,10 +154,10 @@ class Autons
         void red_two_tower_left();
         void red_two_tower_right();
         
-        void blue_two_tower_mid_left();
-        void blue_two_tower_mid_right();
-        void red_two_tower_mid_left();
-        void red_two_tower_mid_right();
+        void blue_two_tower_new_left();
+        void blue_two_tower_new_right();
+        void red_two_tower_new_left();
+        void red_two_tower_new_right();
         
         void blue_north();
         void blue_north_2();

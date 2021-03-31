@@ -32,8 +32,9 @@
 #define DETECTOR_TOP_PORT        'D'  // no port available but still wanted in code
 
 #define OPTICAL_PORT              5
+#define DISTANCE_PORT            20
 #define IMU_PORT                 10
-#define EXPANDER_PORT            4
+#define EXPANDER_PORT             4
 
 
 typedef struct

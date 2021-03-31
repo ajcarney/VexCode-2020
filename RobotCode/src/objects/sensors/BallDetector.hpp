@@ -27,18 +27,14 @@ class BallDetector
                         
     public:
         BallDetector(
-            AnalogInSensor& detector_top_left, 
-            AnalogInSensor& detector_filter, 
-            AnalogInSensor& detector_bottom, 
             int optical_port, 
+            int distance_port,
             int detector_threshold
         );
         ~BallDetector();
         
-        AnalogInSensor ball_detector_top;
-        AnalogInSensor ball_detector_filter;
-        AnalogInSensor ball_detector_bottom;
         pros::Optical* optical_sensor;
+        pros::Distance* distance_sensor;
                         
         int set_threshold(int new_threshold);
         int check_filter_level();

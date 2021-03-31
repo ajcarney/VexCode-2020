@@ -82,6 +82,7 @@ typedef enum e_indexer_command {
 } indexer_command;
 
 typedef struct {
+    bool run_lower_roller;
     ball_positions end_state;
     bool allow_filter;
 }indexer_args;
@@ -122,9 +123,9 @@ class Indexer
         Indexer(Motor &upper, Motor &lower, BallDetector &detector, std::string color);
         ~Indexer();
     
-        void index();
+        void index(bool run_lower=true);
         void filter();
-        void auto_index();
+        void auto_index(bool run_lower=true);
         void index_no_backboard();
         void auto_staggered_index();
         void staggered_index();

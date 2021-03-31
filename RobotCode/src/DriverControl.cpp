@@ -40,13 +40,14 @@ void driver_control(void*)
     } else {
         config->filter_color = "none";
     }
-    config->filter_color = "blue";
+    // config->filter_color = "blue";  // uncomment if uploading for skills
 
     Controller controllers;
 
-    Chassis chassis( Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
+    Chassis chassis(Motors::front_left, Motors::front_right, Motors::back_left, Motors::back_right, Sensors::left_encoder, Sensors::right_encoder, 16, 3/5);
     Indexer indexer(Motors::upper_indexer, Motors::lower_indexer, Sensors::ball_detector, config->filter_color);
     Intakes intakes(Motors::left_intake, Motors::right_intake);
+    intakes.stop();  // help pid loop not be wierd when starting the task
     
     int left_analog_y = 0;
     int right_analog_y = 0;
@@ -54,6 +55,9 @@ void driver_control(void*)
     bool auto_filter = true;
     bool hold_intakes_out = true;
     int intake_start_time = 0;  // no possible way to think indexer should run at the start of driver control
+
+    bool run_lower_indexer = true;
+    int lower_indexer_start_time = 0;
 
     controllers.master.print(0, 0, "Auto Filter %s     ", config->filter_color);
 
@@ -65,25 +69,35 @@ void driver_control(void*)
             intakes.intake();
             intake_start_time = pros::millis();
         } else if(hold_intakes_out){  // rest state is outward with motor power
-            intakes.hold_outward();
+            intakes.pid_hold_outward();
         } else {  // rest state is no motor power
             intakes.stop();
         }
         
-        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_R2)) {
+        if(controllers.btn_get_release(pros::E_CONTROLLER_DIGITAL_R2)) {  // toggle actuating intakes
             hold_intakes_out = !hold_intakes_out;
         }
 
     // section for indexer motion
-        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && auto_filter) {  // define movement for indexer subsystem
-            indexer.auto_index();
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1) && !auto_filter) {
-            indexer.index();
+        // wait for some time before running the bottom roller
+        if(controllers.btn_get_start_press(pros::E_CONTROLLER_DIGITAL_L1)) {  // if it is a new press of indexing button
+            run_lower_indexer = false;
+            lower_indexer_start_time = pros::millis();
+        } else if (pros::millis() > lower_indexer_start_time + 150) {
+            run_lower_indexer = true;
+        }
+        
+        if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L1)) {  // define movement for indexer subsystem
+            if(auto_filter) {
+                indexer.auto_index(run_lower_indexer);
+            } else {
+                indexer.reset_command_queue();
+                indexer.index(run_lower_indexer);
+            }
         } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             indexer.run_upper_roller_reverse();
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && auto_filter) {
-            indexer.index();
-        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2) && !auto_filter) {
+        } else if(controllers.btn_is_pressing(pros::E_CONTROLLER_DIGITAL_L2)) {
+            indexer.reset_command_queue();
             indexer.index();
         } else if(controllers.master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
             indexer.fix_ball(true);

@@ -21,15 +21,12 @@ namespace Sensors
     Encoder left_encoder{LEFT_ENC_TOP_PORT, LEFT_ENC_BOTTOM_PORT, false};
     Encoder strafe_encoder{STRAFE_ENC_TOP_PORT, STRAFE_ENC_BOTTOM_PORT, true};
     
-    AnalogInSensor line_tracker_top{DETECTOR_TOP_PORT};
-    AnalogInSensor line_tracker_middle{DETECTOR_MIDDLE_PORT}; 
-    AnalogInSensor line_tracker_bottom{DETECTOR_BOTTOM_PORT};
+    pros::ADIDigitalIn r_limit_switch{pros::ext_adi_port_pair_t(EXPANDER_PORT, 'E')};
+    pros::ADIDigitalIn l_limit_switch{'D'};
     
     BallDetector ball_detector{
-        line_tracker_top,
-        line_tracker_middle,
-        line_tracker_bottom,
         OPTICAL_PORT,
+        DISTANCE_PORT,
         Configuration::get_instance()->filter_threshold
     };
     

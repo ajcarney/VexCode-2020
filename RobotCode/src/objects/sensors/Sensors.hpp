@@ -25,10 +25,9 @@ namespace Sensors
     extern Encoder left_encoder;
     extern Encoder strafe_encoder;
     
-    extern AnalogInSensor line_tracker_top;
-    extern AnalogInSensor line_tracker_middle;
-    extern AnalogInSensor line_tracker_bottom;
-    extern pros::Optical optical;
+    extern pros::ADIDigitalIn r_limit_switch;
+    extern pros::ADIDigitalIn l_limit_switch;
+    
     extern BallDetector ball_detector;
     
     extern pros::Imu imu;

@@ -117,7 +117,11 @@ void Indexer::indexer_motion_task(void*) {
                 // fallthrough and index like normal now that it doesn't need to filter
             } case e_index: {
                 upper_indexer->set_voltage(12000); 
-                lower_indexer->set_voltage(12000);
+                if(action.args.run_lower_roller) {
+                    lower_indexer->set_voltage(12000);
+                } else {
+                    lower_indexer->set_voltage(0);
+                }
                 break;
             } case e_index_no_backboard: {
                 upper_indexer->set_voltage(9000); 
@@ -191,11 +195,11 @@ void Indexer::indexer_motion_task(void*) {
                 std::vector<bool> locations = ball_detector->locate_balls();
                 
                 if(!locations.at(0)) {  // move ball into top position
-                    upper_indexer->set_voltage(10000); 
-                    lower_indexer->set_voltage(10000);
+                    upper_indexer->set_voltage(12000); 
+                    lower_indexer->set_voltage(12000);
                 } else if(locations.at(0) && !locations.at(1)) { // move ball from lowest/no position to middle position
                     upper_indexer->set_voltage(0); 
-                    lower_indexer->set_voltage(10000);
+                    lower_indexer->set_voltage(12000);
                 } else { // indexer can't do anything to increment so don't run
                     upper_indexer->set_voltage(0); 
                     lower_indexer->set_voltage(0);
@@ -247,16 +251,20 @@ int Indexer::send_command(indexer_command command, indexer_args args /*{}*/) {
     return action.uid;
 }
 
-void Indexer::index() {
-    send_command(e_index);
+void Indexer::index(bool run_lower /*true*/) {
+    indexer_args args;
+    args.run_lower_roller = run_lower;  
+    send_command(e_index, args);
 }
 
 void Indexer::filter() {
     send_command(e_filter);
 }
 
-void Indexer::auto_index() {
-    send_command(e_auto_index);
+void Indexer::auto_index(bool run_lower /*true*/) {
+    indexer_args args;
+    args.run_lower_roller = run_lower;   
+    send_command(e_auto_index, args);
 }
 
 void Indexer::index_no_backboard() {

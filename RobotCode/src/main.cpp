@@ -497,6 +497,6 @@ void opcontrol() {
         // std::cout << "handling requests\n";
         // logger.dump();
 
-        pros::delay(10);
+        pros::delay(20);
     }
 }

@@ -18,10 +18,10 @@ review_dates = {}
 for file in files:
     todo_comments.update({file:[]})
     with open(file) as f:
-        for line in f.readlines():
+        for i, line in enumerate(f.readlines()):
             if "TODO: " in line:
                 comment = line.split("TODO: ")[-1].strip()
-                todo_comments[file].append(comment)
+                todo_comments[file].append([comment, i + 1])
             elif "@reviewed_on: " in line:
                 date = line.split("@reviewed_on: ")[-1].strip()
                 if date:
@@ -40,7 +40,7 @@ for file in todo_comments:
     if todo_comments.get(file):
         print(file)
         for comment in todo_comments.get(file):
-            print("\t" + comment)
+            print("\t" + str(comment[1]) + ": " + comment[0])
             i1 += 1
 
 to_review = []
@@ -64,6 +64,36 @@ for file in to_review:
 
 print("\n")
 
+print("number of files:", len(files))
 print("number of todo comments:", i1)
 print("number of files needing review:", i2)
 
+# robot source code
+header_files = glob.glob("src/**/" + '*.hpp', recursive=True)
+impl_files = glob.glob("src/**/" + '*.cpp', recursive=True)
+py_files = glob.glob("./**/" + '*.py', recursive=True)
+files = header_files + impl_files + py_files
+robocode_lines = 0
+for file in files:
+    with open(file) as f:
+        for i, l in enumerate(f):
+            pass
+        robocode_lines += i + 1
+
+side_project_files = (
+    glob.glob("../**/" + '*.py', recursive=True)
+    + glob.glob("../**/" + '*.sh', recursive=True)
+
+) 
+sidecode_lines = 0
+for file in side_project_files:
+    with open(file) as f:
+        for i, l in enumerate(f):
+            pass
+        sidecode_lines += i + 1
+
+print()
+print()
+print("Code that goes on robot:", robocode_lines, "lines")
+print("Code from side projects:", sidecode_lines, "lines")
+print("Total:", sidecode_lines + robocode_lines, "lines")

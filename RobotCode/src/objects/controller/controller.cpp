@@ -142,12 +142,12 @@ void Controller::update_button_history()
 bool Controller::btn_get_release(pros::controller_digital_e_t btn, int controller /** 0 **/) {
     bool pressed_and_released = false;
     if(!controller) {
-        if(master_btn_history.at(btn)->at(1) and !master_btn_history.at(btn)->at(2)) {
+        if(master_btn_history.at(btn)->at(1) && !master_btn_history.at(btn)->at(2)) {
             pressed_and_released = true;
         }
     }
     else {
-        if(partner_btn_history.at(btn)->at(1) and !partner_btn_history.at(btn)->at(2)) {
+        if(partner_btn_history.at(btn)->at(1) && !partner_btn_history.at(btn)->at(2)) {
             pressed_and_released = true;
         }
     }
@@ -158,12 +158,12 @@ bool Controller::btn_get_release(pros::controller_digital_e_t btn, int controlle
 bool Controller::btn_get_start_press(pros::controller_digital_e_t btn, int controller /** 0 **/) {
     bool press_start = false;
     if(!controller) {
-        if(!master_btn_history.at(btn)->at(1) and master_btn_history.at(btn)->at(2)) {
+        if(!master_btn_history.at(btn)->at(1) && master_btn_history.at(btn)->at(2)) {
             press_start = true;
         }
     }
     else {
-        if(!partner_btn_history.at(btn)->at(1) and partner_btn_history.at(btn)->at(2)) {
+        if(!partner_btn_history.at(btn)->at(1) && partner_btn_history.at(btn)->at(2)) {
             press_start = true;
         }
     }

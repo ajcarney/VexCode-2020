@@ -11,6 +11,7 @@
 #include "main.h"
 
 
+#include "../sensors/Sensors.hpp"
 #include "../serial/Logger.hpp"
 #include "intakes.hpp"
 
@@ -73,7 +74,7 @@ void Intakes::intake_motion_task(void*) {
         while(1) { // delay unitl there is a command in the queue
             while ( lock.exchange( true ) ); //aquire lock and release it later
             if(!command_queue.empty()) {
-                break;
+                break;  // keep lock and release it later
             }
             
             lock.exchange( false ); //release lock
@@ -84,7 +85,7 @@ void Intakes::intake_motion_task(void*) {
         command_queue.pop();
         lock.exchange( false ); //release lock
         
-        if(command != e_hold_outward) {  // reset integral if no longer holding outwards
+        if(command != e_pid_hold_outward) {  // reset integral if no longer holding outwards
             integral_l = 0;
             integral_r = 0;
             prev_error_l = 0;
@@ -137,11 +138,32 @@ void Intakes::intake_motion_task(void*) {
                 
                 break;
             } case e_pid_hold_outward: {
-                double l_error = 100 - abs_position_l;  // set first number to encoder setpoint
-                double r_error = 100 - abs_position_r;  // set first number to encoder setpoint
+                double l_error = -42 - abs_position_l;  // set first number to encoder setpoint
+                double r_error = -42 - abs_position_r;  // set first number to encoder setpoint
+                if(Sensors::l_limit_switch.get_value()) {
+                    l_error = 0;
+                }
+                if(Sensors::r_limit_switch.get_value()) {
+                    r_error = 0;
+                }
                 
                 integral_l = integral_l + (l_error * dt);
                 integral_r = integral_r + (r_error * dt);
+                if(std::abs(l_error) < 1) {  // reset integral if error is 0
+                    integral_l = 0;
+                }
+                if(std::abs(r_error) < 1) {
+                    integral_r = 0;
+                }
+                
+                // cap voltage to max voltage with regard to velocity
+                double i_max = 12000;
+                if ( std::abs(integral_l) > i_max ) {
+                    integral_l = integral_l > 0 ? i_max : -i_max;
+                }
+                if ( std::abs(integral_r) > i_max ) {
+                    integral_r = integral_r > 0 ? i_max : -i_max;
+                }
 
                 double d_error_l = l_error - prev_error_l;
                 double d_error_r = r_error - prev_error_r;
@@ -149,8 +171,23 @@ void Intakes::intake_motion_task(void*) {
                 prev_error_l = l_error;
                 prev_error_r = r_error;
 
-                int voltage_l = (1 * l_error) + (.001 * integral_l) + (.001 * d_error_l);  // set first number to kP, second number to kI
-                int voltage_r = (1 * r_error) + (.001 * integral_r) + (.001 * d_error_r);  // set first number to kP, second number to kI
+                int voltage_l = (1 * l_error) + (10 * integral_l) + (1 * d_error_l);  // set first number to kP, second number to kI
+                int voltage_r = (1 * r_error) + (10 * integral_r) + (1 * d_error_r);  // set first number to kP, second number to kI
+
+                // cap voltage to max and min voltages
+                if ( voltage_l < -12000 ) {
+                    voltage_l = -12000;
+                } else if(voltage_l > -1500) {
+                    voltage_l = -1500;
+                }
+                
+                if (voltage_r < -12000 ) {
+                    voltage_r = -12000;
+                } else if(voltage_r > -2000) {
+                    voltage_r = -2000;
+                }
+
+                std::cout << Sensors::l_limit_switch.get_value() << " " << Sensors::r_limit_switch.get_value() << " " << l_error << " " << r_error << " " << voltage_l << " " << voltage_r << "\n";
 
                 l_intake->set_voltage(voltage_l);
                 r_intake->set_voltage(voltage_r);
